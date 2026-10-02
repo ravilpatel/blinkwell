@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">BlinkWell</string>
+    <string name="developer_credit">मिताली पुरोहित द्वारा</string>
+    <string name="tagline">सजग नेत्र देखभाल और पलक झपकाने का स्वास्थ्य</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">होम</string>
+    <string name="nav_stats">आँकड़े</string>
+    <string name="nav_settings">सेटिंग्स</string>
+    <string name="nav_about">के बारे में</string>
+
+    <!-- Onboarding: Welcome -->
+    <string name="onboarding_welcome_title">BlinkWell में आपका स्वागत है</string>
+    <string name="onboarding_welcome_desc">स्क्रीन समय में आपकी आँखों की सेहत के लिए आपका निजी साथी। BlinkWell पलक झपकाने की दर की निगरानी करके डिजिटल आँखों के तनाव को कम करने में मदद करता है।</string>
+    <string name="onboarding_get_started">शुरू करें</string>
+
+    <!-- Onboarding: How It Works -->
+    <string name="onboarding_how_it_works_title">BlinkWell कैसे काम करता है</string>
+    <string name="onboarding_how_it_works_desc">सामने के कैमरे का उपयोग करके, BlinkWell पूरी तरह से आपके डिवाइस पर ही पलक झपकाने के पैटर्न का पता लगाता है। कोई भी वीडियो या फोटो कभी रिकॉर्ड या सहेजा नहीं जाता है।</string>
+    <string name="onboarding_privacy_promise">100% ऑन-डिवाइस विश्लेषण • कोई वीडियो सहेजा नहीं गया</string>
+
+    <!-- Onboarding: Consent -->
+    <string name="onboarding_consent_title">आपकी गोपनीयता और सहमति</string>
+    <string name="onboarding_consent_desc">कृपया अपनी गोपनीयता प्राथमिकताएँ चुनें। आप इन्हें कभी भी सेटिंग्स में बदल सकते हैं।</string>
+    <string name="consent_monitor_title">पलक झपकाने की निगरानी की अनुमति दें</string>
+    <string name="consent_monitor_desc">पलक झपकाने की दर मापने और स्वास्थ्य अलर्ट देने के लिए आवश्यक है।</string>
+    <string name="consent_research_title">गुमनाम अनुसंधान डेटा साझा करें</string>
+    <string name="consent_research_desc">गुमनाम एकत्रित मेट्रिक्स अपलोड करके शोधकर्ताओं की सहायता करें (वैकल्पिक)।</string>
+    <string name="privacy_policy_link">हमारी गोपनीयता नीति पढ़ें</string>
+
+    <!-- Onboarding: Monitoring Mode Choice -->
+    <string name="mode_choice_title">निगरानी मोड चुनें</string>
+    <string name="mode_choice_desc">चुनें कि आप BlinkWell द्वारा आँखों की देखभाल कैसे चाहते हैं:</string>
+    <string name="mode_background_title">पृष्ठभूमि (Background) में चलाएं</string>
+    <string name="mode_background_desc">अन्य ऐप्स का उपयोग करते समय भी सूचना के माध्यम से समय-समय पर निगरानी करता है। स्क्रीन बंद होने पर तुरंत रुक जाता है।</string>
+    <string name="mode_app_only_title">केवल ऐप खुला होने पर जांचें</string>
+    <string name="mode_app_only_desc">केवल तभी निगरानी करता है जब BlinkWell स्क्रीन पर सक्रिय रूप से खुला हो। शून्य बैकग्राउंड बैटरी खपत।</string>
+
+    <!-- Onboarding: Permissions -->
+    <string name="permissions_title">आवश्यक अनुमतियाँ</string>
+    <string name="permissions_desc">BlinkWell को पलकें पहचानने के लिए कैमरा एक्सेस और स्वास्थ्य अलर्ट के लिए सूचना (Notification) एक्सेस की आवश्यकता है।</string>
+    <string name="permission_camera_reason">कैमरे का उपयोग केवल ऑन-डिवाइस पलक झपकाने की पहचान के लिए किया जाता है।</string>
+    <string name="permission_notification_reason">कम पलक झपकाने पर नोटिफिकेशन द्वारा याद दिलाया जाता है।</string>
+    <string name="grant_permissions">अनुमतियाँ दें</string>
+
+    <!-- Onboarding: Account -->
+    <string name="account_title">खाता सेटअप</string>
+    <string name="account_desc">BlinkWell बिना किसी खाते के पूरी तरह से ऑफ़लाइन काम करता है।</string>
+    <string name="continue_anonymous">बिना खाते के जारी रखें</string>
+    <string name="sign_in_with_email">साइन इन / रजिस्टर करें</string>
+
+    <!-- Home Screen -->
+    <string name="home_status_ready">निगरानी के लिए तैयार</string>
+    <string name="home_status_monitoring">निगरानी सक्रिय है</string>
+    <string name="home_status_paused">निगरानी रुकी हुई है</string>
+    <string name="home_no_face_detected">चेहरा नहीं मिला — फोन को सामने रखें</string>
+    <string name="home_face_detected">चेहरा पहचाना गया और सक्रिय है</string>
+    <string name="home_blinks_per_minute">पलकें / मिनट</string>
+    <string name="home_current_rate">वर्तमान दर</string>
+    <string name="home_target_rate">उत्तम: 15–20 BPM</string>
+    <string name="home_btn_start">निगरानी शुरू करें</string>
+    <string name="home_btn_stop">निगरानी बंद करें</string>
+    <string name="home_mode_badge_bg">मोड: बैकग्राउंड</string>
+    <string name="home_mode_badge_app">मोड: केवल ऐप में</string>
+
+    <!-- Stats Screen -->
+    <string name="stats_title">इतिहास और रुझान</string>
+    <string name="stats_today_avg">आज का औसत</string>
+    <string name="stats_alerts_today">आज के अलर्ट</string>
+    <string name="stats_total_sessions">कुल सत्र</string>
+    <string name="stats_recent_trend">हालिया दर (BPM)</string>
+    <string name="stats_recent_alerts">हाल के अलर्ट</string>
+    <string name="stats_no_data">अभी कोई डेटा दर्ज नहीं हुआ है।</string>
+
+    <!-- Settings Screen -->
+    <string name="settings_title">सेटिंग्स</string>
+    <string name="settings_section_monitoring">निगरानी और संवेदनशीलता</string>
+    <string name="settings_threshold_label">अलर्ट सीमा (BPM)</string>
+    <string name="settings_threshold_summary">यदि दर 2 मिनट तक %d BPM से कम रहे तो अलर्ट करें</string>
+    <string name="settings_sampling_mode_label">बैकग्राउंड सैंपलिंग रणनीति</string>
+    <string name="settings_sampling_duty_cycle">आवधिक बर्स्ट (अनुशंसित - बैटरी बचाता है)</string>
+    <string name="settings_sampling_continuous">निरंतर कम-एफपीएस (3–5 fps)</string>
+    <string name="settings_mode_switch_label">निगरानी मोड</string>
+    <string name="settings_section_notifications">सूचनाएँ (Notifications)</string>
+    <string name="settings_alerts_enabled">कम पलक अलर्ट</string>
+    <string name="settings_section_privacy">गोपनीयता और डेटा</string>
+    <string name="settings_research_sharing">गुमनाम अनुसंधान डेटा साझा करें</string>
+    <string name="settings_delete_data">मेरा स्थानीय डेटा हटाएं</string>
+    <string name="settings_delete_data_confirm">क्या आप वाकई सारा स्थानीय डेटा हटाना चाहते हैं?</string>
+    <string name="settings_section_language">भाषा (Language)</string>
+    <string name="btn_cancel">रद्द करें</string>
+    <string name="btn_delete">हटाएं</string>
+    <string name="btn_save">सहेजें</string>
+
+    <!-- About Screen -->
+    <string name="about_title">BlinkWell के बारे में</string>
+    <string name="about_version">संस्करण 1.0.0</string>
+    <string name="about_dev_credit">मिताली पुरोहित द्वारा विकसित</string>
+    <string name="about_disclaimer_title">स्वास्थ्य अस्वीकरण (Disclaimer)</string>
+    <string name="disclaimer_text">BlinkWell एक सामान्य स्वास्थ्य उपकरण है जो आपके डिवाइस के कैमरे का उपयोग करके आपकी पलक झपकाने की दर का अनुमान लगाता है। यह कोई चिकित्सा उपकरण नहीं है और किसी भी स्थिति का निदान, उपचार या रोकथाम नहीं करता है। प्रकाश, चश्मा और कैमरे का कोण सटीकता को प्रभावित कर सकता है। यदि आपको सूखी आँखों या दृष्टि संबंधी कोई चिंता है, तो कृपया किसी नेत्र रोग विशेषज्ञ से परामर्श लें।</string>
+
+    <!-- Notifications & Service -->
+    <string name="notification_channel_alerts">पलक अलर्ट</string>
+    <string name="notification_channel_service">BlinkWell बैकग्राउंड सेवा</string>
+    <string name="notification_service_running">BlinkWell सक्रिय रूप से आपकी पलकों की निगरानी कर रहा है</string>
+    <string name="notification_alert_title">आँखों को थोड़ा आराम दें</string>
+    <string name="notification_alert_body">आपकी पलक झपकाने की दर कम लग रही है — 20 सेकंड का ब्रेक लें और कुछ बार पलकें झपकाएं।</string>
+
+    <!-- Common -->
+    <string name="next">आगे</string>
+    <string name="skip">छोड़ें</string>
+    <string name="done">संपन्न</string>
+</resources>

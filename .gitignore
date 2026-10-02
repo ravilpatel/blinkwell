@@ -1,0 +1,22 @@
+# Root .gitignore
+.gradle/
+build/
+*.iml
+.idea/
+local.properties
+.DS_Store
+
+# Android
+android/app/build/
+android/build/
+android/.gradle/
+android/local.properties
+*.apk
+*.aab
+*.keystore
+
+# Node & Next.js
+dashboard/node_modules/
+dashboard/.next/
+dashboard/out/
+dashboard/.env*.local

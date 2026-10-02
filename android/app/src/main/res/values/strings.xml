@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">BlinkWell</string>
+    <string name="developer_credit">By Mitali Purohit</string>
+    <string name="tagline">Mindful Eye Care &amp; Blink Wellness</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_stats">Stats</string>
+    <string name="nav_settings">Settings</string>
+    <string name="nav_about">About</string>
+
+    <!-- Onboarding: Welcome -->
+    <string name="onboarding_welcome_title">Welcome to BlinkWell</string>
+    <string name="onboarding_welcome_desc">Your personal companion for eye health and screen-time wellness. BlinkWell helps reduce digital eye strain by monitoring your blink rate.</string>
+    <string name="onboarding_get_started">Get Started</string>
+
+    <!-- Onboarding: How It Works -->
+    <string name="onboarding_how_it_works_title">How BlinkWell Works</string>
+    <string name="onboarding_how_it_works_desc">Using your front camera, BlinkWell detects your blink patterns completely on-device. No raw video or photos are ever recorded, stored, or transmitted.</string>
+    <string name="onboarding_privacy_promise">100% On-Device Face Analysis • Zero Video Saved</string>
+
+    <!-- Onboarding: Consent -->
+    <string name="onboarding_consent_title">Your Privacy &amp; Consent</string>
+    <string name="onboarding_consent_desc">Please review and select your privacy preferences. You can modify these anytime in Settings.</string>
+    <string name="consent_monitor_title">Allow blink rate monitoring</string>
+    <string name="consent_monitor_desc">Required to measure blink rates and deliver low-blink wellness alerts.</string>
+    <string name="consent_research_title">Share anonymized research data</string>
+    <string name="consent_research_desc">Help eye-health researchers by uploading anonymous aggregate blink metrics (optional).</string>
+    <string name="privacy_policy_link">Read our Privacy Policy</string>
+
+    <!-- Onboarding: Monitoring Mode Choice -->
+    <string name="mode_choice_title">Choose Monitoring Mode</string>
+    <string name="mode_choice_desc">Select how you want BlinkWell to watch over your eye health:</string>
+    <string name="mode_background_title">Run in Background</string>
+    <string name="mode_background_desc">Periodically monitors your blink rate while you use other apps via an ongoing notification. Pauses immediately when screen turns off.</string>
+    <string name="mode_app_only_title">Only Check in App</string>
+    <string name="mode_app_only_desc">Monitors blink rate only while BlinkWell is actively open on your screen. Zero background battery or CPU use.</string>
+
+    <!-- Onboarding: Permissions -->
+    <string name="permissions_title">Required Permissions</string>
+    <string name="permissions_desc">BlinkWell requires camera access to detect blinks, and notification access for gentle wellness reminders.</string>
+    <string name="permission_camera_reason">Camera is used strictly for real-time, on-device eye blink detection.</string>
+    <string name="permission_notification_reason">Notifications deliver friendly alerts when your blink rate is low.</string>
+    <string name="grant_permissions">Grant Permissions</string>
+
+    <!-- Onboarding: Account -->
+    <string name="account_title">Account Setup</string>
+    <string name="account_desc">BlinkWell works completely offline without an account. You can optionally sign in to sync across devices.</string>
+    <string name="continue_anonymous">Continue without an Account</string>
+    <string name="sign_in_with_email">Sign In / Register</string>
+
+    <!-- Home Screen -->
+    <string name="home_status_ready">Ready to Monitor</string>
+    <string name="home_status_monitoring">Monitoring Active</string>
+    <string name="home_status_paused">Monitoring Paused</string>
+    <string name="home_no_face_detected">No face detected — keep phone in view</string>
+    <string name="home_face_detected">Face detected &amp; active</string>
+    <string name="home_blinks_per_minute">Blinks / Min</string>
+    <string name="home_current_rate">Current Rate</string>
+    <string name="home_target_rate">Optimal: 15–20 BPM</string>
+    <string name="home_btn_start">Start Monitoring</string>
+    <string name="home_btn_stop">Stop Monitoring</string>
+    <string name="home_mode_badge_bg">Mode: Background</string>
+    <string name="home_mode_badge_app">Mode: In-App Only</string>
+
+    <!-- Stats Screen -->
+    <string name="stats_title">Blink History &amp; Trends</string>
+    <string name="stats_today_avg">Today\'s Average</string>
+    <string name="stats_alerts_today">Alerts Today</string>
+    <string name="stats_total_sessions">Total Sessions</string>
+    <string name="stats_recent_trend">Recent Blink Rate (BPM)</string>
+    <string name="stats_recent_alerts">Recent Alerts</string>
+    <string name="stats_no_data">No session data recorded yet. Start monitoring to see stats.</string>
+
+    <!-- Settings Screen -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_section_monitoring">Monitoring &amp; Sensitivity</string>
+    <string name="settings_threshold_label">Alert Threshold (BPM)</string>
+    <string name="settings_threshold_summary">Alert when blink rate drops below %d BPM for 2 minutes</string>
+    <string name="settings_sampling_mode_label">Background Sampling Strategy</string>
+    <string name="settings_sampling_duty_cycle">Duty-Cycled Burst (Recommended - Saves Battery)</string>
+    <string name="settings_sampling_continuous">Continuous Low-FPS (3–5 fps)</string>
+    <string name="settings_mode_switch_label">Monitoring Mode</string>
+    <string name="settings_section_notifications">Notifications</string>
+    <string name="settings_alerts_enabled">Low-Blink Alerts</string>
+    <string name="settings_section_privacy">Privacy &amp; Data</string>
+    <string name="settings_research_sharing">Share Anonymized Research Data</string>
+    <string name="settings_delete_data">Delete All My Local Data</string>
+    <string name="settings_delete_data_confirm">Are you sure? This will delete all your local session logs and history.</string>
+    <string name="settings_section_language">Language</string>
+    <string name="btn_cancel">Cancel</string>
+    <string name="btn_delete">Delete</string>
+    <string name="btn_save">Save</string>
+
+    <!-- About Screen -->
+    <string name="about_title">About BlinkWell</string>
+    <string name="about_version">Version 1.0.0</string>
+    <string name="about_dev_credit">Developed by Mitali Purohit</string>
+    <string name="about_disclaimer_title">Wellness Disclaimer</string>
+    <string name="disclaimer_text">BlinkWell is a general wellness tool that estimates your blink rate using your device\'s camera. It is not a medical device and does not diagnose, treat, or prevent any condition. Lighting, glasses, and camera angle can affect accuracy. If you have concerns about dry eyes, eye strain, or vision changes, please consult an eye care professional.</string>
+
+    <!-- Notifications & Service -->
+    <string name="notification_channel_alerts">Blink Alerts</string>
+    <string name="notification_channel_service">BlinkWell Background Service</string>
+    <string name="notification_service_running">BlinkWell is actively monitoring your blink rate</string>
+    <string name="notification_alert_title">Gentle Eye Break</string>
+    <string name="notification_alert_body">Your blink rate looks low right now — take a 20-second break and blink a few times.</string>
+
+    <!-- Common -->
+    <string name="next">Next</string>
+    <string name="skip">Skip</string>
+    <string name="done">Done</string>
+</resources>
