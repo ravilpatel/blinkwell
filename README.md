@@ -60,7 +60,7 @@ BlinkWell/
 The BlinkWell Research Portal has been redesigned for high-precision clinical ergonomics research:
 
 - **Population Telemetry & Cohort Analytics (`/overview/`)**:
-  - Live 120Hz WebSocket biometric stream ingestion.
+  - Live WebSocket biometric telemetry stream ingestion.
   - Multi-arm study cohort segmentation (Software Engineers, Remote Students, Control Group).
   - 24-Hour Diurnal Blink Suppression analysis curve with physiological normal baseline (15–20 BPM) and severe asthenopia threshold (<10 BPM).
   - Gaussian Blink Rate Distribution histogram.

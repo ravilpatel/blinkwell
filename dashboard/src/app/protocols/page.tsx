@@ -30,11 +30,14 @@ import {
   Cell
 } from 'recharts';
 
+import ClinicalReportModal from '@/components/ClinicalReportModal';
+
 export default function ProtocolsPage() {
   const [selectedArm, setSelectedArm] = useState<'arm_a' | 'arm_b' | 'arm_c'>('arm_a');
   const [cooldownMins, setCooldownMins] = useState<number>(10);
   const [alertThresholdBpm, setAlertThresholdBpm] = useState<number>(10);
   const [savedSuccess, setSavedSuccess] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
 
   // Comparative Cohort Statistics
   const cohortComparisonData = [
@@ -80,6 +83,37 @@ No camera images or video frames are ever recorded, stored, or transmitted. ML K
     <div className="min-h-screen bg-slate-50 pb-16">
       <Navbar />
 
+      <ClinicalReportModal
+        isOpen={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        data={{
+          investigatorName: 'Mitali Purohit',
+          reportDate: new Date(),
+          totalSessions: 4860,
+          avgBpm: 14.2,
+          strainIndex: 18.4,
+          totalScreenHours: 8940,
+          totalAlerts: 3812,
+          diurnalData: [
+            { hour: '00:00', avgBpm: 18.2, alerts: 12, strainRate: 4 },
+            { hour: '04:00', avgBpm: 19.8, alerts: 3, strainRate: 1 },
+            { hour: '08:00', avgBpm: 16.5, alerts: 24, strainRate: 9 },
+            { hour: '12:00', avgBpm: 12.4, alerts: 142, strainRate: 31 },
+            { hour: '14:00', avgBpm: 9.8, alerts: 218, strainRate: 44 },
+            { hour: '16:00', avgBpm: 8.9, alerts: 286, strainRate: 52 },
+            { hour: '18:00', avgBpm: 11.2, alerts: 174, strainRate: 36 },
+            { hour: '20:00', avgBpm: 14.5, alerts: 96, strainRate: 18 },
+            { hour: '22:00', avgBpm: 16.8, alerts: 42, strainRate: 8 },
+          ],
+          distributionData: [
+            { range: '<10 BPM (Severe Strain)', percentage: 18, count: 263, color: '#e11d48' },
+            { range: '10–14 BPM (Sub-optimal)', percentage: 44, count: 628, color: '#f59e0b' },
+            { range: '15–20 BPM (Physiological Normal)', percentage: 32, count: 457, color: '#10b981' },
+            { range: '>20 BPM (Compensatory)', percentage: 6, count: 80, color: '#6366f1' },
+          ],
+        }}
+      />
+
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         {/* Protocol Title & Header */}
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-6">
@@ -97,13 +131,24 @@ No camera images or video frames are ever recorded, stored, or transmitted. ML K
             </p>
           </div>
 
-          <button
-            onClick={downloadProtocolDossier}
-            className="inline-flex items-center px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold rounded-xl shadow-xs transition-colors self-start lg:self-auto"
-          >
-            <Download className="w-3.5 h-3.5 mr-1.5" />
-            Download Study Protocol Dossier
-          </button>
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={() => setShowReportModal(true)}
+              className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 text-white text-xs font-bold rounded-xl shadow-xs transition-all ring-1 ring-teal-500/50"
+              title="Generate and Download Medical Practitioner PDF Report"
+            >
+              <FileText className="w-3.5 h-3.5 mr-1.5" />
+              Clinical PDF Report
+            </button>
+
+            <button
+              onClick={downloadProtocolDossier}
+              className="inline-flex items-center px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl border border-slate-200 transition-colors"
+            >
+              <Download className="w-3.5 h-3.5 mr-1.5" />
+              Protocol Markdown
+            </button>
+          </div>
         </div>
 
         {/* Multi-Arm Cohort Management Cards */}

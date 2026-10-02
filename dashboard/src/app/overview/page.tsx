@@ -11,21 +11,25 @@ import {
   AlertTriangle, 
   Clock, 
   Download, 
-  RefreshCw,
-  Zap,
-  Info,
-  Smartphone,
-  Database,
-  FileSpreadsheet,
-  ShieldCheck,
-  TrendingDown,
-  TrendingUp,
-  Cpu,
-  Eye,
-  SlidersHorizontal,
-  ChevronRight,
-  Sparkles
+  RefreshCw, 
+  Zap, 
+  Info, 
+  Smartphone, 
+  Database, 
+  FileSpreadsheet, 
+  FileText, 
+  ShieldCheck, 
+  TrendingDown, 
+  TrendingUp, 
+  Cpu, 
+  Eye, 
+  SlidersHorizontal, 
+  ChevronRight, 
+  Sparkles,
+  Printer
 } from 'lucide-react';
+import ClinicalReportModal from '@/components/ClinicalReportModal';
+import { generateClinicalPDFReport } from '@/lib/pdfReportGenerator';
 import {
   ResponsiveContainer,
   LineChart,
@@ -66,6 +70,7 @@ export default function OverviewPage() {
   const [modeBreakdown, setModeBreakdown] = useState<any[]>([]);
   const [liveTelemetryFeed, setLiveTelemetryFeed] = useState<any[]>([]);
   const [realtimeNotification, setRealtimeNotification] = useState<string | null>(null);
+  const [showReportModal, setShowReportModal] = useState(false);
 
   useEffect(() => {
     fetchDashboardData();
@@ -334,7 +339,7 @@ export default function OverviewPage() {
               </h1>
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 mr-1.5 animate-ping"></span>
-                Live 120Hz
+                Live Stream
               </span>
             </div>
             <p className="text-xs text-slate-500 mt-1">
@@ -379,16 +384,26 @@ export default function OverviewPage() {
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             </button>
 
-            {/* Export Dataset Actions */}
-            <div className="flex items-center space-x-2">
+            {/* Export Dataset Actions & PDF Report */}
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                onClick={() => setShowReportModal(true)}
+                className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 text-white text-xs font-bold rounded-xl shadow-xs transition-all ring-1 ring-teal-500/50"
+                title="View and Download Medical Practitioner PDF Report"
+              >
+                <FileText className="w-3.5 h-3.5 mr-1.5" />
+                Clinical PDF Report
+              </button>
+
               <button
                 onClick={() => exportResearchDataset('csv')}
-                className="inline-flex items-center px-3.5 py-2 bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold rounded-xl shadow-xs transition-colors"
+                className="inline-flex items-center px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl border border-slate-200 transition-colors"
                 title="Export De-identified Research Dataset"
               >
-                <Download className="w-3.5 h-3.5 mr-1.5" />
-                Export CSV
+                <Download className="w-3.5 h-3.5 mr-1" />
+                CSV
               </button>
+
               <button
                 onClick={() => exportResearchDataset('json')}
                 className="inline-flex items-center px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl border border-slate-200 transition-colors"
@@ -400,6 +415,25 @@ export default function OverviewPage() {
             </div>
           </div>
         </div>
+
+        {/* Clinical Presentation & PDF Report Modal */}
+        <ClinicalReportModal
+          isOpen={showReportModal}
+          onClose={() => setShowReportModal(false)}
+          data={{
+            investigatorName: 'Mitali Purohit',
+            reportDate: new Date(),
+            dateRangeDays: dateRangeDays,
+            totalSessions: totalSessions,
+            avgBpm: avgBpm,
+            strainIndex: strainIndex,
+            totalScreenHours: totalScreenHours,
+            totalAlerts: totalAlerts,
+            diurnalData: diurnalData,
+            distributionData: distributionData,
+            recentLogs: recentMinuteLogs,
+          }}
+        />
 
         {/* 5 Key Clinical Research Metric Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
