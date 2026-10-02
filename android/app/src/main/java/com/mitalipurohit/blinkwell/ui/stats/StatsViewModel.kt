@@ -186,7 +186,7 @@ class StatsViewModel(
 
                 // Group logs into hourly buckets for smooth 24-hour presentation
                 val points = if (relevantLogs.isNotEmpty()) {
-                    val buckets = (23 downTo 0).map { hoursAgo ->
+                    val bucketedPoints = (23 downTo 0).map { hoursAgo ->
                         val bucketStart = now - ((hoursAgo + 1) * 3600 * 1000L)
                         val bucketEnd = now - (hoursAgo * 3600 * 1000L)
                         val inBucket = relevantLogs.filter { it.minuteTimestamp in bucketStart until bucketEnd }
@@ -202,7 +202,8 @@ class StatsViewModel(
                             )
                         }
                     }.filterNotNull()
-                    if (pointsEmptyFallback(points)) {
+
+                    if (bucketedPoints.isEmpty()) {
                         relevantLogs.map { log ->
                             GraphPoint(
                                 timestamp = log.minuteTimestamp,
@@ -211,8 +212,12 @@ class StatsViewModel(
                                 isDaysBpm = true
                             )
                         }
-                    } else points
-                } else emptyList()
+                    } else {
+                        bucketedPoints
+                    }
+                } else {
+                    emptyList()
+                }
 
                 val avg = if (points.isNotEmpty()) points.map { it.bpm }.average() else 0.0
                 val min = if (points.isNotEmpty()) points.minOf { it.bpm } else 0.0
@@ -301,10 +306,6 @@ class StatsViewModel(
                 )
             }
         }
-    }
-
-    private fun pointsEmptyFallback(points: List<GraphPoint>): Boolean {
-        return points.isEmpty()
     }
 
     private fun calculateYAnnotations(maxVal: Double): List<Int> {

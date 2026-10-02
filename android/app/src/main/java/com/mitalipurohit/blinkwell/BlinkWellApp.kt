@@ -7,9 +7,12 @@ import com.mitalipurohit.blinkwell.data.remote.sync.BlinkSyncWorker
 import com.mitalipurohit.blinkwell.data.repository.BlinkRepository
 import com.mitalipurohit.blinkwell.data.repository.SettingsRepository
 import com.mitalipurohit.blinkwell.detection.BlinkDetector
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.launch
 
 class BlinkWellApp : Application() {
 
@@ -53,7 +56,7 @@ class BlinkWellApp : Application() {
         BlinkSyncWorker.schedulePeriodicSync(this)
 
         // Requirement 3: Enforce 30-day max storage limit on startup
-        kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
+        CoroutineScope(Dispatchers.IO).launch {
             repository.pruneDataOlderThan30Days()
         }
     }
