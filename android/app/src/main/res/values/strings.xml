@@ -30,6 +30,17 @@
     <string name="consent_research_desc">Help eye-health researchers by uploading anonymous aggregate blink metrics (optional).</string>
     <string name="privacy_policy_link">Read our Privacy Policy</string>
 
+    <!-- Onboarding: Screening & Cohort -->
+    <string name="screening_title">Personalize Your Vision Care</string>
+    <string name="screening_subtitle">What best describes your daily screen activity?</string>
+    <string name="screening_desc">This helps calibrate ergonomic fatigue thresholds and study models.</string>
+    <string name="cohort_software_title">Software Engineer / Tech</string>
+    <string name="cohort_software_desc">Continuous code editor, IDE &amp; terminal focus with intense staring blocks.</string>
+    <string name="cohort_student_title">Student / Academic</string>
+    <string name="cohort_student_desc">Prolonged reading, coursework, research &amp; video lectures.</string>
+    <string name="cohort_general_title">General Screen Use</string>
+    <string name="cohort_general_desc">Everyday browsing, messaging, media &amp; varied device habits.</string>
+
     <!-- Onboarding: Monitoring Mode Choice -->
     <string name="mode_choice_title">Choose Monitoring Mode</string>
     <string name="mode_choice_desc">Select how you want BlinkWell to watch over your eye health:</string>

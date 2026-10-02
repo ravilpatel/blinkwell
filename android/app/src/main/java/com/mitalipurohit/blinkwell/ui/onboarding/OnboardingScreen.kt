@@ -85,7 +85,7 @@ fun OnboardingScreen(
             verticalArrangement = Arrangement.SpaceBetween
         ) {
             // Header Progress Indicator
-            StepIndicator(currentStep = uiState.currentStep, totalSteps = 6)
+            StepIndicator(currentStep = uiState.currentStep, totalSteps = 7)
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -109,15 +109,19 @@ fun OnboardingScreen(
                             context.startActivity(browserIntent)
                         }
                     )
-                    3 -> ModeChoiceStep(
+                    3 -> CohortScreeningStep(
+                        selectedCohort = uiState.cohortArm,
+                        onCohortSelected = { viewModel.setCohortArm(it) }
+                    )
+                    4 -> ModeChoiceStep(
                         selectedMode = uiState.selectedMode,
                         onModeSelected = { viewModel.setSelectedMode(it) }
                     )
-                    4 -> PermissionsStep(
+                    5 -> PermissionsStep(
                         selectedMode = uiState.selectedMode,
                         onGranted = { viewModel.nextStep() }
                     )
-                    5 -> AccountStep(
+                    6 -> AccountStep(
                         onContinue = {
                             viewModel.completeOnboarding(onFinished)
                         }
@@ -128,7 +132,7 @@ fun OnboardingScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             // Bottom Navigation Buttons
-            if (uiState.currentStep != 4 && uiState.currentStep != 5) {
+            if (uiState.currentStep != 5 && uiState.currentStep != 6) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -147,7 +151,7 @@ fun OnboardingScreen(
 
                     val canProceed = when (uiState.currentStep) {
                         2 -> uiState.monitorConsent
-                        3 -> uiState.selectedMode != null
+                        4 -> uiState.selectedMode != null
                         else -> true
                     }
 
@@ -428,6 +432,205 @@ fun ConsentStep(
                 color = TealPrimary,
                 style = MaterialTheme.typography.bodySmall
             )
+        }
+    }
+}
+
+@Composable
+fun CohortScreeningStep(
+    selectedCohort: String,
+    onCohortSelected: (String) -> Unit
+) {
+    Column(
+        horizontalAlignment = Alignment.Start,
+        modifier = Modifier.verticalScroll(rememberScrollState())
+    ) {
+        Text(
+            text = stringResource(R.string.screening_title),
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
+            text = stringResource(R.string.screening_desc),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        // Option 1: Software Engineer / Tech (Arm A)
+        val isEngineer = selectedCohort == "software_engineer"
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onCohortSelected("software_engineer") },
+            colors = CardDefaults.cardColors(
+                containerColor = if (isEngineer) TealPrimary.copy(alpha = 0.10f) else MaterialTheme.colorScheme.surface
+            ),
+            border = BorderStroke(
+                if (isEngineer) 2.dp else 1.dp,
+                if (isEngineer) TealPrimary else MaterialTheme.colorScheme.outlineVariant
+            ),
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Row(
+                modifier = Modifier.padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(44.dp)
+                        .clip(CircleShape)
+                        .background(if (isEngineer) TealPrimary.copy(alpha = 0.2f) else MaterialTheme.colorScheme.surfaceVariant),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(text = "💻", fontSize = 20.sp)
+                }
+
+                Spacer(modifier = Modifier.width(14.dp))
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = stringResource(R.string.cohort_software_title),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = stringResource(R.string.cohort_software_desc),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                if (isEngineer) {
+                    Icon(
+                        imageVector = Icons.Default.Check,
+                        contentDescription = "Selected",
+                        tint = TealPrimary,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(14.dp))
+
+        // Option 2: Student / Academic Researcher (Arm B)
+        val isStudent = selectedCohort == "student"
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onCohortSelected("student") },
+            colors = CardDefaults.cardColors(
+                containerColor = if (isStudent) TealPrimary.copy(alpha = 0.10f) else MaterialTheme.colorScheme.surface
+            ),
+            border = BorderStroke(
+                if (isStudent) 2.dp else 1.dp,
+                if (isStudent) TealPrimary else MaterialTheme.colorScheme.outlineVariant
+            ),
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Row(
+                modifier = Modifier.padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(44.dp)
+                        .clip(CircleShape)
+                        .background(if (isStudent) TealPrimary.copy(alpha = 0.2f) else MaterialTheme.colorScheme.surfaceVariant),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(text = "🎓", fontSize = 20.sp)
+                }
+
+                Spacer(modifier = Modifier.width(14.dp))
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = stringResource(R.string.cohort_student_title),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = stringResource(R.string.cohort_student_desc),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                if (isStudent) {
+                    Icon(
+                        imageVector = Icons.Default.Check,
+                        contentDescription = "Selected",
+                        tint = TealPrimary,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(14.dp))
+
+        // Option 3: General Screen Use (Arm C)
+        val isGeneral = selectedCohort == "general"
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onCohortSelected("general") },
+            colors = CardDefaults.cardColors(
+                containerColor = if (isGeneral) TealPrimary.copy(alpha = 0.10f) else MaterialTheme.colorScheme.surface
+            ),
+            border = BorderStroke(
+                if (isGeneral) 2.dp else 1.dp,
+                if (isGeneral) TealPrimary else MaterialTheme.colorScheme.outlineVariant
+            ),
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Row(
+                modifier = Modifier.padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(44.dp)
+                        .clip(CircleShape)
+                        .background(if (isGeneral) TealPrimary.copy(alpha = 0.2f) else MaterialTheme.colorScheme.surfaceVariant),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(text = "📱", fontSize = 20.sp)
+                }
+
+                Spacer(modifier = Modifier.width(14.dp))
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = stringResource(R.string.cohort_general_title),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = stringResource(R.string.cohort_general_desc),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                if (isGeneral) {
+                    Icon(
+                        imageVector = Icons.Default.Check,
+                        contentDescription = "Selected",
+                        tint = TealPrimary,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+            }
         }
     }
 }

@@ -59,9 +59,9 @@ Approval Status: Approved by Human Subjects Protection Review Board
 Data Protocol: Fully De-Identified, Zero-PII, On-Device Face Mesh Classification via ML Kit
 
 1. Study Arms:
-- Arm A: Software Engineers (n=512) - Continuous high-cognitive screen exposure.
-- Arm B: Remote Higher-Ed Students (n=496) - Prolonged reading & coursework.
-- Arm C: Control Cohort (n=420) - Non-continuous computer use.
+- Arm A: Software Engineers (n=512 sessions) - Continuous high-cognitive screen exposure.
+- Arm B: Remote Higher-Ed Students (n=496 sessions) - Prolonged reading & coursework.
+- Arm C: General Screen Use / Control (n=420 sessions) - Non-continuous computer use.
 
 2. Primary Endpoint:
 Measurement of habitual blink rate suppression (BPM) below the physiological normal of 15-20 BPM, and evaluation of haptic vibration alerts for restorative blink habituation.
@@ -136,7 +136,7 @@ No camera images or video frames are ever recorded, stored, or transmitted. ML K
               </p>
               <div className="grid grid-cols-2 gap-2 text-xs border-t border-slate-100 pt-3">
                 <div>
-                  <span className="text-[10px] text-slate-400 block uppercase">Cohort Size</span>
+                  <span className="text-[10px] text-slate-400 block uppercase">Sampled Sessions</span>
                   <strong className="text-slate-900 font-telemetry">n = 512</strong>
                 </div>
                 <div>
@@ -166,7 +166,7 @@ No camera images or video frames are ever recorded, stored, or transmitted. ML K
               </p>
               <div className="grid grid-cols-2 gap-2 text-xs border-t border-slate-100 pt-3">
                 <div>
-                  <span className="text-[10px] text-slate-400 block uppercase">Cohort Size</span>
+                  <span className="text-[10px] text-slate-400 block uppercase">Sampled Sessions</span>
                   <strong className="text-slate-900 font-telemetry">n = 496</strong>
                 </div>
                 <div>
@@ -186,17 +186,17 @@ No camera images or video frames are ever recorded, stored, or transmitted. ML K
               }`}
             >
               <div className="flex justify-between items-start mb-2">
-                <span className="text-xs font-bold text-slate-900">Arm C: Control Group</span>
+                <span className="text-xs font-bold text-slate-900">Arm C: General Screen Use / Control</span>
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
                   Baseline
                 </span>
               </div>
               <p className="text-xs text-slate-500 mb-4">
-                Intermittent screen usage without continuous sustained focus.
+                General mobile and computer use without continuous sustained focus.
               </p>
               <div className="grid grid-cols-2 gap-2 text-xs border-t border-slate-100 pt-3">
                 <div>
-                  <span className="text-[10px] text-slate-400 block uppercase">Cohort Size</span>
+                  <span className="text-[10px] text-slate-400 block uppercase">Sampled Sessions</span>
                   <strong className="text-slate-900 font-telemetry">n = 420</strong>
                 </div>
                 <div>

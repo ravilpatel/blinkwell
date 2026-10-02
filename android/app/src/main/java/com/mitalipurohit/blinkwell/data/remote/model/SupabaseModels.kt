@@ -8,6 +8,8 @@ data class ProfileRemote(
     val id: String,
     @SerialName("research_consent")
     val researchConsent: Boolean = false,
+    @SerialName("cohort_arm")
+    val cohortArm: String = "general",
     @SerialName("created_at")
     val createdAt: String? = null
 )

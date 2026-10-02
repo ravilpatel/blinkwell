@@ -13,6 +13,7 @@ data class OnboardingUiState(
     val currentStep: Int = 0,
     val monitorConsent: Boolean = true,
     val researchConsent: Boolean = false,
+    val cohortArm: String = "software_engineer", // "software_engineer" | "student" | "general"
     val selectedMode: String? = null, // "background" or "app_only"
     val isCompleting: Boolean = false
 )
@@ -46,6 +47,10 @@ class OnboardingViewModel(
         _uiState.value = _uiState.value.copy(researchConsent = consented)
     }
 
+    fun setCohortArm(arm: String) {
+        _uiState.value = _uiState.value.copy(cohortArm = arm)
+    }
+
     fun setSelectedMode(mode: String) {
         _uiState.value = _uiState.value.copy(selectedMode = mode)
     }
@@ -56,9 +61,11 @@ class OnboardingViewModel(
 
             val mode = _uiState.value.selectedMode ?: "app_only"
             val research = _uiState.value.researchConsent
+            val cohort = _uiState.value.cohortArm
 
             settingsRepository.setMonitoringMode(mode)
             settingsRepository.setResearchConsent(research)
+            settingsRepository.setCohortArm(cohort)
             settingsRepository.setOnboardingCompleted(true)
 
             // Silently authenticate anonymously if research consent is enabled

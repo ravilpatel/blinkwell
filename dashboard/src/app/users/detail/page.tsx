@@ -259,40 +259,40 @@ function UserDetailContent() {
             className="inline-flex items-center text-xs font-bold text-slate-500 hover:text-teal-700 mb-3 transition-colors"
           >
             <ArrowLeft className="w-4 h-4 mr-1" />
-            Back to Participant Directory
+            Back to Session Directory
           </Link>
 
-          {/* Participant Profile Banner */}
+          {/* Session Profile Banner */}
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-6">
             <div>
               <div className="flex flex-wrap items-center gap-2.5">
                 <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
-                  Participant Biometric Drill-Down
+                  Session Stream Telemetry Drill-Down
                 </h1>
                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
                   <ShieldCheck className="w-3.5 h-3.5 mr-1" />
-                  Consented Subject
+                  De-identified Stream
                 </span>
                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-teal-50 text-teal-800 border border-teal-200">
                   {cohortName}
                 </span>
               </div>
               <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500 mt-2 font-mono">
-                <span>Subject UUID: <strong className="text-slate-800">{userId}</strong></span>
+                <span>Telemetry ID: <strong className="text-slate-800">{userId}</strong></span>
                 <span>• Device: Android 14 (ML Kit / CameraX)</span>
-                <span>• Sampling: 60s Rolling</span>
+                <span>• Sampling: 60s Rolling Window</span>
               </div>
             </div>
 
             {/* Quick Actions & Risk Badge */}
             <div className="flex flex-wrap items-center gap-3">
               <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-right">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Asthenopia Risk</span>
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Asthenopia Strain</span>
                 <div className="flex items-center space-x-1.5 mt-0.5">
                   <Flame className={`w-4 h-4 ${riskScore > 70 ? 'text-rose-600' : 'text-emerald-600'}`} />
                   <span className="text-base font-bold text-slate-900 font-telemetry">{riskScore}/100</span>
                   <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${riskScore > 70 ? 'bg-rose-100 text-rose-800' : 'bg-emerald-100 text-emerald-800'}`}>
-                    {riskScore > 70 ? 'High Fatigue' : 'Nominal'}
+                    {riskScore > 70 ? 'High Strain' : 'Nominal'}
                   </span>
                 </div>
               </div>
@@ -312,7 +312,7 @@ function UserDetailContent() {
         {/* 4 Summary Ribbon Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
-            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Lifetime Recorded Sessions</span>
+            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Recorded Session Batches</span>
             <div className="mt-3 flex items-baseline justify-between">
               <span className="font-telemetry text-2xl font-bold text-slate-900">{sessions.length}</span>
               <span className="text-xs text-slate-400 font-mono">100% On-Device</span>

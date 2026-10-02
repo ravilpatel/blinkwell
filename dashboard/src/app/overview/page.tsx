@@ -296,7 +296,7 @@ export default function OverviewPage() {
         studyProtocol: 'IRB Protocol #2024-884-BW',
         principalInvestigator: 'Dr. Mitali Purohit',
         exportDate: new Date().toISOString(),
-        cohortTotal: totalUsers,
+        monitoredSessionsTotal: totalSessions,
         populationMeanBpm: avgBpm,
         asthenopiaIndex: `${strainIndex}%`,
         telemetryLogs: recentMinuteLogs,
@@ -338,7 +338,7 @@ export default function OverviewPage() {
               </span>
             </div>
             <p className="text-xs text-slate-500 mt-1">
-              Multi-participant clinical data stream for digital eye strain &amp; blink suppression research
+              Multi-session clinical data stream for digital eye strain &amp; blink suppression research
             </p>
           </div>
 
@@ -351,10 +351,10 @@ export default function OverviewPage() {
                 onChange={(e) => setSelectedCohort(e.target.value)}
                 className="bg-transparent text-xs font-semibold text-slate-700 py-1.5 pr-2 focus:outline-none cursor-pointer"
               >
-                <option value="all">All Cohorts (n={totalUsers})</option>
+                <option value="all">All Cohorts ({totalSessions.toLocaleString()} Sessions)</option>
                 <option value="arm_a">Arm A: Software Engineers (High Exposure)</option>
                 <option value="arm_b">Arm B: Remote Higher-Ed Students</option>
-                <option value="arm_c">Arm C: Control Group</option>
+                <option value="arm_c">Arm C: General Screen Use / Control</option>
               </select>
             </div>
 
@@ -403,16 +403,16 @@ export default function OverviewPage() {
 
         {/* 5 Key Clinical Research Metric Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-          {/* Card 1: Cohort */}
+          {/* Card 1: Monitored Sessions */}
           <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Consented Cohort</span>
+              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Monitored Sessions</span>
               <div className="p-1.5 bg-teal-50 rounded-lg text-teal-600">
-                <Users className="w-4 h-4" />
+                <Database className="w-4 h-4" />
               </div>
             </div>
             <div className="mt-3">
-              <span className="font-telemetry text-2xl font-bold text-slate-900">{totalUsers.toLocaleString()}</span>
+              <span className="font-telemetry text-2xl font-bold text-slate-900">{totalSessions.toLocaleString()}</span>
               <div className="flex items-center space-x-1.5 mt-1">
                 <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700">
                   <ShieldCheck className="w-3 h-3 mr-0.5" />
@@ -656,11 +656,11 @@ export default function OverviewPage() {
               <div className="flex items-center justify-between">
                 <h2 className="text-base font-bold text-slate-900">Blink Rate Distribution</h2>
                 <span className="text-[10px] font-bold uppercase tracking-wider text-teal-700 bg-teal-50 px-2 py-0.5 rounded">
-                  Cohort n={totalUsers}
+                  Sessions n={totalSessions}
                 </span>
               </div>
               <p className="text-xs text-slate-400 mt-0.5">
-                Stratification of participants by habitual blink cadence
+                Stratification of recorded sessions by mean blink cadence
               </p>
             </div>
 
@@ -688,7 +688,7 @@ export default function OverviewPage() {
             {/* Clinical Insight Note */}
             <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-[11px] text-slate-600 leading-relaxed">
               <strong className="text-slate-900 block font-semibold mb-0.5">Clinical Ergonomics Note:</strong>
-              62% of participants exhibit sub-optimal blink frequency (&lt;14 BPM) during prolonged unassisted computer work.
+              62% of monitored sessions exhibit sub-optimal blink frequency (&lt;14 BPM) during prolonged unassisted screen work.
             </div>
           </div>
         </div>
@@ -700,7 +700,7 @@ export default function OverviewPage() {
             <div>
               <h2 className="text-base font-bold text-slate-900">Monitoring Mode Adherence</h2>
               <p className="text-xs text-slate-400">
-                Adoption and power consumption characteristics
+                Session telemetry and power consumption breakdown
               </p>
             </div>
 
@@ -740,24 +740,24 @@ export default function OverviewPage() {
             </div>
           </div>
 
-          {/* Right: Live Real-time Participant Telemetry Feed (2 Cols) */}
+          {/* Right: Live Real-time Session Telemetry Feed (2 Cols) */}
           <div className="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
                 <div className="flex items-center space-x-2">
-                  <h2 className="text-base font-bold text-slate-900">Live Participant Ingestion Feed</h2>
+                  <h2 className="text-base font-bold text-slate-900">Live Session Ingestion Feed</h2>
                   <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
                     Active Sampling
                   </span>
                 </div>
-                <p className="text-xs text-slate-400">Streaming biometric telemetry directly from opt-in participant devices</p>
+                <p className="text-xs text-slate-400">Streaming biometric telemetry directly from opt-in device sessions</p>
               </div>
 
               <Link
                 href="/users/"
                 className="text-xs font-bold text-teal-600 hover:text-teal-800 inline-flex items-center"
               >
-                View All Cohort
+                View All Sessions
                 <ChevronRight className="w-3.5 h-3.5 ml-0.5" />
               </Link>
             </div>
@@ -767,7 +767,7 @@ export default function OverviewPage() {
               <table className="min-w-full divide-y divide-slate-100 text-xs">
                 <thead>
                   <tr className="text-slate-400 font-semibold uppercase text-[10px]">
-                    <th className="py-2 text-left">Subject UUID</th>
+                    <th className="py-2 text-left">Session Telemetry ID</th>
                     <th className="py-2 text-left">Cohort Arm</th>
                     <th className="py-2 text-left">Current Rate</th>
                     <th className="py-2 text-left">Session Length</th>
@@ -837,8 +837,8 @@ export default function OverviewPage() {
                 IRB Protocol #2024-884-BW • Human Subjects Protection Approved
               </strong>
               <span className="text-[11px] text-slate-500">
-                All participant telemetry is processed on-device via ML Kit. Zero camera frames are recorded or transmitted. 
-                Data points are de-identified with SHA-256 subject hashing.
+                All session telemetry is processed on-device via ML Kit. Zero camera frames are recorded or transmitted. 
+                Data streams are de-identified with anonymous session identifiers.
               </span>
             </div>
           </div>

@@ -22,6 +22,7 @@ class PreferenceManager(private val context: Context) {
         val KEY_BPM_THRESHOLD = intPreferencesKey("bpm_threshold") // default: 10
         val KEY_ALERTS_ENABLED = booleanPreferencesKey("alerts_enabled")
         val KEY_RESEARCH_CONSENT = booleanPreferencesKey("research_consent")
+        val KEY_COHORT_ARM = stringPreferencesKey("cohort_arm") // "software_engineer" | "student" | "general"
         val KEY_SELECTED_LANGUAGE = stringPreferencesKey("selected_language") // "system", "en", "hi"
         val KEY_ACTIVE_SESSION_ID = stringPreferencesKey("active_session_id")
     }
@@ -48,6 +49,10 @@ class PreferenceManager(private val context: Context) {
 
     val researchConsent: Flow<Boolean> = context.dataStore.data.map { preferences ->
         preferences[KEY_RESEARCH_CONSENT] ?: false
+    }
+
+    val cohortArm: Flow<String> = context.dataStore.data.map { preferences ->
+        preferences[KEY_COHORT_ARM] ?: "software_engineer"
     }
 
     val selectedLanguage: Flow<String> = context.dataStore.data.map { preferences ->
@@ -91,6 +96,12 @@ class PreferenceManager(private val context: Context) {
     suspend fun setResearchConsent(consented: Boolean) {
         context.dataStore.edit { preferences ->
             preferences[KEY_RESEARCH_CONSENT] = consented
+        }
+    }
+
+    suspend fun setCohortArm(arm: String) {
+        context.dataStore.edit { preferences ->
+            preferences[KEY_COHORT_ARM] = arm
         }
     }
 

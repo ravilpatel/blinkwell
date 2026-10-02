@@ -11,6 +11,7 @@ class SettingsRepository(private val preferenceManager: PreferenceManager) {
     val bpmThreshold: Flow<Int> = preferenceManager.bpmThreshold
     val alertsEnabled: Flow<Boolean> = preferenceManager.alertsEnabled
     val researchConsent: Flow<Boolean> = preferenceManager.researchConsent
+    val cohortArm: Flow<String> = preferenceManager.cohortArm
     val selectedLanguage: Flow<String> = preferenceManager.selectedLanguage
     val activeSessionId: Flow<String?> = preferenceManager.activeSessionId
 
@@ -36,6 +37,10 @@ class SettingsRepository(private val preferenceManager: PreferenceManager) {
 
     suspend fun setResearchConsent(consented: Boolean) {
         preferenceManager.setResearchConsent(consented)
+    }
+
+    suspend fun setCohortArm(arm: String) {
+        preferenceManager.setCohortArm(arm)
     }
 
     suspend fun setSelectedLanguage(language: String) {

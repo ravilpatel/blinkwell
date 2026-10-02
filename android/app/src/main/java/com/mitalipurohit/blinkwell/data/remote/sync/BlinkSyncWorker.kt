@@ -103,13 +103,15 @@ class BlinkSyncWorker(
             val database = BlinkWellApp.database
             val dao = database.blinkDao()
 
-            // 1. Ensure profile exists with research_consent = true
+            // 1. Ensure profile exists with research_consent = true and cohort_arm
             try {
-                Log.d(TAG, "Upserting profile record for user: $userId")
+                val cohortArm = settingsRepo.cohortArm.first()
+                Log.d(TAG, "Upserting profile record for user: $userId (Cohort Arm: $cohortArm)")
                 SupabaseClientProvider.postgrest["profiles"].upsert(
                     ProfileRemote(
                         id = userId,
-                        researchConsent = true
+                        researchConsent = true,
+                        cohortArm = cohortArm
                     )
                 )
                 Log.d(TAG, "Profile successfully synced.")

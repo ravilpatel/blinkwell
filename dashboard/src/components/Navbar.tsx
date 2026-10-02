@@ -66,7 +66,7 @@ export default function Navbar() {
 
   const navLinks = [
     { name: 'Overview', href: '/overview/', icon: Activity },
-    { name: 'Participants & Cohorts', href: '/users/', icon: Users },
+    { name: 'Session Telemetry & Cohorts', href: '/users/', icon: Activity },
     { name: 'Study Protocols & IRB', href: '/protocols/', icon: FileText },
     { name: 'Team & Permissions', href: '/team/', icon: UserCheck },
   ];

@@ -11,8 +11,12 @@ create extension if not exists "pgcrypto";
 create table if not exists public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
   research_consent boolean default false not null,
+  cohort_arm text default 'general' not null,
   created_at timestamptz default now() not null
 );
+
+-- Ensure cohort_arm column exists if table was created previously
+alter table public.profiles add column if not exists cohort_arm text default 'general';
 
 -- 2. Blink Sessions Table (session summaries)
 create table if not exists public.blink_sessions (
