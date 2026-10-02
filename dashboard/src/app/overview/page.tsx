@@ -9,9 +9,9 @@ import {
   Activity, 
   AlertTriangle, 
   Clock, 
-  Download,
-  Filter,
-  RefreshCw
+  Download, 
+  RefreshCw,
+  Zap
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -21,8 +21,6 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  BarChart,
-  Bar,
   PieChart,
   Pie,
   Cell
@@ -39,17 +37,59 @@ export default function OverviewPage() {
   const [recentMinuteLogs, setRecentMinuteLogs] = useState<any[]>([]);
   const [modeBreakdown, setModeBreakdown] = useState<any[]>([]);
   const [dateRangeDays, setDateRangeDays] = useState(7);
+  const [realtimeNotification, setRealtimeNotification] = useState<string | null>(null);
 
   useEffect(() => {
     fetchDashboardData();
+
+    // Setup Supabase Realtime Channel
+    const channel = supabase
+      .channel('dashboard-realtime-overview')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'blink_sessions' },
+        (payload) => {
+          showRealtimeToast('New blink session synced from participant!');
+          fetchDashboardData();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'blink_minute_log' },
+        (payload) => {
+          const newLog = payload.new as any;
+          if (newLog) {
+            setRecentMinuteLogs((prev) => [
+              ...prev.slice(-99),
+              {
+                time: format(new Date(newLog.minute_timestamp), 'MM/dd HH:mm'),
+                bpm: Number(newLog.bpm),
+              }
+            ]);
+            showRealtimeToast(`Live BPM received: ${Number(newLog.bpm).toFixed(1)} BPM`);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [dateRangeDays]);
+
+  const showRealtimeToast = (msg: string) => {
+    setRealtimeNotification(msg);
+    setTimeout(() => {
+      setRealtimeNotification(null);
+    }, 4000);
+  };
 
   async function fetchDashboardData() {
     setLoading(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        router.push('/login');
+        router.push('/login/');
         return;
       }
 
@@ -133,11 +173,24 @@ export default function OverviewPage() {
       <Navbar />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Realtime Live Toast */}
+        {realtimeNotification && (
+          <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-4 py-3 rounded-2xl shadow-xl border border-slate-800 flex items-center space-x-3 text-sm animate-bounce">
+            <Zap className="w-4 h-4 text-emerald-400" />
+            <span>{realtimeNotification}</span>
+          </div>
+        )}
+
         {/* Top Controls Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">Research Analytics Overview</h1>
-            <p className="text-sm text-slate-500">Aggregate metrics across all opt-in participants</p>
+            <div className="flex items-center space-x-2">
+              <h1 className="text-2xl font-bold text-slate-900">Realtime Analytics Overview</h1>
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800">
+                Live
+              </span>
+            </div>
+            <p className="text-sm text-slate-500">Live aggregate metrics across all opt-in research participants</p>
           </div>
 
           <div className="flex items-center space-x-3">
@@ -230,7 +283,13 @@ export default function OverviewPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
           {/* Main BPM Trend Chart */}
           <div className="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-            <h2 className="text-base font-bold text-slate-900 mb-4">Aggregate Blink Rate Trend (BPM)</h2>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-base font-bold text-slate-900">Live Blink Rate Trend (BPM)</h2>
+              <span className="text-xs text-slate-400 flex items-center">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 mr-1.5 animate-ping"></span>
+                Streaming Updates
+              </span>
+            </div>
             <div className="h-72 w-full">
               {recentMinuteLogs.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">

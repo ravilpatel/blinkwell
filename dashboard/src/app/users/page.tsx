@@ -14,20 +14,32 @@ export default function UsersDirectoryPage() {
 
   useEffect(() => {
     fetchUsers();
+
+    // Realtime subscription for new participant profiles
+    const channel = supabase
+      .channel('participants-realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'profiles' },
+        () => {
+          fetchUsers();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   async function fetchUsers() {
     setLoading(true);
     try {
-      const { data: profiles, error } = await supabase
+      const { data: profiles } = await supabase
         .from('profiles')
-        .select(`
-          id,
-          created_at,
-          research_consent,
-          blink_sessions(count)
-        `)
-        .eq('research_consent', true);
+        .select('*')
+        .eq('research_consent', true)
+        .order('created_at', { ascending: false });
 
       if (profiles) {
         setUsers(profiles);
@@ -61,7 +73,7 @@ export default function UsersDirectoryPage() {
               placeholder="Search by UUID..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="bg-white border border-slate-300 text-slate-700 text-sm rounded-xl pl-9 pr-4 py-2 focus:ring-2 focus:ring-teal-500 focus:outline-none w-full sm:w-64"
+              className="bg-white border border-slate-300 text-slate-700 text-sm rounded-xl pl-9 pr-4 py-2 focus:ring-2 focus:ring-teal-500 focus:outline-none w-full sm:w-64 font-mono"
             />
           </div>
         </div>
@@ -105,8 +117,8 @@ export default function UsersDirectoryPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <Link
-                        href={`/users/${user.id}`}
-                        className="inline-flex items-center text-teal-600 hover:text-teal-900 font-semibold"
+                        href={`/users/detail/?id=${user.id}`}
+                        className="inline-flex items-center text-teal-600 hover:text-teal-900 font-semibold text-xs"
                       >
                         Drill Down
                         <ChevronRight className="w-4 h-4 ml-1" />

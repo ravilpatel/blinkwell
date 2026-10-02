@@ -1,19 +1,19 @@
 -- ====================================================================
--- BlinkWell Supabase Database Schema & Row-Level Security (RLS) Policies
+-- BlinkWell Supabase Database Schema & Realtime Setup
 -- Designed by Mitali Purohit / BlinkWell Project
 -- ====================================================================
 
--- Enable UUID extension if not already present
+-- Enable UUID extension
 create extension if not exists "pgcrypto";
 
--- 1. Profiles Table
+-- 1. Profiles Table (for mobile app users)
 create table if not exists public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
   research_consent boolean default false not null,
   created_at timestamptz default now() not null
 );
 
--- 2. Blink Sessions Table
+-- 2. Blink Sessions Table (session summaries)
 create table if not exists public.blink_sessions (
   id uuid primary key default gen_random_uuid(),
   user_id uuid references public.profiles(id) on delete cascade not null,
@@ -26,7 +26,7 @@ create table if not exists public.blink_sessions (
   created_at timestamptz default now() not null
 );
 
--- 3. Blink Minute Logs Table
+-- 3. Blink Minute Logs Table (minute-by-minute metrics)
 create table if not exists public.blink_minute_log (
   id bigint generated always as identity primary key,
   session_id uuid references public.blink_sessions(id) on delete cascade not null,
@@ -35,20 +35,57 @@ create table if not exists public.blink_minute_log (
   created_at timestamptz default now() not null
 );
 
--- Indexes for performance
+-- 4. Authorized Researchers & Admins Table
+create table if not exists public.researchers (
+  id uuid primary key references auth.users(id) on delete cascade,
+  email text unique not null,
+  role text not null check (role in ('admin', 'researcher')) default 'researcher',
+  created_at timestamptz default now() not null
+);
+
+-- Indexes for lightning-fast queries
 create index if not exists idx_sessions_user_id on public.blink_sessions(user_id);
 create index if not exists idx_sessions_started_at on public.blink_sessions(started_at desc);
 create index if not exists idx_minute_log_session_id on public.blink_minute_log(session_id);
 create index if not exists idx_minute_log_timestamp on public.blink_minute_log(minute_timestamp desc);
+create index if not exists idx_researchers_email on public.researchers(email);
+
+-- ====================================================================
+-- Enable Supabase Realtime for Live Dashboard Updates
+-- ====================================================================
+alter publication supabase_realtime add table public.blink_sessions;
+alter publication supabase_realtime add table public.blink_minute_log;
+alter publication supabase_realtime add table public.profiles;
 
 -- ====================================================================
 -- Row Level Security (RLS) Policies
 -- ====================================================================
 
--- Enable RLS on all tables
 alter table public.profiles enable row level security;
 alter table public.blink_sessions enable row level security;
 alter table public.blink_minute_log enable row level security;
+alter table public.researchers enable row level security;
+
+-- Helper functions to check roles
+create or replace function public.is_researcher()
+returns boolean as $$
+begin
+  return exists (
+    select 1 from public.researchers
+    where id = auth.uid()
+  );
+end;
+$$ language plpgsql security definer;
+
+create or replace function public.is_admin()
+returns boolean as $$
+begin
+  return exists (
+    select 1 from public.researchers
+    where id = auth.uid() and role = 'admin'
+  );
+end;
+$$ language plpgsql security definer;
 
 -- Profiles Policies
 create policy "Users can read own profile"
@@ -63,12 +100,9 @@ create policy "Users can update own profile"
   on public.profiles for update
   using (auth.uid() = id);
 
-create policy "Researchers can read profiles with research consent"
+create policy "Researchers can read consented profiles"
   on public.profiles for select
-  using (
-    auth.jwt() ->> 'email' is not null 
-    and research_consent = true
-  );
+  using (public.is_researcher() and research_consent = true);
 
 -- Blink Sessions Policies
 create policy "Users can read own sessions"
@@ -86,7 +120,7 @@ create policy "Users can update own sessions"
 create policy "Researchers can view consented sessions"
   on public.blink_sessions for select
   using (
-    auth.jwt() ->> 'email' is not null 
+    public.is_researcher()
     and exists (
       select 1 from public.profiles
       where profiles.id = blink_sessions.user_id
@@ -118,7 +152,7 @@ create policy "Users can insert own minute logs"
 create policy "Researchers can view consented minute logs"
   on public.blink_minute_log for select
   using (
-    auth.jwt() ->> 'email' is not null 
+    public.is_researcher()
     and exists (
       select 1 from public.blink_sessions
       join public.profiles on profiles.id = blink_sessions.user_id
@@ -126,3 +160,39 @@ create policy "Researchers can view consented minute logs"
       and profiles.research_consent = true
     )
   );
+
+-- Researchers Table Policies
+create policy "Researchers can read researchers list"
+  on public.researchers for select
+  using (public.is_researcher());
+
+create policy "Admins can insert new researchers"
+  on public.researchers for insert
+  with check (public.is_admin() or not exists (select 1 from public.researchers));
+
+create policy "Admins can delete researchers"
+  on public.researchers for delete
+  using (public.is_admin());
+
+-- ====================================================================
+-- Initial Super-Admin Provisioning
+-- Primary Super-Admin: viraravil2101@gmail.com
+-- ====================================================================
+-- Trigger to automatically assign 'admin' role when viraravil2101@gmail.com registers or logs in:
+create or replace function public.handle_new_researcher()
+returns trigger as $$
+begin
+  if new.email = 'viraravil2101@gmail.com' then
+    insert into public.researchers (id, email, role)
+    values (new.id, new.email, 'admin')
+    on conflict (id) do update set role = 'admin';
+  end if;
+  return new;
+end;
+$$ language plpgsql security definer;
+
+-- Trigger on auth.users
+drop trigger if exists on_auth_user_created_researcher on auth.users;
+create trigger on_auth_user_created_researcher
+  after insert on auth.users
+  for each row execute function public.handle_new_researcher();
