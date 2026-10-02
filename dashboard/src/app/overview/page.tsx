@@ -338,7 +338,7 @@ export default function OverviewPage() {
               </span>
             </div>
             <p className="text-xs text-slate-500 mt-1">
-              Multi-participant clinical data stream for digital eye strain &amp; blink suppression research • Principal Investigator: Dr. Mitali Purohit
+              Multi-participant clinical data stream for digital eye strain &amp; blink suppression research
             </p>
           </div>
 

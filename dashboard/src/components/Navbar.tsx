@@ -21,7 +21,6 @@ export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const [userEmail, setUserEmail] = useState<string | null>(null);
-  const [userRole, setUserRole] = useState<string>('Principal Investigator');
   const [isAdmin, setIsAdmin] = useState(true);
   const [showConfigModal, setShowConfigModal] = useState(false);
   const [configured, setConfigured] = useState(true);
@@ -40,7 +39,6 @@ export default function Navbar() {
           
           if (session.user.email === 'viraravil2101@gmail.com') {
             setIsAdmin(true);
-            setUserRole('Principal Investigator');
           } else {
             const { data } = await supabase
               .from('researchers')
@@ -49,9 +47,6 @@ export default function Navbar() {
               .single();
             if (data?.role === 'admin') {
               setIsAdmin(true);
-              setUserRole('Principal Investigator');
-            } else if (data?.role) {
-              setUserRole(data.role === 'analyst' ? 'Biostatistician' : 'Clinical Investigator');
             }
           }
         }
@@ -164,14 +159,11 @@ export default function Navbar() {
                 120Hz Stream
               </div>
 
-              {/* User Profile */}
+              {/* User Email ID */}
               {userEmail && (
                 <div className="text-right hidden sm:block border-l border-slate-200 pl-3">
-                  <span className="text-xs font-semibold text-slate-900 block truncate max-w-[150px]">
-                    {userEmail === 'viraravil2101@gmail.com' ? 'Dr. Mitali Purohit' : userEmail}
-                  </span>
-                  <span className="text-[10px] text-teal-700 font-bold uppercase tracking-wider block">
-                    {userRole}
+                  <span className="text-xs font-semibold text-slate-800 block truncate max-w-[200px]" title={userEmail}>
+                    {userEmail}
                   </span>
                 </div>
               )}

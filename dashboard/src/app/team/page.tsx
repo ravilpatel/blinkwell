@@ -122,7 +122,7 @@ export default function TeamManagementPage() {
 
   const handleDeleteUser = async (id: string, userEmail: string) => {
     if (userEmail === 'viraravil2101@gmail.com') {
-      alert('Primary Principal Investigator account cannot be deleted.');
+      alert('Primary Administrator account cannot be deleted.');
       return;
     }
 
@@ -284,7 +284,7 @@ export default function TeamManagementPage() {
                           : 'bg-teal-100 text-teal-800'
                       }`}
                     >
-                      {user.role === 'admin' ? 'Principal Investigator' : user.role === 'analyst' ? 'Biostatistician' : 'Clinical Investigator'}
+                      {user.role === 'admin' ? 'Administrator' : user.role === 'analyst' ? 'Biostatistician' : 'Researcher'}
                     </span>
 
                     {user.email !== 'viraravil2101@gmail.com' && (
