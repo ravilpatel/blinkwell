@@ -19,8 +19,8 @@ class BlinkAnalyzer(
         val options = FaceDetectorOptions.Builder()
             .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_FAST)
             .setClassificationMode(FaceDetectorOptions.CLASSIFICATION_MODE_ALL)
-            .setLandmarkMode(FaceDetectorOptions.NO_LANDMARKS)
-            .setContourMode(FaceDetectorOptions.NO_CONTOURS)
+            .setLandmarkMode(FaceDetectorOptions.LANDMARK_MODE_NONE)
+            .setContourMode(FaceDetectorOptions.CONTOUR_MODE_NONE)
             .setMinFaceSize(0.2f)
             .build()
 
@@ -29,6 +29,7 @@ class BlinkAnalyzer(
 
     private var lastAnalyzedTimestamp: Long = 0L
 
+    @androidx.annotation.OptIn(androidx.camera.core.ExperimentalGetImage::class)
     @SuppressLint("UnsafeOptInUsageError")
     override fun analyze(imageProxy: ImageProxy) {
         val currentTimestamp = System.currentTimeMillis()
