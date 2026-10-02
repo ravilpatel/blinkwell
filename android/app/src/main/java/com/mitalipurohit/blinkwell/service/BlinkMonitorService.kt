@@ -179,19 +179,28 @@ class BlinkMonitorService : Service(), LifecycleOwner {
         gracePeriodJob?.cancel()
 
         dutyCycleJob = serviceScope.launch {
-            // Standard Duty-Cycled Burst: Sample for 45s, pause camera for 120s (2 minutes)
+            var isLastReadingLow = false
+
+            // Adaptive Duty-Cycled Scanning:
+            // Standard: Scan for 20s, convert to BPM.
+            // If normal: wait usual period (120s / 2 minutes).
+            // If low: send alert notification -> wait 10s -> scan 20s again -> convert to BPM.
+            // If recovered to normal: wait usual period (120s). If still not normal: scan after 10s again.
             while (isActive && isRunning) {
                 if (isScreenUnlockedAndActive) {
-                    // 1. Bind Camera and Start 45s burst scan
+                    val scanDurationMs = 20_000L
+                    val scanDurationSeconds = 20.0
+
+                    // 1. Bind Camera and Start 20s burst scan
                     bindCamera()
                     blinkDetector.startBurstScan()
 
-                    // 2. Sample for 45 seconds
-                    delay(45_000L)
+                    // 2. Sample for 20 seconds (sticky notification updates in real time via metrics collector)
+                    delay(scanDurationMs)
 
                     if (isScreenUnlockedAndActive && isRunning) {
-                        // 3. Complete the 45-second scan and convert to BPM
-                        val burstResult = blinkDetector.finishBurstScan(scanDurationSeconds = 45.0)
+                        // 3. Complete the 20-second scan and convert to BPM
+                        val burstResult = blinkDetector.finishBurstScan(scanDurationSeconds = scanDurationSeconds)
                         unbindCamera()
 
                         val threshold = BlinkWellApp.settingsRepository.bpmThreshold.first()
@@ -215,16 +224,24 @@ class BlinkMonitorService : Service(), LifecycleOwner {
                                 force = true
                             )
 
-                            // If BPM is normal: do nothing. If BPM fell below threshold: send notification!
+                            // If blink rate is lower: immediately send notification, then scan after 10s for 20s
                             if (burstResult.isLowRate) {
+                                isLastReadingLow = true
                                 val alertsEnabled = BlinkWellApp.settingsRepository.alertsEnabled.first()
                                 if (alertsEnabled) {
                                     alertCount++
                                     notificationHelper.showGreenToRedAlertNotification(bpm, threshold)
                                 }
+
+                                // Immediately after notification is sent, pause 10s before the next 20s scan
+                                delay(10_000L)
+                            } else {
+                                // If normal: perform next scan after usual period (120 seconds)
+                                isLastReadingLow = false
+                                delay(120_000L)
                             }
                         } else {
-                            // Face not detected during the 45s scan
+                            // Face not detected during the scan
                             notificationHelper.updateStatusNotification(
                                 category = BlinkStatusCategory.FACE_NOT_DETECTED,
                                 bpm = 0.0,
@@ -232,16 +249,17 @@ class BlinkMonitorService : Service(), LifecycleOwner {
                                 isWarmedUp = true,
                                 force = true
                             )
+                            val pauseMs = if (isLastReadingLow) 10_000L else 120_000L
+                            delay(pauseMs)
                         }
                     } else {
                         // Cancelled mid-burst (e.g. screen off)
                         blinkDetector.cancelBurst()
                         unbindCamera()
                     }
+                } else {
+                    delay(2000L)
                 }
-
-                // 4. Pause camera for 2 minutes (120 seconds)
-                delay(120_000L)
             }
         }
     }
@@ -336,17 +354,17 @@ class BlinkMonitorService : Service(), LifecycleOwner {
     }
 
     private fun observeAlertsAndSettings() {
-        // Collect metrics and update dynamic sticky notification in continuous mode
+        // Collect metrics and update dynamic sticky notification in real time whenever camera is ON or continuous mode
         serviceScope.launch {
             blinkDetector.metrics.collect { metrics ->
                 val samplingMode = BlinkWellApp.settingsRepository.samplingMode.first()
-                if (samplingMode == "continuous") {
+                if (samplingMode == "continuous" || isCameraBound) {
                     val threshold = BlinkWellApp.settingsRepository.bpmThreshold.first()
                     notificationHelper.updateStatusNotification(
                         category = metrics.statusCategory,
                         bpm = metrics.currentBpm,
                         thresholdBpm = threshold,
-                        isWarmedUp = metrics.isWarmedUp
+                        isWarmedUp = true
                     )
                 }
             }

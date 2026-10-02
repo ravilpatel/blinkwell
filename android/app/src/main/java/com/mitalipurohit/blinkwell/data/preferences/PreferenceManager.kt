@@ -25,6 +25,11 @@ class PreferenceManager(private val context: Context) {
         val KEY_COHORT_ARM = stringPreferencesKey("cohort_arm") // "software_engineer" | "student" | "general"
         val KEY_SELECTED_LANGUAGE = stringPreferencesKey("selected_language") // "system", "en", "hi"
         val KEY_ACTIVE_SESSION_ID = stringPreferencesKey("active_session_id")
+        val KEY_DEVICE_REGISTERED = booleanPreferencesKey("device_registered")
+    }
+
+    val isDeviceRegistered: Flow<Boolean> = context.dataStore.data.map { preferences ->
+        preferences[KEY_DEVICE_REGISTERED] ?: false
     }
 
     val isOnboardingCompleted: Flow<Boolean> = context.dataStore.data.map { preferences ->
@@ -118,6 +123,12 @@ class PreferenceManager(private val context: Context) {
             } else {
                 preferences.remove(KEY_ACTIVE_SESSION_ID)
             }
+        }
+    }
+
+    suspend fun setDeviceRegistered(registered: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[KEY_DEVICE_REGISTERED] = registered
         }
     }
 

@@ -84,7 +84,7 @@ class BlinkDetector(
     }
 
     /**
-     * Starts a dedicated 45-second burst scan in background mode.
+     * Starts a dedicated burst scan in background mode.
      * Resets burst counters and avoids triggering premature 0-BPM alerts.
      */
     @Synchronized
@@ -98,18 +98,19 @@ class BlinkDetector(
         isSamplingActive = true
         _metrics.value = _metrics.value.copy(
             isSamplingActive = true,
-            isFaceDetected = true
+            isFaceDetected = true,
+            warmupSecondsElapsed = 0L
         )
     }
 
     /**
-     * Completes the 45-second burst scan:
-     * - Converts the 45s blink count into BPM.
+     * Completes the burst scan:
+     * - Converts the burst blink count into BPM over the elapsed duration.
      * - Updates metrics and status category.
      * - Returns BurstResult for alert evaluation.
      */
     @Synchronized
-    fun finishBurstScan(scanDurationSeconds: Double = 45.0): BurstResult {
+    fun finishBurstScan(scanDurationSeconds: Double = 20.0): BurstResult {
         isBurstActive = false
         isSamplingActive = false
 
@@ -130,7 +131,7 @@ class BlinkDetector(
         }
 
         val elapsedSeconds = if (burstStartTimestamp > 0L) {
-            ((System.currentTimeMillis() - burstStartTimestamp) / 1000.0).coerceIn(10.0, 60.0)
+            ((System.currentTimeMillis() - burstStartTimestamp) / 1000.0).coerceIn(5.0, 60.0)
         } else {
             scanDurationSeconds
         }
@@ -147,7 +148,7 @@ class BlinkDetector(
             isFaceDetected = true,
             isSamplingActive = false,
             isWarmedUp = true,
-            warmupSecondsElapsed = 30L,
+            warmupSecondsElapsed = elapsedSeconds.toLong(),
             statusCategory = statusCategory
         )
 
@@ -214,22 +215,29 @@ class BlinkDetector(
             val isGracePeriodActive = lastFaceSeenTimestamp > 0L && (timestamp - lastFaceSeenTimestamp <= FACE_LOST_GRACE_PERIOD_MS)
             val isFacePresentOrInGrace = hasFaceAndEyes || isGracePeriodActive
 
+            val elapsedSeconds = if (burstStartTimestamp > 0L) {
+                ((timestamp - burstStartTimestamp) / 1000.0).coerceAtLeast(1.0)
+            } else 1.0
+
+            val liveBpm = (burstBlinkCount * 60.0) / elapsedSeconds
+
             val statusCategory = when {
                 !isFacePresentOrInGrace -> BlinkStatusCategory.FACE_NOT_DETECTED
-                lastBurstCompletedBpm > 0.0 -> {
+                elapsedSeconds < 3.0 && lastBurstCompletedBpm > 0.0 -> {
                     if (lastBurstCompletedBpm < alertThresholdBpm) BlinkStatusCategory.LOW_RATE else BlinkStatusCategory.NORMAL
                 }
+                liveBpm < alertThresholdBpm -> BlinkStatusCategory.LOW_RATE
                 else -> BlinkStatusCategory.NORMAL
             }
 
             _metrics.value = BlinkMetrics(
-                currentBpm = if (lastBurstCompletedBpm > 0.0) lastBurstCompletedBpm else 0.0,
+                currentBpm = liveBpm,
                 totalBlinksInSession = totalBlinksCount,
                 isFaceDetected = hasFaceAndEyes,
                 lastEyeOpenScore = if (hasFaceAndEyes) ((leftEyeProb!! + rightEyeProb!!) / 2.0f) else _metrics.value.lastEyeOpenScore,
                 isSamplingActive = true,
                 isWarmedUp = true,
-                warmupSecondsElapsed = 30L,
+                warmupSecondsElapsed = elapsedSeconds.toLong(),
                 statusCategory = statusCategory
             )
             return

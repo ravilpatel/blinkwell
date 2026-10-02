@@ -1,10 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase, isSupabaseConfigured } from '@/lib/supabaseClient';
-import SupabaseConfigModal from '@/components/SupabaseConfigModal';
-import { Eye, Lock, Mail, AlertCircle, ShieldCheck, Database, AlertTriangle, KeyRound } from 'lucide-react';
+import { supabase } from '@/lib/supabaseClient';
+import { Eye, Lock, Mail, AlertCircle, ShieldCheck } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -12,23 +11,10 @@ export default function LoginPage() {
   const [password, setPassword] = useState('123456789');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [showConfigModal, setShowConfigModal] = useState(false);
-  const [isConfigured, setIsConfigured] = useState(true);
-
-  useEffect(() => {
-    setIsConfigured(isSupabaseConfigured());
-  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-
-    if (!isSupabaseConfigured()) {
-      setShowConfigModal(true);
-      setError('Supabase connection is not configured. Please set your Supabase Project URL and Anon Key.');
-      return;
-    }
-
     setLoading(true);
 
     try {
@@ -43,7 +29,7 @@ export default function LoginPage() {
 
         // Failed to fetch check
         if (errorMsg.includes('failed to fetch')) {
-          setError('Failed to fetch: Unable to reach your Supabase endpoint. Please verify your Supabase URL & Anon Key.');
+          setError('Failed to fetch: Unable to reach your Supabase endpoint. Please verify connection.');
           setLoading(false);
           return;
         }
@@ -99,7 +85,7 @@ export default function LoginPage() {
     } catch (err: any) {
       const msg = err?.message || 'An unexpected error occurred during login.';
       if (msg.toLowerCase().includes('failed to fetch')) {
-        setError('Failed to fetch: Could not reach Supabase database. Please check your Supabase URL & Anon Key.');
+        setError('Failed to fetch: Could not reach Supabase database. Please check your connection.');
       } else {
         setError(msg);
       }
@@ -110,14 +96,6 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4 py-12 sm:px-6 lg:px-8">
-      <SupabaseConfigModal
-        isOpen={showConfigModal}
-        onClose={() => {
-          setShowConfigModal(false);
-          setIsConfigured(isSupabaseConfigured());
-        }}
-      />
-
       <div className="max-w-md w-full space-y-6 bg-white p-8 sm:p-10 rounded-2xl shadow-xs border border-slate-200">
         <div className="text-center">
           <div className="inline-flex p-3 bg-teal-600 rounded-2xl mb-4 text-white shadow-sm">
@@ -132,27 +110,6 @@ export default function LoginPage() {
             </span>
           </div>
         </div>
-
-        {/* Warning if Supabase is unconfigured */}
-        {!isConfigured && (
-          <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs space-y-2">
-            <div className="flex items-center space-x-2 font-bold">
-              <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0" />
-              <span>Supabase Connection Not Configured</span>
-            </div>
-            <p className="text-amber-700 leading-relaxed">
-              The portal is currently using placeholder credentials. Click below to enter your Supabase Project URL and Anon Key.
-            </p>
-            <button
-              type="button"
-              onClick={() => setShowConfigModal(true)}
-              className="inline-flex items-center px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg transition-colors text-xs"
-            >
-              <Database className="w-3.5 h-3.5 mr-1" />
-              Configure Supabase Database
-            </button>
-          </div>
-        )}
 
         {error && (
           <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-start space-x-2">
@@ -204,23 +161,15 @@ export default function LoginPage() {
             disabled={loading}
             className="w-full py-2.5 px-4 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl shadow-xs transition-colors disabled:opacity-50 mt-2"
           >
-            {loading ? 'Authenticating Clinical Credentials...' : 'Sign In to Research Portal'}
+            {loading ? 'Authenticating...' : 'Sign In to Research Portal'}
           </button>
         </form>
 
-        {/* Database Config Shortcut */}
-        <div className="pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+        <div className="pt-4 border-t border-slate-100 flex items-center justify-center text-xs text-slate-500">
           <span className="flex items-center">
             <ShieldCheck className="w-3.5 h-3.5 text-teal-600 mr-1" />
             256-Bit SSL Encrypted
           </span>
-          <button
-            type="button"
-            onClick={() => setShowConfigModal(true)}
-            className="text-teal-700 hover:text-teal-900 font-bold underline"
-          >
-            Database Settings
-          </button>
         </div>
       </div>
     </div>

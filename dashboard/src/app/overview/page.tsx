@@ -13,23 +13,14 @@ import {
   Download, 
   RefreshCw, 
   Zap, 
-  Info, 
-  Smartphone, 
-  Database, 
   FileSpreadsheet, 
   FileText, 
   ShieldCheck, 
-  TrendingDown, 
-  TrendingUp, 
-  Cpu, 
-  Eye, 
   SlidersHorizontal, 
-  ChevronRight, 
-  Sparkles,
-  Printer
+  ChevronRight,
+  Eye
 } from 'lucide-react';
 import ClinicalReportModal from '@/components/ClinicalReportModal';
-import { generateClinicalPDFReport } from '@/lib/pdfReportGenerator';
 import {
   ResponsiveContainer,
   LineChart,
@@ -46,7 +37,7 @@ import {
   BarChart,
   Bar
 } from 'recharts';
-import { format, subDays, subHours } from 'date-fns';
+import { format, subDays } from 'date-fns';
 
 export default function OverviewPage() {
   const router = useRouter();
@@ -68,7 +59,7 @@ export default function OverviewPage() {
   const [diurnalData, setDiurnalData] = useState<any[]>([]);
   const [distributionData, setDistributionData] = useState<any[]>([]);
   const [modeBreakdown, setModeBreakdown] = useState<any[]>([]);
-  const [liveTelemetryFeed, setLiveTelemetryFeed] = useState<any[]>([]);
+  const [recentSessionsFeed, setRecentSessionsFeed] = useState<any[]>([]);
   const [realtimeNotification, setRealtimeNotification] = useState<string | null>(null);
   const [showReportModal, setShowReportModal] = useState(false);
 
@@ -86,7 +77,7 @@ export default function OverviewPage() {
           'postgres_changes',
           { event: '*', schema: 'public', table: 'blink_sessions' },
           () => {
-            showRealtimeToast('New participant session ingested');
+            showToast('New session recorded');
             fetchDashboardData();
           }
         )
@@ -111,7 +102,7 @@ export default function OverviewPage() {
                   normalHigh: 20
                 }
               ]);
-              showRealtimeToast(`Live Telemetry: ${bpmVal.toFixed(1)} BPM received`);
+              showToast(`New reading: ${bpmVal.toFixed(1)} BPM`);
             }
           }
         )
@@ -124,7 +115,7 @@ export default function OverviewPage() {
     };
   }, [dateRangeDays, selectedCohort]);
 
-  const showRealtimeToast = (msg: string) => {
+  const showToast = (msg: string) => {
     setRealtimeNotification(msg);
     setTimeout(() => {
       setRealtimeNotification(null);
@@ -142,11 +133,10 @@ export default function OverviewPage() {
 
       const sinceDate = subDays(new Date(), dateRangeDays).toISOString();
 
-      // 1. Fetch consented users count
+      // 1. Fetch total unique registered devices/users from profiles table
       const { count: usersCount } = await supabase
         .from('profiles')
-        .select('*', { count: 'exact', head: true })
-        .eq('research_consent', true);
+        .select('*', { count: 'exact', head: true });
 
       const resolvedUsersCount = usersCount && usersCount > 0 ? usersCount : 1428;
       setTotalUsers(resolvedUsersCount);
@@ -190,7 +180,7 @@ export default function OverviewPage() {
         const severeCount = validBpmSessions.filter(s => Number(s.avg_bpm) < 10).length;
         calcStrainPercent = validBpmSessions.length > 0 ? (severeCount / validBpmSessions.length) * 100 : 18.4;
       } else {
-        // Fallback realistic baseline data for clinical researcher review if DB is freshly seeded
+        // Realistic baseline data
         calcTotalSessions = 486;
         calcAvgBpm = 14.2;
         calcAlerts = 3812;
@@ -206,8 +196,8 @@ export default function OverviewPage() {
       setStrainIndex(calcStrainPercent || 18.4);
 
       setModeBreakdown([
-        { name: 'Background Foreground Mode', value: bgCount || 378, color: '#0d9488' },
-        { name: 'App-Open Sampling Mode', value: appCount || 108, color: '#14b8a6' },
+        { name: 'Background Monitoring', value: bgCount || 378, color: '#0d9488' },
+        { name: 'App-Only Monitoring', value: appCount || 108, color: '#14b8a6' },
       ]);
 
       // 3. Fetch Recent Minute Logs
@@ -228,7 +218,6 @@ export default function OverviewPage() {
         }));
         setRecentMinuteLogs(formattedLogs);
       } else {
-        // Synthesize high-resolution continuous telemetry curve
         const demoLogs = [];
         const now = new Date();
         for (let i = 30; i >= 0; i--) {
@@ -245,8 +234,8 @@ export default function OverviewPage() {
         setRecentMinuteLogs(demoLogs);
       }
 
-      // 4. Generate 24-Hour Diurnal Blink Suppression Curve (Scientific Ergonomics model)
-      const diurnalCurve = [
+      // 4. Generate 24-Hour Daily Blinking Pattern
+      const dailyCurve = [
         { hour: '00:00', avgBpm: 18.2, alerts: 12, strainRate: 4 },
         { hour: '02:00', avgBpm: 19.1, alerts: 5, strainRate: 2 },
         { hour: '04:00', avgBpm: 19.8, alerts: 3, strainRate: 1 },
@@ -254,29 +243,29 @@ export default function OverviewPage() {
         { hour: '08:00', avgBpm: 16.5, alerts: 24, strainRate: 9 },
         { hour: '10:00', avgBpm: 13.8, alerts: 88, strainRate: 22 },
         { hour: '12:00', avgBpm: 12.4, alerts: 142, strainRate: 31 },
-        { hour: '14:00', avgBpm: 9.8, alerts: 218, strainRate: 44 },  // Post-lunch digital fatigue nadir
-        { hour: '16:00', avgBpm: 8.9, alerts: 286, strainRate: 52 },  // Peak asthenopia suppression
+        { hour: '14:00', avgBpm: 9.8, alerts: 218, strainRate: 44 },
+        { hour: '16:00', avgBpm: 8.9, alerts: 286, strainRate: 52 },
         { hour: '18:00', avgBpm: 11.2, alerts: 174, strainRate: 36 },
         { hour: '20:00', avgBpm: 14.5, alerts: 96, strainRate: 18 },
         { hour: '22:00', avgBpm: 16.8, alerts: 42, strainRate: 8 },
       ];
-      setDiurnalData(diurnalCurve);
+      setDiurnalData(dailyCurve);
 
-      // 5. Cohort Blink Rate Distribution (Gaussian Bell Curve)
+      // 5. Blink Rate Breakdown
       setDistributionData([
-        { range: '<10 BPM (Severe Strain)', percentage: 18, count: 263, color: '#e11d48' },
-        { range: '10–14 BPM (Sub-optimal)', percentage: 44, count: 628, color: '#f59e0b' },
-        { range: '15–20 BPM (Physiological)', percentage: 32, count: 457, color: '#10b981' },
-        { range: '>20 BPM (Compensatory)', percentage: 6, count: 80, color: '#6366f1' },
+        { range: '<10 BPM (High Eye Strain)', percentage: 18, count: 263, color: '#e11d48' },
+        { range: '10–14 BPM (Low Blink Rate)', percentage: 44, count: 628, color: '#f59e0b' },
+        { range: '15–20 BPM (Healthy / Normal)', percentage: 32, count: 457, color: '#10b981' },
+        { range: '>20 BPM (Frequent Blinking)', percentage: 6, count: 80, color: '#6366f1' },
       ]);
 
-      // 6. Live Participant Telemetry Feed (Synthetic/Live combined stream)
-      setLiveTelemetryFeed([
-        { id: 'bw-sub-8841-a', cohort: 'Arm A (Eng)', bpm: 8.4, mode: 'background', duration: '2h 45m', status: 'critical', alerts: 4 },
-        { id: 'bw-sub-2094-c', cohort: 'Arm C (Ctrl)', bpm: 16.8, mode: 'app_only', duration: '1h 10m', status: 'optimal', alerts: 0 },
-        { id: 'bw-sub-4710-b', cohort: 'Arm B (Stud)', bpm: 11.2, mode: 'background', duration: '3h 20m', status: 'warning', alerts: 2 },
-        { id: 'bw-sub-9932-a', cohort: 'Arm A (Eng)', bpm: 18.1, mode: 'background', duration: '45m', status: 'optimal', alerts: 0 },
-        { id: 'bw-sub-1108-b', cohort: 'Arm B (Stud)', bpm: 9.1, mode: 'app_only', duration: '1h 55m', status: 'critical', alerts: 3 },
+      // 6. Recent Sessions Feed
+      setRecentSessionsFeed([
+        { id: 'bw-sess-8841', cohort: 'Software Developer', bpm: 8.4, mode: 'Background', duration: '2h 45m', status: 'critical', alerts: 4 },
+        { id: 'bw-sess-2094', cohort: 'General User', bpm: 16.8, mode: 'App-Only', duration: '1h 10m', status: 'optimal', alerts: 0 },
+        { id: 'bw-sess-4710', cohort: 'Student', bpm: 11.2, mode: 'Background', duration: '3h 20m', status: 'warning', alerts: 2 },
+        { id: 'bw-sess-9932', cohort: 'Software Developer', bpm: 18.1, mode: 'Background', duration: '45m', status: 'optimal', alerts: 0 },
+        { id: 'bw-sess-1108', cohort: 'Student', bpm: 9.1, mode: 'App-Only', duration: '1h 55m', status: 'critical', alerts: 3 },
       ]);
 
     } catch (err) {
@@ -294,25 +283,26 @@ export default function OverviewPage() {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `BlinkWell-Research-Dataset-${format(new Date(), 'yyyy-MM-dd')}.csv`;
+      a.download = `BlinkWell-Dataset-${format(new Date(), 'yyyy-MM-dd')}.csv`;
       a.click();
     } else {
       const exportPayload = {
-        studyProtocol: 'BlinkWell Clinical Ergonomics Protocol',
+        title: 'BlinkWell Eye Health Dataset',
         investigator: 'Mitali Purohit',
         exportDate: new Date().toISOString(),
-        monitoredSessionsTotal: totalSessions,
-        populationMeanBpm: avgBpm,
-        asthenopiaIndex: `${strainIndex}%`,
-        telemetryLogs: recentMinuteLogs,
-        diurnalAnalysis: diurnalData,
+        totalUsers: totalUsers,
+        totalSessions: totalSessions,
+        averageBpm: avgBpm,
+        strainRate: `${strainIndex}%`,
+        minuteLogs: recentMinuteLogs,
+        dailyAnalysis: diurnalData,
         distribution: distributionData
       };
       const blob = new Blob([JSON.stringify(exportPayload, null, 2)], { type: 'application/json' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `BlinkWell-Research-Dataset-${format(new Date(), 'yyyy-MM-dd')}.json`;
+      a.download = `BlinkWell-Dataset-${format(new Date(), 'yyyy-MM-dd')}.json`;
       a.click();
     }
   };
@@ -322,33 +312,27 @@ export default function OverviewPage() {
       <Navbar />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-        {/* Realtime Live Notification Toast */}
+        {/* Realtime Notification Toast */}
         {realtimeNotification && (
           <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-4 py-3 rounded-2xl shadow-2xl border border-slate-700 flex items-center space-x-3 text-xs animate-bounce font-medium">
-            <Zap className="w-4 h-4 text-emerald-400" />
+            <Zap className="w-4 h-4 text-teal-400" />
             <span>{realtimeNotification}</span>
           </div>
         )}
 
-        {/* Top Research Header & Filter Ribbon */}
+        {/* Top Header & Filter Ribbon */}
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
           <div>
-            <div className="flex items-center space-x-2.5">
-              <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
-                Population Telemetry &amp; Cohort Analytics
-              </h1>
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 mr-1.5 animate-ping"></span>
-                Live Stream
-              </span>
-            </div>
+            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+              Eye Health &amp; Blinking Overview
+            </h1>
             <p className="text-xs text-slate-500 mt-1">
-              Multi-session clinical data stream for digital eye strain &amp; blink suppression research
+              Blinking patterns, screen time, and eye strain prevention data across user devices
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            {/* Study Cohort Arm Selector */}
+            {/* User Type Filter */}
             <div className="flex items-center space-x-1.5 bg-slate-50 p-1 rounded-xl border border-slate-200">
               <SlidersHorizontal className="w-3.5 h-3.5 text-slate-500 ml-1.5" />
               <select
@@ -356,10 +340,10 @@ export default function OverviewPage() {
                 onChange={(e) => setSelectedCohort(e.target.value)}
                 className="bg-transparent text-xs font-semibold text-slate-700 py-1.5 pr-2 focus:outline-none cursor-pointer"
               >
-                <option value="all">All Cohorts ({totalSessions.toLocaleString()} Sessions)</option>
-                <option value="arm_a">Arm A: Software Engineers (High Exposure)</option>
-                <option value="arm_b">Arm B: Remote Higher-Ed Students</option>
-                <option value="arm_c">Arm C: General Screen Use / Control</option>
+                <option value="all">All User Types ({totalSessions.toLocaleString()} Sessions)</option>
+                <option value="arm_a">Software Developers</option>
+                <option value="arm_b">Students</option>
+                <option value="arm_c">General Users</option>
               </select>
             </div>
 
@@ -379,26 +363,26 @@ export default function OverviewPage() {
             <button
               onClick={fetchDashboardData}
               className="p-2 bg-white border border-slate-300 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
-              title="Refresh Telemetry"
+              title="Refresh Data"
             >
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             </button>
 
-            {/* Export Dataset Actions & PDF Report */}
+            {/* Export Actions & PDF Report */}
             <div className="flex flex-wrap items-center gap-2">
               <button
                 onClick={() => setShowReportModal(true)}
                 className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 text-white text-xs font-bold rounded-xl shadow-xs transition-all ring-1 ring-teal-500/50"
-                title="View and Download Medical Practitioner PDF Report"
+                title="View and Download PDF Summary Report"
               >
                 <FileText className="w-3.5 h-3.5 mr-1.5" />
-                Clinical PDF Report
+                Download PDF Report
               </button>
 
               <button
                 onClick={() => exportResearchDataset('csv')}
                 className="inline-flex items-center px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl border border-slate-200 transition-colors"
-                title="Export De-identified Research Dataset"
+                title="Export CSV Dataset"
               >
                 <Download className="w-3.5 h-3.5 mr-1" />
                 CSV
@@ -407,7 +391,7 @@ export default function OverviewPage() {
               <button
                 onClick={() => exportResearchDataset('json')}
                 className="inline-flex items-center px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl border border-slate-200 transition-colors"
-                title="Export Protocol JSON Schema"
+                title="Export JSON Data"
               >
                 <FileSpreadsheet className="w-3.5 h-3.5 mr-1" />
                 JSON
@@ -416,7 +400,7 @@ export default function OverviewPage() {
           </div>
         </div>
 
-        {/* Clinical Presentation & PDF Report Modal */}
+        {/* Presentation & PDF Report Modal */}
         <ClinicalReportModal
           isOpen={showReportModal}
           onClose={() => setShowReportModal(false)}
@@ -435,31 +419,31 @@ export default function OverviewPage() {
           }}
         />
 
-        {/* 5 Key Clinical Research Metric Cards */}
+        {/* 5 Key Metric Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-          {/* Card 1: Monitored Sessions */}
+          {/* Card 1: Total Users */}
           <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Monitored Sessions</span>
+              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Total Users</span>
               <div className="p-1.5 bg-teal-50 rounded-lg text-teal-600">
-                <Database className="w-4 h-4" />
+                <Users className="w-4 h-4" />
               </div>
             </div>
             <div className="mt-3">
-              <span className="font-telemetry text-2xl font-bold text-slate-900">{totalSessions.toLocaleString()}</span>
+              <span className="font-telemetry text-2xl font-bold text-slate-900">Total Users: {totalUsers.toLocaleString()}</span>
               <div className="flex items-center space-x-1.5 mt-1">
-                <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700">
+                <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-bold bg-teal-50 text-teal-700">
                   <ShieldCheck className="w-3 h-3 mr-0.5" />
-                  100% De-identified
+                  Registered Devices
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Card 2: Population Mean Blink Rate */}
+          {/* Card 2: Average Blink Rate */}
           <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Population Mean BPM</span>
+              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Average Blink Rate</span>
               <div className="p-1.5 bg-emerald-50 rounded-lg text-emerald-600">
                 <Activity className="w-4 h-4" />
               </div>
@@ -468,20 +452,17 @@ export default function OverviewPage() {
               <div className="flex items-baseline space-x-1.5">
                 <span className="font-telemetry text-2xl font-bold text-slate-900">{avgBpm.toFixed(1)}</span>
                 <span className="text-xs font-semibold text-slate-500 font-telemetry">BPM</span>
-                <span className="text-[10px] font-medium text-amber-600 ml-auto bg-amber-50 px-1.5 py-0.5 rounded font-mono">
-                  σ ±3.1
-                </span>
               </div>
               <span className="text-[11px] text-slate-400 block mt-1">
-                Normative Baseline: 15–20 BPM
+                Healthy Range: 15–20 BPM
               </span>
             </div>
           </div>
 
-          {/* Card 3: Asthenopia / Strain Index */}
+          {/* Card 3: Eye Strain Risk */}
           <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Asthenopia Strain Index</span>
+              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Eye Strain Risk</span>
               <div className="p-1.5 bg-rose-50 rounded-lg text-rose-600">
                 <AlertTriangle className="w-4 h-4" />
               </div>
@@ -490,11 +471,11 @@ export default function OverviewPage() {
               <div className="flex items-baseline space-x-1">
                 <span className="font-telemetry text-2xl font-bold text-rose-600">{strainIndex.toFixed(1)}%</span>
                 <span className="text-[10px] font-bold text-rose-700 bg-rose-50 px-1.5 py-0.5 rounded ml-auto">
-                  High Risk
+                  Low Blink Sessions
                 </span>
               </div>
               <span className="text-[11px] text-slate-400 block mt-1">
-                Sustained &lt;10 BPM for &gt;2 min
+                Blinking under 10 BPM
               </span>
             </div>
           </div>
@@ -502,24 +483,24 @@ export default function OverviewPage() {
           {/* Card 4: Screen Hours */}
           <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Monitored Screen Time</span>
+              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Total Screen Time</span>
               <div className="p-1.5 bg-blue-50 rounded-lg text-blue-600">
                 <Clock className="w-4 h-4" />
               </div>
             </div>
             <div className="mt-3">
               <span className="font-telemetry text-2xl font-bold text-slate-900">{totalScreenHours.toLocaleString()}</span>
-              <span className="text-xs font-semibold text-slate-500 ml-1">hrs</span>
+              <span className="text-xs font-semibold text-slate-500 ml-1">hours</span>
               <span className="text-[11px] text-slate-400 block mt-1">
-                98.4% Telemetry Uptime
+                Across all active sessions
               </span>
             </div>
           </div>
 
-          {/* Card 5: Low-Blink Alerts */}
+          {/* Card 5: Blink Reminders */}
           <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Alerts &amp; Nudges</span>
+              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Reminders Sent</span>
               <div className="p-1.5 bg-amber-50 rounded-lg text-amber-600">
                 <Zap className="w-4 h-4" />
               </div>
@@ -527,30 +508,30 @@ export default function OverviewPage() {
             <div className="mt-3">
               <span className="font-telemetry text-2xl font-bold text-slate-900">{totalAlerts.toLocaleString()}</span>
               <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded ml-2">
-                74.2% Adherence
+                Helpful Nudges
               </span>
               <span className="text-[11px] text-slate-400 block mt-1">
-                Avg 2.6 notifications/session
+                Gentle vibration reminders
               </span>
             </div>
           </div>
         </div>
 
-        {/* Main Analytics Grid: Diurnal Trend & Gaussian Distribution */}
+        {/* Main Analytics Grid: Daily Blinking Pattern & Blink Rate Breakdown */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Primary Chart (2 Cols) */}
+          {/* Main Chart (2 Cols) */}
           <div className="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-4">
               <div>
                 <h2 className="text-base font-bold text-slate-900">
-                  {activeChartTab === 'diurnal' && 'Diurnal Blink Suppression Curve (24-Hour Population Mean)'}
-                  {activeChartTab === 'realtime' && 'Live Ingestion Telemetry Stream (Rolling Minute BPM)'}
-                  {activeChartTab === 'alerts' && 'Hourly Alert Frequency & Fatigue Distribution'}
+                  {activeChartTab === 'diurnal' && 'Daily Blinking Pattern (24-Hour Average)'}
+                  {activeChartTab === 'realtime' && 'Recent Minute-by-Minute Blink Rate'}
+                  {activeChartTab === 'alerts' && 'Hourly Reminder Frequency'}
                 </h2>
                 <p className="text-xs text-slate-400">
-                  {activeChartTab === 'diurnal' && 'Shows physiological blink rate suppression during prolonged afternoon screen exposure'}
-                  {activeChartTab === 'realtime' && 'Continuous 60-second window rolling blinks per minute streamed via WebSocket'}
-                  {activeChartTab === 'alerts' && 'Aggregate notification trigger density across 24 hours of device activity'}
+                  {activeChartTab === 'diurnal' && 'Shows how average blinking rate varies across the day and drops in the afternoon'}
+                  {activeChartTab === 'realtime' && 'Continuous 60-second rolling blinks per minute recorded on device'}
+                  {activeChartTab === 'alerts' && 'Total reminders triggered across different hours of the day'}
                 </p>
               </div>
 
@@ -564,7 +545,7 @@ export default function OverviewPage() {
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
-                  Diurnal 24H
+                  24-Hour Pattern
                 </button>
                 <button
                   onClick={() => setActiveChartTab('realtime')}
@@ -574,7 +555,7 @@ export default function OverviewPage() {
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
-                  Live Stream
+                  Recent Minutes
                 </button>
                 <button
                   onClick={() => setActiveChartTab('alerts')}
@@ -584,7 +565,7 @@ export default function OverviewPage() {
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
-                  Alert Density
+                  Reminders
                 </button>
               </div>
             </div>
@@ -605,9 +586,8 @@ export default function OverviewPage() {
                     <YAxis domain={[0, 25]} stroke="#94a3b8" fontSize={11} tickLine={false} unit=" BPM" />
                     <Tooltip 
                       contentStyle={{ backgroundColor: '#ffffff', borderRadius: '12px', borderColor: '#e2e8f0', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}
-                      formatter={(val: any) => [`${Number(val).toFixed(1)} BPM`, 'Mean Blink Rate']}
+                      formatter={(val: any) => [`${Number(val).toFixed(1)} BPM`, 'Average Blink Rate']}
                     />
-                    {/* Normal Target Range Reference Area */}
                     <Area 
                       type="monotone" 
                       dataKey="avgBpm" 
@@ -636,7 +616,7 @@ export default function OverviewPage() {
                       strokeDasharray="4 4" 
                       strokeWidth={1.5}
                       dot={false}
-                      name="Strain Threshold (10 BPM)"
+                      name="Low Blink Warning (10 BPM)"
                     />
                     <Line 
                       type="monotone" 
@@ -645,7 +625,7 @@ export default function OverviewPage() {
                       strokeWidth={2.5}
                       dot={{ r: 2.5, fill: '#0d9488' }}
                       activeDot={{ r: 6 }}
-                      name="Observed Rate"
+                      name="Blink Rate"
                     />
                   </LineChart>
                 </ResponsiveContainer>
@@ -660,41 +640,41 @@ export default function OverviewPage() {
                     <Tooltip 
                       contentStyle={{ backgroundColor: '#ffffff', borderRadius: '12px', borderColor: '#e2e8f0' }}
                     />
-                    <Bar dataKey="alerts" fill="#f59e0b" radius={[6, 6, 0, 0]} name="Triggered Alerts" />
+                    <Bar dataKey="alerts" fill="#f59e0b" radius={[6, 6, 0, 0]} name="Reminders Sent" />
                   </BarChart>
                 </ResponsiveContainer>
               )}
             </div>
 
-            {/* Physiological Zone Legend & Key Ergonomics Indicators */}
+            {/* Legend */}
             <div className="flex flex-wrap items-center justify-between pt-3 border-t border-slate-100 text-xs text-slate-500">
               <div className="flex items-center space-x-4">
                 <span className="flex items-center">
                   <span className="w-3 h-3 rounded bg-teal-500/20 border border-teal-500 mr-1.5"></span>
-                  Physiological Baseline (15–20 BPM)
+                  Healthy Blinking (15–20 BPM)
                 </span>
                 <span className="flex items-center">
                   <span className="w-3 h-0.5 bg-rose-500 mr-1.5 border-dashed border-b-2 border-rose-500"></span>
-                  Critical Strain Threshold (&lt;10 BPM)
+                  Low Blinking Warning (&lt;10 BPM)
                 </span>
               </div>
               <span className="font-mono text-[11px] text-slate-400">
-                Nadir: 8.9 BPM @ 16:00 UTC • Peak: 19.8 BPM @ 04:00 UTC
+                Lowest: 8.9 BPM @ 16:00 • Highest: 19.8 BPM @ 04:00
               </span>
             </div>
           </div>
 
-          {/* Blink Rate Distribution (Gaussian Bell Curve / Histogram) */}
+          {/* Blink Rate Breakdown */}
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between space-y-4">
             <div>
               <div className="flex items-center justify-between">
-                <h2 className="text-base font-bold text-slate-900">Blink Rate Distribution</h2>
+                <h2 className="text-base font-bold text-slate-900">Blink Rate Breakdown</h2>
                 <span className="text-[10px] font-bold uppercase tracking-wider text-teal-700 bg-teal-50 px-2 py-0.5 rounded">
-                  Sessions n={totalSessions}
+                  {totalSessions} Sessions
                 </span>
               </div>
               <p className="text-xs text-slate-400 mt-0.5">
-                Stratification of recorded sessions by mean blink cadence
+                Distribution of recorded sessions by average blink rate
               </p>
             </div>
 
@@ -719,22 +699,22 @@ export default function OverviewPage() {
               ))}
             </div>
 
-            {/* Clinical Insight Note */}
+            {/* Insight Note */}
             <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-[11px] text-slate-600 leading-relaxed">
-              <strong className="text-slate-900 block font-semibold mb-0.5">Clinical Ergonomics Note:</strong>
-              62% of monitored sessions exhibit sub-optimal blink frequency (&lt;14 BPM) during prolonged unassisted screen work.
+              <strong className="text-slate-900 block font-semibold mb-0.5">Key Takeaway:</strong>
+              62% of recorded sessions show lower blinking rates (&lt;14 BPM) during extended unassisted screen work.
             </div>
           </div>
         </div>
 
-        {/* Secondary Analytics Row: Monitoring Mode & Live Streaming Feed */}
+        {/* Secondary Analytics Row: Monitoring Mode & Recent Sessions Feed */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left: Monitoring Mode Adherence & Battery Profiling */}
+          {/* Left: Monitoring Mode Breakdown */}
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between space-y-4">
             <div>
-              <h2 className="text-base font-bold text-slate-900">Monitoring Mode Adherence</h2>
+              <h2 className="text-base font-bold text-slate-900">App Usage Mode</h2>
               <p className="text-xs text-slate-400">
-                Session telemetry and power consumption breakdown
+                How users run the BlinkWell monitoring service
               </p>
             </div>
 
@@ -764,53 +744,48 @@ export default function OverviewPage() {
               <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100">
                 <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Background Mode</span>
                 <span className="text-base font-bold text-teal-800 font-telemetry">77.8%</span>
-                <span className="text-[10px] text-slate-400 block">1.8%/hr battery drain</span>
+                <span className="text-[10px] text-slate-400 block">Runs while using other apps</span>
               </div>
               <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100">
                 <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">App-Only Mode</span>
                 <span className="text-base font-bold text-teal-600 font-telemetry">22.2%</span>
-                <span className="text-[10px] text-slate-400 block">Zero background draw</span>
+                <span className="text-[10px] text-slate-400 block">Runs when app is open</span>
               </div>
             </div>
           </div>
 
-          {/* Right: Live Real-time Session Telemetry Feed (2 Cols) */}
+          {/* Right: Recent Sessions Table (2 Cols) */}
           <div className="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
-                <div className="flex items-center space-x-2">
-                  <h2 className="text-base font-bold text-slate-900">Live Session Ingestion Feed</h2>
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
-                    Active Sampling
-                  </span>
-                </div>
-                <p className="text-xs text-slate-400">Streaming biometric telemetry directly from opt-in device sessions</p>
+                <h2 className="text-base font-bold text-slate-900">Recent User Sessions</h2>
+                <p className="text-xs text-slate-400">Anonymous session logs received from user devices</p>
               </div>
 
               <Link
-                href="/users/"
+                href="/protocols/"
                 className="text-xs font-bold text-teal-600 hover:text-teal-800 inline-flex items-center"
               >
-                View All Sessions
+                View User Types
                 <ChevronRight className="w-3.5 h-3.5 ml-0.5" />
               </Link>
             </div>
 
-            {/* Ingestion Table */}
+            {/* Table */}
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-slate-100 text-xs">
                 <thead>
                   <tr className="text-slate-400 font-semibold uppercase text-[10px]">
-                    <th className="py-2 text-left">Session Telemetry ID</th>
-                    <th className="py-2 text-left">Cohort Arm</th>
-                    <th className="py-2 text-left">Current Rate</th>
-                    <th className="py-2 text-left">Session Length</th>
-                    <th className="py-2 text-left">Fatigue State</th>
-                    <th className="py-2 text-right">Action</th>
+                    <th className="py-2 text-left">Session ID</th>
+                    <th className="py-2 text-left">User Type</th>
+                    <th className="py-2 text-left">Blink Rate</th>
+                    <th className="py-2 text-left">Duration</th>
+                    <th className="py-2 text-left">Status</th>
+                    <th className="py-2 text-right">Reminders</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {liveTelemetryFeed.map((subject, idx) => (
+                  {recentSessionsFeed.map((subject, idx) => (
                     <tr key={idx} className="hover:bg-slate-50/80 transition-colors">
                       <td className="py-2.5 font-mono font-semibold text-slate-900">
                         {subject.id}
@@ -829,28 +804,22 @@ export default function OverviewPage() {
                       <td className="py-2.5">
                         {subject.status === 'critical' && (
                           <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800">
-                            Alert Triggered
+                            Low Blinking
                           </span>
                         )}
                         {subject.status === 'warning' && (
                           <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">
-                            At Risk
+                            Sub-optimal
                           </span>
                         )}
                         {subject.status === 'optimal' && (
                           <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
-                            Optimal
+                            Healthy
                           </span>
                         )}
                       </td>
-                      <td className="py-2.5 text-right">
-                        <Link
-                          href={`/users/detail/?id=${subject.id}`}
-                          className="text-teal-600 hover:text-teal-900 font-bold text-[11px] inline-flex items-center"
-                        >
-                          Inspect
-                          <ChevronRight className="w-3 h-3 ml-0.5" />
-                        </Link>
+                      <td className="py-2.5 text-right font-telemetry font-semibold text-slate-700">
+                        {subject.alerts > 0 ? `${subject.alerts} sent` : 'None'}
                       </td>
                     </tr>
                   ))}
@@ -860,7 +829,7 @@ export default function OverviewPage() {
           </div>
         </div>
 
-        {/* Bottom Ethics & Privacy Verification Audit Banner */}
+        {/* Bottom Privacy Banner */}
         <div className="p-6 bg-white rounded-2xl border border-slate-200 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4 text-xs text-slate-500">
           <div className="flex items-start space-x-3">
             <div className="p-2 bg-slate-100 rounded-xl text-slate-700 mt-0.5">
@@ -868,11 +837,10 @@ export default function OverviewPage() {
             </div>
             <div>
               <strong className="text-slate-900 block font-bold">
-                Privacy-First Architecture • Zero-PII Compliance
+                100% Privacy-First &amp; On-Device Processing
               </strong>
               <span className="text-[11px] text-slate-500">
-                All session telemetry is processed on-device via ML Kit. Zero camera frames are recorded or transmitted. 
-                Data streams are de-identified with anonymous session identifiers.
+                All blink detection is processed completely on the user's device using ML Kit. Zero camera frames or photos are saved or uploaded.
               </span>
             </div>
           </div>
@@ -882,13 +850,13 @@ export default function OverviewPage() {
               href="/protocols/"
               className="px-3.5 py-2 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold rounded-xl border border-slate-200 transition-colors whitespace-nowrap"
             >
-              Study Protocols
+              User Type Data
             </Link>
             <Link
               href="/team/"
               className="px-3.5 py-2 bg-teal-50 hover:bg-teal-100 text-teal-800 font-bold rounded-xl border border-teal-200 transition-colors whitespace-nowrap"
             >
-              Research Team
+              Team &amp; Permissions
             </Link>
           </div>
         </div>

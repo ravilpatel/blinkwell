@@ -6,18 +6,14 @@ import {
   FileText, 
   ShieldCheck, 
   Download, 
-  Layers, 
-  Cpu, 
   Sliders, 
   CheckCircle, 
-  BarChart3, 
   Lock, 
   Eye, 
-  AlertCircle,
-  HelpCircle,
-  Clock,
-  Sparkles,
-  Users
+  Users,
+  Code,
+  GraduationCap,
+  Smartphone
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -39,43 +35,44 @@ export default function ProtocolsPage() {
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
 
-  // Comparative Cohort Statistics
-  const cohortComparisonData = [
-    { name: 'Arm A (Engineers)', meanBpm: 11.2, alertFreq: 3.4, adherence: 78.4, color: '#e11d48' },
-    { name: 'Arm B (Students)', meanBpm: 13.8, alertFreq: 2.1, adherence: 72.1, color: '#f59e0b' },
-    { name: 'Arm C (Control)', meanBpm: 17.6, alertFreq: 0.3, adherence: 88.9, color: '#10b981' },
+  // User type comparison data
+  const userTypeComparisonData = [
+    { name: 'Software Developers', meanBpm: 11.2, alertFreq: 3.4, adherence: 78.4, color: '#e11d48' },
+    { name: 'Students', meanBpm: 13.8, alertFreq: 2.1, adherence: 72.1, color: '#f59e0b' },
+    { name: 'General Users', meanBpm: 17.6, alertFreq: 0.3, adherence: 88.9, color: '#10b981' },
   ];
 
-  const handleSaveProtocolSettings = (e: React.FormEvent) => {
+  const handleSaveSettings = (e: React.FormEvent) => {
     e.preventDefault();
     setSavedSuccess(true);
     setTimeout(() => setSavedSuccess(false), 3000);
   };
 
-  const downloadProtocolDossier = () => {
-    const content = `# BlinkWell Clinical Study Protocol Dossier
-Study Title: Digital Ergonomics & Non-Invasive Blink Rate Modulation in High-Screen Cohorts
-Investigator: Mitali Purohit
-Affiliation: BlinkWell Ophthalmic Ergonomics Research Group
-Data Protocol: Fully De-Identified, Zero-PII, On-Device Face Mesh Classification via ML Kit
+  const downloadUserTypeSummary = () => {
+    const content = `# BlinkWell User Type Data & Summary
+Author: Mitali Purohit
+Platform: BlinkWell Eye Health & Blink Tracking
+Privacy: Fully De-Identified, Zero-PII, On-Device ML Kit Processing
 
-1. Study Arms:
-- Arm A: Software Engineers (n=512 sessions) - Continuous high-cognitive screen exposure.
-- Arm B: Remote Higher-Ed Students (n=496 sessions) - Prolonged reading & coursework.
-- Arm C: General Screen Use / Control (n=420 sessions) - Non-continuous computer use.
+1. User Categories:
+- Software Developers (n=512 sessions): Continuous coding, IDE, and terminal use. Average blink rate: 11.2 BPM.
+- Students (n=496 sessions): Digital textbook reading and online coursework. Average blink rate: 13.8 BPM.
+- General Users (n=420 sessions): Everyday web browsing and smartphone use. Average blink rate: 17.6 BPM.
 
-2. Primary Endpoint:
-Measurement of habitual blink rate suppression (BPM) below the physiological normal of 15-20 BPM, and evaluation of haptic vibration alerts for restorative blink habituation.
+2. Key Findings:
+- Higher cognitive screen focus significantly suppresses natural blink rates below healthy levels (15-20 BPM).
+- Gentle vibration reminders effectively encourage users to restore healthy blink frequency without disrupting workflow.
 
-3. Privacy & Ethics:
-No camera images or video frames are ever recorded, stored, or transmitted. ML Kit on-device inference extracts only eye openness probabilities (0.0 to 1.0) and generates aggregate 60-second rolling BPM values.
+3. Privacy Guarantees:
+- Zero camera photos or videos are ever saved or transmitted.
+- All eye openness detection runs 100% locally on the device via ML Kit.
 `;
 
     const blob = new Blob([content], { type: 'text/markdown' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `BlinkWell-Study-Protocol-Dossier.md`;
+    a.download = `BlinkWell-User-Type-Data.md`;
     a.click();
   };
 
@@ -89,7 +86,7 @@ No camera images or video frames are ever recorded, stored, or transmitted. ML K
         data={{
           investigatorName: 'Mitali Purohit',
           reportDate: new Date(),
-          totalSessions: 4860,
+          totalSessions: 1428,
           avgBpm: 14.2,
           strainIndex: 18.4,
           totalScreenHours: 8940,
@@ -106,28 +103,28 @@ No camera images or video frames are ever recorded, stored, or transmitted. ML K
             { hour: '22:00', avgBpm: 16.8, alerts: 42, strainRate: 8 },
           ],
           distributionData: [
-            { range: '<10 BPM (Severe Strain)', percentage: 18, count: 263, color: '#e11d48' },
-            { range: '10–14 BPM (Sub-optimal)', percentage: 44, count: 628, color: '#f59e0b' },
-            { range: '15–20 BPM (Physiological Normal)', percentage: 32, count: 457, color: '#10b981' },
-            { range: '>20 BPM (Compensatory)', percentage: 6, count: 80, color: '#6366f1' },
+            { range: '<10 BPM (High Strain)', percentage: 18, count: 263, color: '#e11d48' },
+            { range: '10–14 BPM (Low Rate)', percentage: 44, count: 628, color: '#f59e0b' },
+            { range: '15–20 BPM (Healthy Normal)', percentage: 32, count: 457, color: '#10b981' },
+            { range: '>20 BPM (Frequent)', percentage: 6, count: 80, color: '#6366f1' },
           ],
         }}
       />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-        {/* Protocol Title & Header */}
+        {/* Title & Header */}
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div>
             <div className="flex flex-wrap items-center gap-2.5">
               <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
-                Study Protocols &amp; Methodology
+                User Type Data
               </h1>
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
-                Active Enrolling (Phase II)
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-teal-100 text-teal-800">
+                User Categories
               </span>
             </div>
             <p className="text-xs text-slate-500 mt-1">
-              Clinical study specifications, multi-arm cohort parameters, statistical hypothesis workbench, and zero-PII compliance logs
+              Screen habits, blink rates, and reminder settings across different user types (Software Developers, Students, and General Users)
             </p>
           </div>
 
@@ -135,27 +132,27 @@ No camera images or video frames are ever recorded, stored, or transmitted. ML K
             <button
               onClick={() => setShowReportModal(true)}
               className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 text-white text-xs font-bold rounded-xl shadow-xs transition-all ring-1 ring-teal-500/50"
-              title="Generate and Download Medical Practitioner PDF Report"
+              title="Generate and Download PDF Report"
             >
               <FileText className="w-3.5 h-3.5 mr-1.5" />
-              Clinical PDF Report
+              Download PDF Report
             </button>
 
             <button
-              onClick={downloadProtocolDossier}
+              onClick={downloadUserTypeSummary}
               className="inline-flex items-center px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl border border-slate-200 transition-colors"
             >
               <Download className="w-3.5 h-3.5 mr-1.5" />
-              Protocol Markdown
+              Export Markdown
             </button>
           </div>
         </div>
 
-        {/* Multi-Arm Cohort Management Cards */}
+        {/* User Type Cards */}
         <div>
-          <h2 className="text-base font-bold text-slate-900 mb-3">Multi-Arm Study Cohorts</h2>
+          <h2 className="text-base font-bold text-slate-900 mb-3">User Types &amp; Screen Habits</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Arm A */}
+            {/* Developers */}
             <div 
               onClick={() => setSelectedArm('arm_a')}
               className={`p-5 rounded-2xl border transition-all cursor-pointer bg-white ${
@@ -165,27 +162,32 @@ No camera images or video frames are ever recorded, stored, or transmitted. ML K
               }`}
             >
               <div className="flex justify-between items-start mb-2">
-                <span className="text-xs font-bold text-slate-900">Arm A: Software Engineers</span>
+                <div className="flex items-center space-x-2">
+                  <div className="p-1.5 bg-rose-50 rounded-lg text-rose-600">
+                    <Code className="w-4 h-4" />
+                  </div>
+                  <span className="text-xs font-bold text-slate-900">Software Developers</span>
+                </div>
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800">
-                  High Exposure
+                  High Screen Time
                 </span>
               </div>
               <p className="text-xs text-slate-500 mb-4">
-                Continuous IDE &amp; terminal usage with severe cognitive focus.
+                Continuous IDE, terminal, and debugging use with intense cognitive focus.
               </p>
               <div className="grid grid-cols-2 gap-2 text-xs border-t border-slate-100 pt-3">
                 <div>
-                  <span className="text-[10px] text-slate-400 block uppercase">Sampled Sessions</span>
-                  <strong className="text-slate-900 font-telemetry">n = 512</strong>
+                  <span className="text-[10px] text-slate-400 block uppercase">Sessions</span>
+                  <strong className="text-slate-900 font-telemetry">512</strong>
                 </div>
                 <div>
-                  <span className="text-[10px] text-slate-400 block uppercase">Mean BPM</span>
+                  <span className="text-[10px] text-slate-400 block uppercase">Average Rate</span>
                   <strong className="text-rose-600 font-telemetry">11.2 BPM</strong>
                 </div>
               </div>
             </div>
 
-            {/* Arm B */}
+            {/* Students */}
             <div 
               onClick={() => setSelectedArm('arm_b')}
               className={`p-5 rounded-2xl border transition-all cursor-pointer bg-white ${
@@ -195,27 +197,32 @@ No camera images or video frames are ever recorded, stored, or transmitted. ML K
               }`}
             >
               <div className="flex justify-between items-start mb-2">
-                <span className="text-xs font-bold text-slate-900">Arm B: Remote Students</span>
+                <div className="flex items-center space-x-2">
+                  <div className="p-1.5 bg-amber-50 rounded-lg text-amber-600">
+                    <GraduationCap className="w-4 h-4" />
+                  </div>
+                  <span className="text-xs font-bold text-slate-900">Students</span>
+                </div>
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">
-                  Moderate Exposure
+                  Moderate Screen Time
                 </span>
               </div>
               <p className="text-xs text-slate-500 mb-4">
-                Digital textbook reading and synchronous video lectures.
+                Digital textbook reading, online assignments, and video classes.
               </p>
               <div className="grid grid-cols-2 gap-2 text-xs border-t border-slate-100 pt-3">
                 <div>
-                  <span className="text-[10px] text-slate-400 block uppercase">Sampled Sessions</span>
-                  <strong className="text-slate-900 font-telemetry">n = 496</strong>
+                  <span className="text-[10px] text-slate-400 block uppercase">Sessions</span>
+                  <strong className="text-slate-900 font-telemetry">496</strong>
                 </div>
                 <div>
-                  <span className="text-[10px] text-slate-400 block uppercase">Mean BPM</span>
+                  <span className="text-[10px] text-slate-400 block uppercase">Average Rate</span>
                   <strong className="text-amber-600 font-telemetry">13.8 BPM</strong>
                 </div>
               </div>
             </div>
 
-            {/* Arm C */}
+            {/* General Users */}
             <div 
               onClick={() => setSelectedArm('arm_c')}
               className={`p-5 rounded-2xl border transition-all cursor-pointer bg-white ${
@@ -225,21 +232,26 @@ No camera images or video frames are ever recorded, stored, or transmitted. ML K
               }`}
             >
               <div className="flex justify-between items-start mb-2">
-                <span className="text-xs font-bold text-slate-900">Arm C: General Screen Use / Control</span>
+                <div className="flex items-center space-x-2">
+                  <div className="p-1.5 bg-emerald-50 rounded-lg text-emerald-600">
+                    <Smartphone className="w-4 h-4" />
+                  </div>
+                  <span className="text-xs font-bold text-slate-900">General Users</span>
+                </div>
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
-                  Baseline
+                  Standard Screen Time
                 </span>
               </div>
               <p className="text-xs text-slate-500 mb-4">
-                General mobile and computer use without continuous sustained focus.
+                General mobile and computer browsing without continuous deep concentration.
               </p>
               <div className="grid grid-cols-2 gap-2 text-xs border-t border-slate-100 pt-3">
                 <div>
-                  <span className="text-[10px] text-slate-400 block uppercase">Sampled Sessions</span>
-                  <strong className="text-slate-900 font-telemetry">n = 420</strong>
+                  <span className="text-[10px] text-slate-400 block uppercase">Sessions</span>
+                  <strong className="text-slate-900 font-telemetry">420</strong>
                 </div>
                 <div>
-                  <span className="text-[10px] text-slate-400 block uppercase">Mean BPM</span>
+                  <span className="text-[10px] text-slate-400 block uppercase">Average Rate</span>
                   <strong className="text-emerald-600 font-telemetry">17.6 BPM</strong>
                 </div>
               </div>
@@ -247,32 +259,32 @@ No camera images or video frames are ever recorded, stored, or transmitted. ML K
           </div>
         </div>
 
-        {/* Statistical Comparative Workbench */}
+        {/* Comparison Chart & Settings */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Cohort Comparison Bar Chart */}
+          {/* Comparison Bar Chart */}
           <div className="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
             <div className="flex justify-between items-center border-b border-slate-100 pb-3">
               <div>
-                <h2 className="text-base font-bold text-slate-900">Comparative Cohort Telemetry (Mean BPM)</h2>
-                <p className="text-xs text-slate-400">ANOVA statistical variance across test arms (F=42.8, p &lt; 0.001)</p>
+                <h2 className="text-base font-bold text-slate-900">Blink Rate by User Type</h2>
+                <p className="text-xs text-slate-400">Average blinks per minute measured across daily activity groups</p>
               </div>
               <span className="text-[11px] font-bold text-teal-800 bg-teal-50 px-2 py-0.5 rounded">
-                Statistical Significance
+                Activity Comparison
               </span>
             </div>
 
             <div className="h-64 w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={cohortComparisonData}>
+                <BarChart data={userTypeComparisonData}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                   <XAxis dataKey="name" stroke="#94a3b8" fontSize={11} tickLine={false} />
                   <YAxis domain={[0, 22]} stroke="#94a3b8" fontSize={11} tickLine={false} unit=" BPM" />
                   <Tooltip 
                     contentStyle={{ backgroundColor: '#ffffff', borderRadius: '12px', borderColor: '#e2e8f0' }}
-                    formatter={(val: any) => [`${val} BPM`, 'Mean Blink Rate']}
+                    formatter={(val: any) => [`${val} BPM`, 'Average Blink Rate']}
                   />
                   <Bar dataKey="meanBpm" radius={[8, 8, 0, 0]}>
-                    {cohortComparisonData.map((entry, index) => (
+                    {userTypeComparisonData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Bar>
@@ -280,40 +292,40 @@ No camera images or video frames are ever recorded, stored, or transmitted. ML K
               </ResponsiveContainer>
             </div>
 
-            {/* Statistical Hypotheses Findings */}
+            {/* Key Findings */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-slate-100 text-xs">
               <div className="p-3 bg-slate-50 rounded-xl">
-                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Hypothesis 1 (Suppression)</span>
-                <strong className="text-slate-900 font-bold block mt-0.5">p &lt; 0.001 (Confirmed)</strong>
-                <span className="text-[11px] text-slate-500">Blink suppression directly scales with cognitive load.</span>
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">1. Intense Focus</span>
+                <strong className="text-slate-900 font-bold block mt-0.5">Fewer Blinks</strong>
+                <span className="text-[11px] text-slate-500">Deep coding focus reduces blinking by over 40%.</span>
               </div>
               <div className="p-3 bg-slate-50 rounded-xl">
-                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Pearson Correlation</span>
-                <strong className="text-teal-700 font-bold block mt-0.5">r = -0.74 (Strong Inverse)</strong>
-                <span className="text-[11px] text-slate-500">Longer continuous sessions yield lower blink rates.</span>
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">2. Screen Duration</span>
+                <strong className="text-teal-700 font-bold block mt-0.5">Fatigue Buildup</strong>
+                <span className="text-[11px] text-slate-500">Long sessions without breaks lead to dry eye strain.</span>
               </div>
               <div className="p-3 bg-slate-50 rounded-xl">
-                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Nudge Efficacy</span>
-                <strong className="text-emerald-700 font-bold block mt-0.5">+48.6% Habituation</strong>
-                <span className="text-[11px] text-slate-500">Significant blink recovery within 15 mins of notification.</span>
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">3. Reminders Help</span>
+                <strong className="text-emerald-700 font-bold block mt-0.5">+48% Recovery</strong>
+                <span className="text-[11px] text-slate-500">Users quickly return to normal blinking after a nudge.</span>
               </div>
             </div>
           </div>
 
-          {/* Protocol Parameter Tuning */}
+          {/* Reminder Settings Tuning */}
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between space-y-4">
             <div>
               <div className="flex items-center space-x-2">
                 <Sliders className="w-4 h-4 text-teal-600" />
-                <h2 className="text-base font-bold text-slate-900">Protocol Parameters</h2>
+                <h2 className="text-base font-bold text-slate-900">Reminder Settings</h2>
               </div>
-              <p className="text-xs text-slate-400 mt-0.5">Adjust clinical thresholds for telemetry ingestion</p>
+              <p className="text-xs text-slate-400 mt-0.5">Customize default reminder thresholds</p>
             </div>
 
-            <form onSubmit={handleSaveProtocolSettings} className="space-y-4 my-auto">
+            <form onSubmit={handleSaveSettings} className="space-y-4 my-auto">
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Alert Trigger Threshold: <span className="text-teal-700 font-telemetry">{alertThresholdBpm} BPM</span>
+                  Blink Rate Alert Threshold: <span className="text-teal-700 font-telemetry">{alertThresholdBpm} BPM</span>
                 </label>
                 <input
                   type="range"
@@ -324,12 +336,12 @@ No camera images or video frames are ever recorded, stored, or transmitted. ML K
                   onChange={(e) => setAlertThresholdBpm(Number(e.target.value))}
                   className="w-full accent-teal-600 cursor-pointer"
                 />
-                <span className="text-[10px] text-slate-400">Trigger notification when sustained &lt; threshold for 2 mins</span>
+                <span className="text-[10px] text-slate-400">Trigger reminder when blinking stays below this rate for 2 mins</span>
               </div>
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Alert Cooldown Window: <span className="text-teal-700 font-telemetry">{cooldownMins} mins</span>
+                  Reminder Cooldown: <span className="text-teal-700 font-telemetry">{cooldownMins} mins</span>
                 </label>
                 <input
                   type="range"
@@ -340,13 +352,13 @@ No camera images or video frames are ever recorded, stored, or transmitted. ML K
                   onChange={(e) => setCooldownMins(Number(e.target.value))}
                   className="w-full accent-teal-600 cursor-pointer"
                 />
-                <span className="text-[10px] text-slate-400">Minimum time between repeat notifications</span>
+                <span className="text-[10px] text-slate-400">Minimum time between consecutive reminders</span>
               </div>
 
               {savedSuccess && (
                 <div className="p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 text-xs flex items-center space-x-2">
                   <CheckCircle className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                  <span>Protocol parameters updated successfully!</span>
+                  <span>Settings saved successfully!</span>
                 </div>
               )}
 
@@ -354,47 +366,47 @@ No camera images or video frames are ever recorded, stored, or transmitted. ML K
                 type="submit"
                 className="w-full py-2 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl shadow-xs transition-colors"
               >
-                Apply Protocol Settings
+                Save Settings
               </button>
             </form>
           </div>
         </div>
 
-        {/* Zero-PII & Cryptographic Ethics Verification */}
+        {/* Privacy & Data Protection */}
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
           <div className="flex items-center space-x-2">
             <Lock className="w-5 h-5 text-teal-600" />
-            <h2 className="text-base font-bold text-slate-900">Zero-PII Privacy &amp; Data Ethics Certification</h2>
+            <h2 className="text-base font-bold text-slate-900">Privacy &amp; Data Protection</h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
             <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-1.5">
               <span className="font-bold text-slate-900 flex items-center">
                 <CheckCircle className="w-4 h-4 text-emerald-600 mr-1.5" />
-                1. On-Device Classification
+                1. On-Device Processing
               </span>
               <p className="text-slate-600 text-[11px] leading-relaxed">
-                Raw camera frames never leave Android device RAM. ML Kit classification produces only numeric probability floats.
+                Camera frames never leave the phone. All blink detection is computed locally in memory with ML Kit.
               </p>
             </div>
 
             <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-1.5">
               <span className="font-bold text-slate-900 flex items-center">
                 <CheckCircle className="w-4 h-4 text-emerald-600 mr-1.5" />
-                2. SHA-256 Subject Anonymization
+                2. Completely Anonymous
               </span>
               <p className="text-slate-600 text-[11px] leading-relaxed">
-                Subject identifiers are salted and hashed. No names, email addresses, or phone identifiers are linked to telemetry logs.
+                No personal information, names, phone numbers, or email addresses are stored with session logs.
               </p>
             </div>
 
             <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-1.5">
               <span className="font-bold text-slate-900 flex items-center">
                 <CheckCircle className="w-4 h-4 text-emerald-600 mr-1.5" />
-                3. Right to Erasure / GDPR
+                3. User Control
               </span>
               <p className="text-slate-600 text-[11px] leading-relaxed">
-                Participants can withdraw consent with one tap in mobile settings, instantly purging all session records from Supabase.
+                Users can enable or disable data sharing at any time directly in the mobile app settings.
               </p>
             </div>
           </div>

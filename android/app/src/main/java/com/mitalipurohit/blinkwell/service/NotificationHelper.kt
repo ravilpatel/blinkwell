@@ -154,8 +154,8 @@ class NotificationHelper(private val context: Context) {
 
     /**
      * Updates the sticky status notification:
-     * - Suppresses notification during initial 30s warmup period.
-     * - Once warmed up: updates immediately on category change, or throttled 5-10s on BPM changes.
+     * - Reflects real-time blink rate and status category whenever camera is active.
+     * - Immediate update on category change, or throttled to 1s on BPM changes to ensure real-time responsiveness without flooding OS.
      */
     fun updateStatusNotification(
         category: BlinkStatusCategory,
@@ -164,18 +164,13 @@ class NotificationHelper(private val context: Context) {
         isWarmedUp: Boolean = true,
         force: Boolean = false
     ) {
-        if (!isWarmedUp) {
-            cancelStatusNotification()
-            return
-        }
-
         val now = System.currentTimeMillis()
         val bpmInt = bpm.toInt()
         val categoryChanged = category != lastNotifiedCategory
         val bpmChanged = bpmInt != lastNotifiedBpm
-        val timeElapsed = now - lastNotificationTimeMs >= 5000L // 5s throttle
+        val timeElapsed = now - lastNotificationTimeMs >= 1000L // 1s throttle for smooth real-time updates
 
-        val shouldUpdate = force || categoryChanged || (bpmChanged && timeElapsed) || (now - lastNotificationTimeMs >= 10000L)
+        val shouldUpdate = force || categoryChanged || (bpmChanged && timeElapsed) || (now - lastNotificationTimeMs >= 3000L)
 
         if (shouldUpdate) {
             lastNotifiedCategory = category

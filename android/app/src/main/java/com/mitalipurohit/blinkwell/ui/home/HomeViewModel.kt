@@ -47,7 +47,7 @@ class HomeViewModel(
     private var inAppGracePeriodJob: Job? = null
 
     init {
-        // Collect metrics and update sticky status notification once warmed up (30s)
+        // Collect metrics and update sticky status notification in real time
         viewModelScope.launch {
             blinkDetector.metrics.collect { metrics ->
                 _uiState.value = _uiState.value.copy(metrics = metrics)
@@ -57,7 +57,7 @@ class HomeViewModel(
                         category = metrics.statusCategory,
                         bpm = metrics.currentBpm,
                         thresholdBpm = threshold,
-                        isWarmedUp = metrics.isWarmedUp
+                        isWarmedUp = true
                     )
                 }
             }
