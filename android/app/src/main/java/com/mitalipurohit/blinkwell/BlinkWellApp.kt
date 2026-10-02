@@ -55,6 +55,9 @@ class BlinkWellApp : Application() {
         // Schedule periodic sync worker
         BlinkSyncWorker.schedulePeriodicSync(this)
 
+        // Trigger immediate catch-up sync on app launch
+        BlinkSyncWorker.triggerOneTimeSync(this)
+
         // Requirement 3: Enforce 30-day max storage limit on startup
         CoroutineScope(Dispatchers.IO).launch {
             repository.pruneDataOlderThan30Days()

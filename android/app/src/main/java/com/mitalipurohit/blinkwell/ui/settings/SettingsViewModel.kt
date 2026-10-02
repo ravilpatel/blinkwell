@@ -94,7 +94,18 @@ class SettingsViewModel(
     fun setResearchConsent(consent: Boolean) {
         viewModelScope.launch {
             settingsRepository.setResearchConsent(consent)
+            if (consent) {
+                try {
+                    com.mitalipurohit.blinkwell.data.remote.SupabaseClientProvider.ensureAnonymousAuth()
+                } catch (ignored: Exception) {
+                }
+                com.mitalipurohit.blinkwell.data.remote.sync.BlinkSyncWorker.triggerOneTimeSync(BlinkWellApp.instance)
+            }
         }
+    }
+
+    fun triggerManualSync() {
+        com.mitalipurohit.blinkwell.data.remote.sync.BlinkSyncWorker.triggerOneTimeSync(BlinkWellApp.instance)
     }
 
     fun setSelectedLanguage(lang: String) {

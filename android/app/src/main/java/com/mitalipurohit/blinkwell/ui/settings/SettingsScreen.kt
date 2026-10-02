@@ -225,6 +225,24 @@ fun SettingsScreen(
                             colors = SwitchDefaults.colors(checkedThumbColor = TealPrimary)
                         )
                     }
+
+                    if (uiState.researchConsent) {
+                        Spacer(modifier = Modifier.height(12.dp))
+                        OutlinedButton(
+                            onClick = {
+                                viewModel.triggerManualSync()
+                                android.widget.Toast.makeText(context, "Data sync initiated...", android.widget.Toast.LENGTH_SHORT).show()
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Text(
+                                text = "Sync Research Data Now",
+                                color = TealPrimary,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                    }
                 }
             }
 

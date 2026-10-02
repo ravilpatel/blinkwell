@@ -33,6 +33,9 @@ interface BlinkDao {
     @Query("SELECT * FROM blink_minute_log WHERE sessionId = :sessionId ORDER BY minuteTimestamp ASC")
     fun getMinuteLogsForSession(sessionId: String): Flow<List<BlinkMinuteLogEntity>>
 
+    @Query("SELECT * FROM blink_minute_log WHERE sessionId = :sessionId ORDER BY minuteTimestamp ASC")
+    suspend fun getMinuteLogsForSessionDirect(sessionId: String): List<BlinkMinuteLogEntity>
+
     @Query("SELECT * FROM blink_minute_log ORDER BY minuteTimestamp DESC LIMIT :limit")
     fun getRecentMinuteLogs(limit: Int = 60): Flow<List<BlinkMinuteLogEntity>>
 

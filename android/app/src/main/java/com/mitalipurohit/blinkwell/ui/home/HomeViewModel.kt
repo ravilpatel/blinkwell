@@ -154,6 +154,7 @@ class HomeViewModel(
                 viewModelScope.launch {
                     blinkRepository.endSession(sid)
                     settingsRepository.setActiveSessionId(null)
+                    com.mitalipurohit.blinkwell.data.remote.sync.BlinkSyncWorker.triggerOneTimeSync(context)
                 }
             }
             blinkDetector.resetSession()
@@ -179,6 +180,7 @@ class HomeViewModel(
                 if (sid != null) {
                     val bpm = blinkDetector.metrics.value.currentBpm
                     blinkRepository.logMinuteBpm(sid, bpm)
+                    com.mitalipurohit.blinkwell.data.remote.sync.BlinkSyncWorker.triggerOneTimeSync(BlinkWellApp.instance)
                 }
             }
         }

@@ -1,0 +1,6 @@
+## BlinkWell Local Android Build Properties
+## Place your Supabase URL and Anon/Public Key here
+## (Do not commit local.properties with production secrets to public git repositories)
+
+SUPABASE_URL=https://your-project-ref.supabase.co
+SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...

@@ -37,9 +37,15 @@ class BlinkRepository(private val blinkDao: BlinkDao) {
         val session = blinkDao.getSessionById(sessionId) ?: return
         val endTime = System.currentTimeMillis()
         
-        // Calculate average and min BPM for session if logs exist
+        // Calculate average and min BPM for session from logs
+        val logs = blinkDao.getMinuteLogsForSessionDirect(sessionId)
+        val avgBpm = if (logs.isNotEmpty()) logs.map { it.bpm }.average() else session.avgBpm
+        val minBpm = if (logs.isNotEmpty()) logs.minOf { it.bpm } else session.minBpm
+
         val updated = session.copy(
             endTime = endTime,
+            avgBpm = avgBpm,
+            minBpm = minBpm,
             alertCount = alertCount
         )
         blinkDao.updateSession(updated)

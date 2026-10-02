@@ -67,6 +67,7 @@ class OnboardingViewModel(
                     SupabaseClientProvider.ensureAnonymousAuth()
                 } catch (ignored: Exception) {
                 }
+                com.mitalipurohit.blinkwell.data.remote.sync.BlinkSyncWorker.triggerOneTimeSync(com.mitalipurohit.blinkwell.BlinkWellApp.instance)
             }
 
             _uiState.value = _uiState.value.copy(isCompleting = false)

@@ -202,6 +202,7 @@ class BlinkMonitorService : Service(), LifecycleOwner {
                             // Log completed burst reading to database
                             currentSessionId?.let { sid ->
                                 BlinkWellApp.repository.logMinuteBpm(sid, bpm)
+                                com.mitalipurohit.blinkwell.data.remote.sync.BlinkSyncWorker.triggerOneTimeSync(this@BlinkMonitorService)
                             }
 
                             // Update ongoing status notification with the new BPM
@@ -328,6 +329,7 @@ class BlinkMonitorService : Service(), LifecycleOwner {
                 if (sid != null && isScreenUnlockedAndActive) {
                     val currentBpm = blinkDetector.metrics.value.currentBpm
                     BlinkWellApp.repository.logMinuteBpm(sid, currentBpm)
+                    com.mitalipurohit.blinkwell.data.remote.sync.BlinkSyncWorker.triggerOneTimeSync(this@BlinkMonitorService)
                 }
             }
         }
@@ -396,6 +398,7 @@ class BlinkMonitorService : Service(), LifecycleOwner {
             serviceScope.launch(Dispatchers.IO) {
                 BlinkWellApp.repository.endSession(sid, alertCount)
                 BlinkWellApp.settingsRepository.setActiveSessionId(null)
+                com.mitalipurohit.blinkwell.data.remote.sync.BlinkSyncWorker.triggerOneTimeSync(this@BlinkMonitorService)
             }
         }
         blinkDetector.resetSession()
