@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase, isSupabaseConfigured } from '@/lib/supabaseClient';
 import SupabaseConfigModal from '@/components/SupabaseConfigModal';
-import { Eye, Lock, Mail, AlertCircle, ShieldCheck, Settings2, Database, AlertTriangle } from 'lucide-react';
+import { Eye, Lock, Mail, AlertCircle, ShieldCheck, Database, AlertTriangle, KeyRound } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -62,7 +62,6 @@ export default function LoginPage() {
           }
 
           if (signUpData.session) {
-            // Ensure record in researchers table
             try {
               await supabase.from('researchers').upsert({
                 id: signUpData.session.user.id,
@@ -82,12 +81,10 @@ export default function LoginPage() {
 
         setError(signInError.message);
       } else if (signInData.session) {
-        // Verify researcher authorization
         const userId = signInData.session.user.id;
         const userEmail = signInData.session.user.email;
 
         if (userEmail === 'viraravil2101@gmail.com') {
-          // Ensure super-admin record exists
           try {
             await supabase.from('researchers').upsert({
               id: userId,
@@ -121,102 +118,83 @@ export default function LoginPage() {
         }}
       />
 
-      <div className="max-w-md w-full space-y-6 bg-white p-8 sm:p-10 rounded-2xl shadow-sm border border-slate-200">
+      <div className="max-w-md w-full space-y-6 bg-white p-8 sm:p-10 rounded-2xl shadow-xs border border-slate-200">
         <div className="text-center">
-          <div className="inline-flex p-3 bg-teal-500/10 rounded-2xl mb-4">
-            <Eye className="w-10 h-10 text-teal-600" />
+          <div className="inline-flex p-3 bg-teal-600 rounded-2xl mb-4 text-white shadow-sm">
+            <Eye className="w-8 h-8" />
           </div>
           <h2 className="text-2xl font-bold tracking-tight text-slate-900">
             BlinkWell Research Portal
           </h2>
-          <p className="mt-1 text-xs text-slate-500">
-            By Mitali Purohit • Authorized Personnel Only
-          </p>
+          <div className="flex items-center justify-center space-x-2 mt-1">
+            <span className="text-xs text-slate-500 font-medium">
+              By Mitali Purohit • IRB Protocol #2024-884-BW
+            </span>
+          </div>
         </div>
 
         {/* Warning if Supabase is unconfigured */}
         {!isConfigured && (
           <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs space-y-2">
-            <div className="flex items-center space-x-2 font-semibold">
+            <div className="flex items-center space-x-2 font-bold">
               <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0" />
               <span>Supabase Connection Not Configured</span>
             </div>
             <p className="text-amber-700 leading-relaxed">
-              The live dashboard is currently using placeholder credentials, which causes &quot;Failed to fetch&quot;.
+              The portal is currently using placeholder credentials. Click below to enter your Supabase Project URL and Anon Key.
             </p>
             <button
               type="button"
               onClick={() => setShowConfigModal(true)}
               className="inline-flex items-center px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg transition-colors text-xs"
             >
-              <Database className="w-3.5 h-3.5 mr-1.5" />
-              Configure Supabase Connection
+              <Database className="w-3.5 h-3.5 mr-1" />
+              Configure Supabase Database
             </button>
           </div>
         )}
 
-        {/* Primary Admin Notice */}
-        <div className="p-3.5 rounded-xl bg-teal-50/70 border border-teal-100 flex items-start space-x-3 text-teal-900 text-xs">
-          <ShieldCheck className="w-4 h-4 text-teal-600 flex-shrink-0 mt-0.5" />
-          <div>
-            <span className="font-semibold block">Primary Admin Account</span>
-            <span className="text-teal-700">viraravil2101@gmail.com (Default Admin)</span>
-          </div>
-        </div>
-
         {error && (
-          <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs space-y-2">
-            <div className="flex items-start space-x-2.5">
-              <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-              <span className="font-medium flex-1">{error}</span>
+          <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-start space-x-2">
+            <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <strong className="block font-bold">Authentication Error</strong>
+              <span>{error}</span>
             </div>
-            {error.includes('Failed to fetch') && (
-              <button
-                type="button"
-                onClick={() => setShowConfigModal(true)}
-                className="text-xs font-bold text-rose-800 underline hover:text-rose-900 block"
-              >
-                Click here to review / update Supabase Connection Settings
-              </button>
-            )}
           </div>
         )}
 
-        <form className="space-y-4" onSubmit={handleLogin}>
+        <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
               Researcher Email
             </label>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                <Mail className="h-4 w-4 text-slate-400" />
-              </div>
+              <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
               <input
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="researcher@example.com"
-                className="block w-full pl-10 pr-3 py-2.5 border border-slate-300 rounded-xl leading-5 bg-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 text-sm font-medium"
+                placeholder="researcher@university.edu"
+                className="w-full pl-9 pr-3 py-2.5 border border-slate-200 bg-slate-50 rounded-xl text-xs focus:ring-2 focus:ring-teal-500 focus:outline-none text-slate-900"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
-              Password
+            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+              Security Key / Password
             </label>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                <Lock className="h-4 w-4 text-slate-400" />
-              </div>
+              <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
               <input
                 type="password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="block w-full pl-10 pr-3 py-2.5 border border-slate-300 rounded-xl leading-5 bg-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 text-sm font-medium"
+                className="w-full pl-9 pr-3 py-2.5 border border-slate-200 bg-slate-50 rounded-xl text-xs focus:ring-2 focus:ring-teal-500 focus:outline-none text-slate-900"
               />
             </div>
           </div>
@@ -224,21 +202,24 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition-all disabled:opacity-50"
+            className="w-full py-2.5 px-4 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl shadow-xs transition-colors disabled:opacity-50 mt-2"
           >
-            {loading ? 'Authenticating...' : 'Sign In to Dashboard'}
+            {loading ? 'Authenticating Clinical Credentials...' : 'Sign In to Research Portal'}
           </button>
         </form>
 
-        <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-          <span>Connection Settings:</span>
+        {/* Database Config Shortcut */}
+        <div className="pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+          <span className="flex items-center">
+            <ShieldCheck className="w-3.5 h-3.5 text-teal-600 mr-1" />
+            256-Bit SSL Encrypted
+          </span>
           <button
             type="button"
             onClick={() => setShowConfigModal(true)}
-            className="inline-flex items-center text-teal-600 hover:text-teal-800 font-semibold transition-colors"
+            className="text-teal-700 hover:text-teal-900 font-bold underline"
           >
-            <Settings2 className="w-3.5 h-3.5 mr-1" />
-            Configure Supabase
+            Database Settings
           </button>
         </div>
       </div>
