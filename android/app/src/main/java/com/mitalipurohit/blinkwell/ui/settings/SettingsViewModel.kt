@@ -17,7 +17,7 @@ data class SettingsUiState(
     val monitoringMode: String = "app_only",
     val samplingMode: String = "duty_cycle",
     val alertsEnabled: Boolean = true,
-    val researchConsent: Boolean = false,
+    val researchConsent: Boolean = true,
     val selectedLanguage: String = "system"
 )
 
