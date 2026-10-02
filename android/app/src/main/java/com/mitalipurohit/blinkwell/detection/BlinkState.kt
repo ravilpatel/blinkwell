@@ -12,9 +12,11 @@ data class BlinkMetrics(
     val isFaceDetected: Boolean = false,
     val lastEyeOpenScore: Float = 1.0f,
     val isSamplingActive: Boolean = true,
+    val isWarmedUp: Boolean = false,
+    val warmupSecondsElapsed: Long = 0L,
     val alertTriggered: Boolean = false,
     val alertMessage: String? = null,
-    val statusCategory: BlinkStatusCategory = BlinkStatusCategory.FACE_NOT_DETECTED
+    val statusCategory: BlinkStatusCategory = BlinkStatusCategory.NORMAL
 )
 
 enum class EyeState {

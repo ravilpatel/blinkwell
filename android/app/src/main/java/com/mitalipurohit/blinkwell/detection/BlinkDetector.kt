@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import java.util.concurrent.ConcurrentLinkedDeque
 
 class BlinkDetector(
-    private var alertThresholdBpm: Int = 10,
+    private var alertThresholdBpm: Int = 13,
     private val alertCooldownMs: Long = 10 * 60 * 1000L // 10 minutes
 ) {
 
@@ -18,7 +18,8 @@ class BlinkDetector(
         const val EYE_OPEN_THRESHOLD = 0.60f
         const val MIN_BLINK_DURATION_MS = 60L
         const val MAX_BLINK_DURATION_MS = 600L
-        const val ROLLING_WINDOW_MS = 60 * 1000L // 60 seconds
+        const val WARMUP_PERIOD_MS = 30_000L // 30 seconds initial warmup
+        const val ROLLING_WINDOW_MS = 60_000L // 60 seconds rolling window
         const val ALERT_SUSTAINED_DURATION_MS = 2 * 60 * 1000L // 2 consecutive minutes
         const val FACE_LOST_GRACE_PERIOD_MS = 10_000L // 10 seconds grace period before Yellow
     }
@@ -32,17 +33,31 @@ class BlinkDetector(
     private val _alertEvents = MutableSharedFlow<String>(extraBufferCapacity = 5)
     val alertEvents: SharedFlow<String> = _alertEvents.asSharedFlow()
 
+    private val _greenToRedTransitions = MutableSharedFlow<Double>(extraBufferCapacity = 5)
+    val greenToRedTransitions: SharedFlow<Double> = _greenToRedTransitions.asSharedFlow()
+
     private var eyeState: EyeState = EyeState.OPEN
     private var eyeClosedTimestamp: Long = 0L
     private val blinkTimestamps = ConcurrentLinkedDeque<Long>()
 
+    private var sessionStartTimestamp: Long = 0L
     private var totalBlinksCount = 0
     private var lastAlertTimestamp: Long = 0L
     private var lowBpmStartTimestamp: Long? = null
     private var lastFaceSeenTimestamp: Long = 0L
+    private var isSamplingActive: Boolean = true
+    private var previousCategory: BlinkStatusCategory? = null
 
     fun setThreshold(thresholdBpm: Int) {
         this.alertThresholdBpm = thresholdBpm
+    }
+
+    fun setSamplingActive(active: Boolean) {
+        this.isSamplingActive = active
+        if (active) {
+            lastFaceSeenTimestamp = System.currentTimeMillis()
+        }
+        _metrics.value = _metrics.value.copy(isSamplingActive = active)
     }
 
     @Synchronized
@@ -52,20 +67,43 @@ class BlinkDetector(
         rightEyeProb: Float?,
         timestamp: Long = System.currentTimeMillis()
     ) {
+        if (sessionStartTimestamp == 0L) {
+            sessionStartTimestamp = timestamp
+        }
+
         val hasFaceAndEyes = faceDetected && leftEyeProb != null && rightEyeProb != null
 
         if (hasFaceAndEyes) {
             lastFaceSeenTimestamp = timestamp
         }
 
+        val elapsedSinceStart = timestamp - sessionStartTimestamp
+        val isWarmedUp = elapsedSinceStart >= WARMUP_PERIOD_MS
+
         // Clean up timestamps outside the rolling 60-second window
-        val windowStart = timestamp - ROLLING_WINDOW_MS
+        val windowStart = if (elapsedSinceStart >= ROLLING_WINDOW_MS) {
+            timestamp - ROLLING_WINDOW_MS
+        } else {
+            sessionStartTimestamp
+        }
+
         while (!blinkTimestamps.isEmpty() && (blinkTimestamps.peekFirst() ?: Long.MAX_VALUE) < windowStart) {
             blinkTimestamps.pollFirst()
         }
 
-        // Calculate rolling BPM
-        val currentBpm = blinkTimestamps.size.toDouble()
+        // Calculate rate: normalized to 60s if between 30s and 60s, or direct rolling size once >= 60s
+        val currentBpm: Double = when {
+            elapsedSinceStart < WARMUP_PERIOD_MS -> {
+                blinkTimestamps.size.toDouble()
+            }
+            elapsedSinceStart < ROLLING_WINDOW_MS -> {
+                val effectiveSeconds = (elapsedSinceStart / 1000.0).coerceAtLeast(1.0)
+                (blinkTimestamps.size * 60.0) / effectiveSeconds
+            }
+            else -> {
+                blinkTimestamps.size.toDouble()
+            }
+        }
 
         if (hasFaceAndEyes) {
             val eyeOpenScore = (leftEyeProb!! + rightEyeProb!!) / 2.0f
@@ -89,11 +127,13 @@ class BlinkDetector(
                 }
             }
 
-            // Check Low-BPM Alert Condition
-            checkAlertCondition(currentBpm, timestamp)
+            // Check Low-BPM Alert Condition (once warmed up)
+            if (isWarmedUp) {
+                checkAlertCondition(currentBpm, timestamp)
+            }
         }
 
-        // Determine status category respecting 10-second grace period
+        // Determine status category
         val isGracePeriodActive = lastFaceSeenTimestamp > 0L && (timestamp - lastFaceSeenTimestamp <= FACE_LOST_GRACE_PERIOD_MS)
         val isFacePresentOrInGrace = hasFaceAndEyes || isGracePeriodActive
 
@@ -103,49 +143,94 @@ class BlinkDetector(
             else -> BlinkStatusCategory.NORMAL
         }
 
+        // Check Green -> Red transition to fire immediate visible notification
+        if (isWarmedUp) {
+            if (previousCategory == BlinkStatusCategory.NORMAL && statusCategory == BlinkStatusCategory.LOW_RATE) {
+                _greenToRedTransitions.tryEmit(currentBpm)
+            }
+            previousCategory = statusCategory
+        }
+
         _metrics.value = BlinkMetrics(
             currentBpm = currentBpm,
             totalBlinksInSession = totalBlinksCount,
             isFaceDetected = hasFaceAndEyes,
             lastEyeOpenScore = if (hasFaceAndEyes) ((leftEyeProb!! + rightEyeProb!!) / 2.0f) else _metrics.value.lastEyeOpenScore,
-            isSamplingActive = true,
+            isSamplingActive = isSamplingActive,
+            isWarmedUp = isWarmedUp,
+            warmupSecondsElapsed = (elapsedSinceStart / 1000L).coerceAtMost(30L),
             statusCategory = statusCategory
         )
     }
 
     /**
-     * Periodic check to transition to FACE_NOT_DETECTED (Yellow) after 10-second grace period
-     * even if camera frames stop arriving or face is not in frame.
+     * Periodic check to update warmup state, normalized BPM, and handle 10s grace period.
+     * When camera is paused in Duty-Cycle Burst mode (isSamplingActive == false),
+     * it does NOT switch to Yellow and remembers the last rate measured.
      */
     @Synchronized
     fun checkGracePeriod(timestamp: Long = System.currentTimeMillis()) {
-        val windowStart = timestamp - ROLLING_WINDOW_MS
+        if (sessionStartTimestamp == 0L) return
+
+        val elapsedSinceStart = timestamp - sessionStartTimestamp
+        val isWarmedUp = elapsedSinceStart >= WARMUP_PERIOD_MS
+
+        // If camera is paused for duty cycle burst, remember last measured rate and category
+        if (!isSamplingActive) {
+            if (_metrics.value.isWarmedUp != isWarmedUp) {
+                _metrics.value = _metrics.value.copy(
+                    isWarmedUp = isWarmedUp,
+                    warmupSecondsElapsed = (elapsedSinceStart / 1000L).coerceAtMost(30L)
+                )
+            }
+            return
+        }
+
+        val windowStart = if (elapsedSinceStart >= ROLLING_WINDOW_MS) {
+            timestamp - ROLLING_WINDOW_MS
+        } else {
+            sessionStartTimestamp
+        }
+
         while (!blinkTimestamps.isEmpty() && (blinkTimestamps.peekFirst() ?: Long.MAX_VALUE) < windowStart) {
             blinkTimestamps.pollFirst()
         }
-        val currentBpm = blinkTimestamps.size.toDouble()
+
+        val currentBpm: Double = when {
+            elapsedSinceStart < WARMUP_PERIOD_MS -> {
+                blinkTimestamps.size.toDouble()
+            }
+            elapsedSinceStart < ROLLING_WINDOW_MS -> {
+                val effectiveSeconds = (elapsedSinceStart / 1000.0).coerceAtLeast(1.0)
+                (blinkTimestamps.size * 60.0) / effectiveSeconds
+            }
+            else -> {
+                blinkTimestamps.size.toDouble()
+            }
+        }
 
         val isGracePeriodActive = lastFaceSeenTimestamp > 0L && (timestamp - lastFaceSeenTimestamp <= FACE_LOST_GRACE_PERIOD_MS)
 
-        if (!isGracePeriodActive && _metrics.value.statusCategory != BlinkStatusCategory.FACE_NOT_DETECTED) {
-            _metrics.value = _metrics.value.copy(
-                currentBpm = currentBpm,
-                isFaceDetected = false,
-                statusCategory = BlinkStatusCategory.FACE_NOT_DETECTED
-            )
-        } else if (isGracePeriodActive) {
-            val statusCategory = if (currentBpm < alertThresholdBpm) {
-                BlinkStatusCategory.LOW_RATE
-            } else {
-                BlinkStatusCategory.NORMAL
-            }
-            if (_metrics.value.statusCategory != statusCategory || _metrics.value.currentBpm != currentBpm) {
-                _metrics.value = _metrics.value.copy(
-                    currentBpm = currentBpm,
-                    statusCategory = statusCategory
-                )
-            }
+        val statusCategory = when {
+            !isGracePeriodActive -> BlinkStatusCategory.FACE_NOT_DETECTED
+            currentBpm < alertThresholdBpm -> BlinkStatusCategory.LOW_RATE
+            else -> BlinkStatusCategory.NORMAL
         }
+
+        if (isWarmedUp) {
+            if (previousCategory == BlinkStatusCategory.NORMAL && statusCategory == BlinkStatusCategory.LOW_RATE) {
+                _greenToRedTransitions.tryEmit(currentBpm)
+            }
+            previousCategory = statusCategory
+        }
+
+        _metrics.value = _metrics.value.copy(
+            currentBpm = currentBpm,
+            isFaceDetected = isGracePeriodActive,
+            isWarmedUp = isWarmedUp,
+            warmupSecondsElapsed = (elapsedSinceStart / 1000L).coerceAtMost(30L),
+            statusCategory = statusCategory
+        )
     }
 
     private fun registerBlink(timestamp: Long) {
@@ -165,7 +250,7 @@ class BlinkDetector(
                 if (sustainedDuration >= ALERT_SUSTAINED_DURATION_MS && cooldownPassed) {
                     lastAlertTimestamp = timestamp
                     lowBpmStartTimestamp = null
-                    _alertEvents.tryEmit("Low blink rate detected ($currentBpm BPM)")
+                    _alertEvents.tryEmit("Low blink rate detected (${currentBpm.toInt()} BPM)")
                 }
             }
         } else {
@@ -175,10 +260,13 @@ class BlinkDetector(
 
     fun resetSession() {
         blinkTimestamps.clear()
+        sessionStartTimestamp = 0L
         totalBlinksCount = 0
         lowBpmStartTimestamp = null
         lastFaceSeenTimestamp = 0L
         eyeState = EyeState.OPEN
-        _metrics.value = BlinkMetrics(statusCategory = BlinkStatusCategory.FACE_NOT_DETECTED)
+        isSamplingActive = true
+        previousCategory = null
+        _metrics.value = BlinkMetrics(statusCategory = BlinkStatusCategory.NORMAL)
     }
 }

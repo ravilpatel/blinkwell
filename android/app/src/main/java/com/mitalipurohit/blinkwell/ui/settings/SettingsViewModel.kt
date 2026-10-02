@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 data class SettingsUiState(
-    val bpmThreshold: Int = 10,
+    val bpmThreshold: Int = 13,
     val monitoringMode: String = "app_only",
     val samplingMode: String = "duty_cycle",
     val alertsEnabled: Boolean = true,

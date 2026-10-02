@@ -159,8 +159,10 @@ fun HomeScreen(
 
                 // Status Indicator (matches sticky notification color code: Green / Red / Yellow)
                 val statusCategory = uiState.metrics.statusCategory
+                val isWarmedUp = uiState.metrics.isWarmedUp
                 val statusTint = when {
                     !uiState.isMonitoring -> MaterialTheme.colorScheme.outlineVariant
+                    !isWarmedUp -> AccentAmber
                     statusCategory == BlinkStatusCategory.NORMAL -> AccentEmerald
                     statusCategory == BlinkStatusCategory.LOW_RATE -> AccentRose
                     else -> AccentAmber
@@ -168,6 +170,7 @@ fun HomeScreen(
 
                 val statusText = when {
                     !uiState.isMonitoring -> stringResource(R.string.home_status_ready)
+                    !isWarmedUp -> "Calibrating (${uiState.metrics.warmupSecondsElapsed}/30s)"
                     statusCategory == BlinkStatusCategory.NORMAL -> stringResource(R.string.home_face_detected)
                     statusCategory == BlinkStatusCategory.LOW_RATE -> "Low Rate • Blink More"
                     else -> stringResource(R.string.home_no_face_detected)
@@ -196,7 +199,8 @@ fun HomeScreen(
             // Central Gauge / Blink Rate Dial
             BlinkGauge(
                 bpm = uiState.metrics.currentBpm,
-                isMonitoring = uiState.isMonitoring
+                isMonitoring = uiState.isMonitoring,
+                isWarmedUp = uiState.metrics.isWarmedUp
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -262,7 +266,8 @@ fun HomeScreen(
 @Composable
 fun BlinkGauge(
     bpm: Double,
-    isMonitoring: Boolean
+    isMonitoring: Boolean,
+    isWarmedUp: Boolean = true
 ) {
     val animatedBpm by animateFloatAsState(
         targetValue = bpm.toFloat(),
@@ -276,8 +281,8 @@ fun BlinkGauge(
     val gaugeColor by animateColorAsState(
         targetValue = when {
             !isMonitoring -> MaterialTheme.colorScheme.outlineVariant
-            bpm < 10.0 -> AccentRose
-            bpm < 14.0 -> AccentAmber
+            !isWarmedUp -> AccentAmber
+            bpm < 13.0 -> AccentRose
             else -> AccentEmerald
         },
         label = "color_anim"

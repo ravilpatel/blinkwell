@@ -115,6 +115,8 @@
     <string name="notification_status_not_detected_title">🟡 चेहरा / आँखें नहीं दिख रही हैं</string>
     <string name="notification_status_not_detected_body">पर्याप्त रोशनी रखें और कैमरे के सामने चेहरा रखें</string>
     <string name="notification_action_stop">निगरानी रोकें</string>
+    <string name="notification_green_to_red_title">🔴 कम पलक दर चेतावनी</string>
+    <string name="notification_green_to_red_body">आपकी दर घटकर %1$d BPM (लक्ष्य: %2$d BPM) हो गई है। कृपया थोड़ा ब्रेक लें और पलकें झपकाएं।</string>
 
     <!-- Common -->
     <string name="next">आगे</string>

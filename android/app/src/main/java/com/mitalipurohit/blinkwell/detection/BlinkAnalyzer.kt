@@ -9,8 +9,7 @@ import com.google.mlkit.vision.face.FaceDetector
 import com.google.mlkit.vision.face.FaceDetectorOptions
 
 class BlinkAnalyzer(
-    private val blinkDetector: BlinkDetector,
-    private val frameIntervalMs: Long = 200L // ~5 fps throttle
+    private val blinkDetector: BlinkDetector
 ) : ImageAnalysis.Analyzer {
 
     private val detector: FaceDetector
@@ -27,26 +26,16 @@ class BlinkAnalyzer(
         detector = FaceDetection.getClient(options)
     }
 
-    private var lastAnalyzedTimestamp: Long = 0L
-
     @androidx.annotation.OptIn(androidx.camera.core.ExperimentalGetImage::class)
     @SuppressLint("UnsafeOptInUsageError")
     override fun analyze(imageProxy: ImageProxy) {
         val currentTimestamp = System.currentTimeMillis()
-
-        // Frame rate throttling: skip frames to stay within ~3-5 fps for maximum battery preservation
-        if (currentTimestamp - lastAnalyzedTimestamp < frameIntervalMs) {
-            imageProxy.close()
-            return
-        }
-
         val mediaImage = imageProxy.image
         if (mediaImage == null) {
             imageProxy.close()
             return
         }
 
-        lastAnalyzedTimestamp = currentTimestamp
         val inputImage = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
 
         detector.process(inputImage)

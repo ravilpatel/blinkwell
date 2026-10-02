@@ -131,7 +131,7 @@ class BlinkMonitorService : Service(), LifecycleOwner {
             currentSessionId = repository.createSession(mode = "background")
             settingsRepo.setActiveSessionId(currentSessionId)
 
-            setupDutyCycleOrContinuous()
+            setupDutyCycleBurst()
             startMinuteLogging()
             startGracePeriodTicker()
         }
@@ -149,27 +149,19 @@ class BlinkMonitorService : Service(), LifecycleOwner {
         }
     }
 
-    private fun setupDutyCycleOrContinuous() {
+    private fun setupDutyCycleBurst() {
         dutyCycleJob?.cancel()
         dutyCycleJob = serviceScope.launch {
-            val settingsRepo = BlinkWellApp.settingsRepository
-            val samplingMode = settingsRepo.samplingMode.first()
-
-            if (samplingMode == "duty_cycle") {
-                // Duty cycle: Sample for 45s, unbind for 120s
-                while (isActive && isRunning) {
-                    if (isScreenOn) {
-                        bindCamera()
-                        delay(45_000L)
-                        unbindCamera()
-                    }
-                    delay(120_000L)
-                }
-            } else {
-                // Continuous mode while screen is on
+            // Standard Duty-Cycled Burst: Sample for 45s, pause camera for 120s
+            while (isActive && isRunning) {
                 if (isScreenOn) {
                     bindCamera()
+                    blinkDetector.setSamplingActive(true)
+                    delay(45_000L)
+                    unbindCamera()
+                    blinkDetector.setSamplingActive(false)
                 }
+                delay(120_000L)
             }
         }
     }
@@ -224,13 +216,14 @@ class BlinkMonitorService : Service(), LifecycleOwner {
 
     private fun handleScreenOn() {
         isScreenOn = true
-        setupDutyCycleOrContinuous()
+        setupDutyCycleBurst()
     }
 
     private fun handleScreenOff() {
         isScreenOn = false
         // Hard requirement: Never analyze with screen off - unbind immediately
         unbindCamera()
+        blinkDetector.setSamplingActive(false)
     }
 
     private fun startMinuteLogging() {
@@ -248,21 +241,34 @@ class BlinkMonitorService : Service(), LifecycleOwner {
     }
 
     private fun observeAlertsAndSettings() {
-        // Observe real-time metrics and update dynamic color-coded sticky notification
+        // Observe real-time metrics and update dynamic sticky notification once warmed up (30s)
         serviceScope.launch {
             blinkDetector.metrics.collect { metrics ->
                 val threshold = BlinkWellApp.settingsRepository.bpmThreshold.first()
                 notificationHelper.updateStatusNotification(
                     category = metrics.statusCategory,
                     bpm = metrics.currentBpm,
-                    thresholdBpm = threshold
+                    thresholdBpm = threshold,
+                    isWarmedUp = metrics.isWarmedUp
                 )
             }
         }
 
-        // Observe low-blink alert events
+        // Observe Green-to-Red movement for immediate visible alert
         serviceScope.launch {
-            blinkDetector.alertEvents.collect { message ->
+            blinkDetector.greenToRedTransitions.collect { bpm ->
+                val alertsEnabled = BlinkWellApp.settingsRepository.alertsEnabled.first()
+                if (alertsEnabled) {
+                    val threshold = BlinkWellApp.settingsRepository.bpmThreshold.first()
+                    alertCount++
+                    notificationHelper.showGreenToRedAlertNotification(bpm, threshold)
+                }
+            }
+        }
+
+        // Observe sustained low-blink alert events
+        serviceScope.launch {
+            blinkDetector.alertEvents.collect {
                 val alertsEnabled = BlinkWellApp.settingsRepository.alertsEnabled.first()
                 if (alertsEnabled) {
                     alertCount++

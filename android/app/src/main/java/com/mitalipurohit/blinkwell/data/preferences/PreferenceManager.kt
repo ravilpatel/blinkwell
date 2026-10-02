@@ -39,7 +39,7 @@ class PreferenceManager(private val context: Context) {
     }
 
     val bpmThreshold: Flow<Int> = context.dataStore.data.map { preferences ->
-        preferences[KEY_BPM_THRESHOLD] ?: 10
+        preferences[KEY_BPM_THRESHOLD] ?: 13
     }
 
     val alertsEnabled: Flow<Boolean> = context.dataStore.data.map { preferences ->

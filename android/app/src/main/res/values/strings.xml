@@ -115,6 +115,8 @@
     <string name="notification_status_not_detected_title">🟡 Face / Eyes Not Detected</string>
     <string name="notification_status_not_detected_body">Ensure good lighting and face the camera directly</string>
     <string name="notification_action_stop">Stop Monitoring</string>
+    <string name="notification_green_to_red_title">🔴 Low Blink Rate Warning</string>
+    <string name="notification_green_to_red_body">Your blink rate dropped to %1$d BPM (Target: %2$d BPM). Remember to take a break and blink consciously.</string>
 
     <!-- Common -->
     <string name="next">Next</string>

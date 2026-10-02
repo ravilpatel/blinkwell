@@ -142,63 +142,7 @@ fun SettingsScreen(
                 }
             }
 
-            // Section 2: Background Sampling Strategy
-            if (uiState.monitoringMode == "background") {
-                Text(
-                    text = stringResource(R.string.settings_sampling_mode_label),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = TealPrimary
-                )
-
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { viewModel.setSamplingMode("duty_cycle") },
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            RadioButton(
-                                selected = uiState.samplingMode == "duty_cycle",
-                                onClick = { viewModel.setSamplingMode("duty_cycle") },
-                                colors = RadioButtonDefaults.colors(selectedColor = TealPrimary)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = stringResource(R.string.settings_sampling_duty_cycle),
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { viewModel.setSamplingMode("continuous") },
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            RadioButton(
-                                selected = uiState.samplingMode == "continuous",
-                                onClick = { viewModel.setSamplingMode("continuous") },
-                                colors = RadioButtonDefaults.colors(selectedColor = TealPrimary)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = stringResource(R.string.settings_sampling_continuous),
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                        }
-                    }
-                }
-            }
-
-            // Section 3: Alert Threshold Slider
+            // Section 2: Alert Threshold Slider
             Text(
                 text = stringResource(R.string.settings_section_monitoring),
                 style = MaterialTheme.typography.titleMedium,

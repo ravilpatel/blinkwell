@@ -21,6 +21,7 @@ class NotificationHelper(private val context: Context) {
         const val CHANNEL_ALERTS_ID = "blinkwell_alerts_channel"
         const val SERVICE_NOTIFICATION_ID = 1001
         const val ALERT_NOTIFICATION_ID = 1002
+        const val ALERT_TRANSITION_NOTIFICATION_ID = 1003
 
         const val ACTION_STOP_MONITORING = "com.mitalipurohit.blinkwell.action.STOP_MONITORING"
 
@@ -55,13 +56,13 @@ class NotificationHelper(private val context: Context) {
                 setSound(null, null)
             }
 
-            // Channel for Low-Blink Alerts (High importance for timely wellness nudges)
+            // Channel for Low-Blink Alerts (High importance for visible, timely wellness nudges)
             val alertsChannel = NotificationChannel(
                 CHANNEL_ALERTS_ID,
                 context.getString(R.string.notification_channel_alerts),
                 NotificationManager.IMPORTANCE_HIGH
             ).apply {
-                description = "Gentle wellness notifications when blink rate is low"
+                description = "Visible wellness notifications when blink rate is low"
                 enableVibration(true)
                 setShowBadge(true)
             }
@@ -79,9 +80,9 @@ class NotificationHelper(private val context: Context) {
     )
 
     fun buildStatusNotification(
-        category: BlinkStatusCategory = BlinkStatusCategory.FACE_NOT_DETECTED,
+        category: BlinkStatusCategory = BlinkStatusCategory.NORMAL,
         bpm: Double = 0.0,
-        thresholdBpm: Int = 10
+        thresholdBpm: Int = 13
     ): Notification {
         val intent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
@@ -152,16 +153,22 @@ class NotificationHelper(private val context: Context) {
     }
 
     /**
-     * Updates the sticky status notification with throttling:
-     * - Immediate update on category change (Green <-> Red <-> Yellow)
-     * - Throttled 5-10s update for BPM changes within same category
+     * Updates the sticky status notification:
+     * - Suppresses notification during initial 30s warmup period.
+     * - Once warmed up: updates immediately on category change, or throttled 5-10s on BPM changes.
      */
     fun updateStatusNotification(
         category: BlinkStatusCategory,
         bpm: Double,
-        thresholdBpm: Int = 10,
+        thresholdBpm: Int = 13,
+        isWarmedUp: Boolean = true,
         force: Boolean = false
     ) {
+        if (!isWarmedUp) {
+            cancelStatusNotification()
+            return
+        }
+
         val now = System.currentTimeMillis()
         val bpmInt = bpm.toInt()
         val categoryChanged = category != lastNotifiedCategory
@@ -193,6 +200,41 @@ class NotificationHelper(private val context: Context) {
         }
     }
 
+    /**
+     * Sends an active, visible high-priority alert notification when moving from Green to Red.
+     */
+    fun showGreenToRedAlertNotification(currentBpm: Double, thresholdBpm: Int = 13) {
+        val intent = Intent(context, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        }
+        val pendingIntent = PendingIntent.getActivity(
+            context,
+            3,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0)
+        )
+
+        val title = context.getString(R.string.notification_green_to_red_title)
+        val body = context.getString(R.string.notification_green_to_red_body, currentBpm.toInt(), thresholdBpm)
+
+        val builder = NotificationCompat.Builder(context, CHANNEL_ALERTS_ID)
+            .setContentTitle(title)
+            .setContentText(body)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(body))
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setColor(COLOR_RED)
+            .setColorized(true)
+            .setAutoCancel(true)
+            .setContentIntent(pendingIntent)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setCategory(NotificationCompat.CATEGORY_REMINDER)
+
+        try {
+            NotificationManagerCompat.from(context).notify(ALERT_TRANSITION_NOTIFICATION_ID, builder.build())
+        } catch (ignored: SecurityException) {
+        }
+    }
+
     fun showAlertNotification(body: String = context.getString(R.string.notification_alert_body)) {
         val intent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
@@ -209,6 +251,7 @@ class NotificationHelper(private val context: Context) {
             .setContentText(body)
             .setStyle(NotificationCompat.BigTextStyle().bigText(body))
             .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setColor(COLOR_RED)
             .setAutoCancel(true)
             .setContentIntent(pendingIntent)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
@@ -217,7 +260,6 @@ class NotificationHelper(private val context: Context) {
         try {
             NotificationManagerCompat.from(context).notify(ALERT_NOTIFICATION_ID, builder.build())
         } catch (ignored: SecurityException) {
-            // In case POST_NOTIFICATIONS runtime permission was revoked
         }
     }
 }

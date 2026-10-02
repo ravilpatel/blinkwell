@@ -47,7 +47,7 @@ class HomeViewModel(
     private var inAppGracePeriodJob: Job? = null
 
     init {
-        // Collect metrics and update sticky status notification
+        // Collect metrics and update sticky status notification once warmed up (30s)
         viewModelScope.launch {
             blinkDetector.metrics.collect { metrics ->
                 _uiState.value = _uiState.value.copy(metrics = metrics)
@@ -56,8 +56,22 @@ class HomeViewModel(
                     notificationHelper.updateStatusNotification(
                         category = metrics.statusCategory,
                         bpm = metrics.currentBpm,
-                        thresholdBpm = threshold
+                        thresholdBpm = threshold,
+                        isWarmedUp = metrics.isWarmedUp
                     )
+                }
+            }
+        }
+
+        // Collect Green-to-Red movements for immediate visible alert
+        viewModelScope.launch {
+            blinkDetector.greenToRedTransitions.collect { bpm ->
+                if (_uiState.value.isMonitoring && _uiState.value.currentMode == "app_only") {
+                    val alertsEnabled = settingsRepository.alertsEnabled.first()
+                    if (alertsEnabled) {
+                        val threshold = settingsRepository.bpmThreshold.first()
+                        notificationHelper.showGreenToRedAlertNotification(bpm, threshold)
+                    }
                 }
             }
         }
@@ -78,7 +92,7 @@ class HomeViewModel(
             }
         }
 
-        // Observe alert events in app-only mode
+        // Observe sustained alert events in app-only mode
         viewModelScope.launch {
             blinkDetector.alertEvents.collect {
                 if (_uiState.value.isMonitoring && _uiState.value.currentMode == "app_only") {
@@ -106,24 +120,17 @@ class HomeViewModel(
         if (mode == "background") {
             BlinkMonitorService.start(context)
         } else {
-            // App-Only Mode: create local session, start logging & show sticky notification
+            // App-Only Mode: create local session and start logging
             viewModelScope.launch {
                 val threshold = settingsRepository.bpmThreshold.first()
                 blinkDetector.setThreshold(threshold)
+                blinkDetector.setSamplingActive(true)
 
                 inAppSessionId = blinkRepository.createSession(mode = "app_only")
                 settingsRepository.setActiveSessionId(inAppSessionId)
 
                 startInAppMinuteLogging()
                 startInAppGracePeriodTicker()
-
-                val initialMetrics = blinkDetector.metrics.value
-                notificationHelper.updateStatusNotification(
-                    category = initialMetrics.statusCategory,
-                    bpm = initialMetrics.currentBpm,
-                    thresholdBpm = threshold,
-                    force = true
-                )
             }
         }
     }
