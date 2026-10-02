@@ -57,9 +57,28 @@ interface BlinkDao {
     @Query("SELECT SUM(alertCount) FROM blink_sessions WHERE startTime >= :startOfDayTimestamp")
     suspend fun getTodayAlertCount(startOfDayTimestamp: Long): Int?
 
+    @Query("SELECT * FROM blink_minute_log WHERE minuteTimestamp >= :sinceTimestamp ORDER BY minuteTimestamp ASC")
+    fun getMinuteLogsSince(sinceTimestamp: Long): Flow<List<BlinkMinuteLogEntity>>
+
+    @Query("SELECT * FROM blink_sessions WHERE startTime >= :sinceTimestamp ORDER BY startTime ASC")
+    fun getSessionsSince(sinceTimestamp: Long): Flow<List<BlinkSessionEntity>>
+
+    @Query("SELECT * FROM blink_minute_log WHERE minuteTimestamp >= :sinceTimestamp ORDER BY minuteTimestamp ASC")
+    suspend fun getMinuteLogsListSince(sinceTimestamp: Long): List<BlinkMinuteLogEntity>
+
+    @Query("SELECT * FROM blink_sessions WHERE startTime >= :sinceTimestamp ORDER BY startTime ASC")
+    suspend fun getSessionsListSince(sinceTimestamp: Long): List<BlinkSessionEntity>
+
+    @Query("DELETE FROM blink_minute_log WHERE minuteTimestamp < :cutoffTimestamp")
+    suspend fun pruneMinuteLogsOlderThan(cutoffTimestamp: Long): Int
+
+    @Query("DELETE FROM blink_sessions WHERE startTime < :cutoffTimestamp")
+    suspend fun pruneSessionsOlderThan(cutoffTimestamp: Long): Int
+
     @Query("DELETE FROM blink_sessions")
     suspend fun deleteAllSessions()
 
     @Query("DELETE FROM blink_minute_log")
     suspend fun deleteAllMinuteLogs()
 }
+

@@ -66,12 +66,28 @@
 
     <!-- Stats Screen -->
     <string name="stats_title">इतिहास और रुझान</string>
-    <string name="stats_today_avg">आज का औसत</string>
+    <string name="stats_today_avg">आज का औसत (Days BPM)</string>
+    <string name="stats_days_bpm">Days BPM</string>
     <string name="stats_alerts_today">आज के अलर्ट</string>
     <string name="stats_total_sessions">कुल सत्र</string>
-    <string name="stats_recent_trend">हालिया दर (BPM)</string>
+    <string name="stats_recent_trend">पलक दर रुझान</string>
     <string name="stats_recent_alerts">हाल के अलर्ट</string>
     <string name="stats_no_data">अभी कोई डेटा दर्ज नहीं हुआ है।</string>
+    <string name="stats_filter_15m">15 मिनट</string>
+    <string name="stats_filter_1h">1 घंटा</string>
+    <string name="stats_filter_1d">1 दिन</string>
+    <string name="stats_filter_7d">7 दिन</string>
+    <string name="stats_filter_30d">30 दिन</string>
+    <string name="stats_streak_title">30-दिवसीय स्ट्रीक दृश्य</string>
+    <string name="stats_current_streak">वर्तमान स्ट्रीक</string>
+    <string name="stats_best_streak">सर्वश्रेष्ठ स्ट्रीक</string>
+    <string name="stats_healthy_days">स्वस्थ दिन</string>
+    <string name="stats_healthy_legend">🟢 स्वस्थ (Days BPM ≥ %d)</string>
+    <string name="stats_not_healthy_legend">🔴 अस्वस्थ (Days BPM &lt; %d)</string>
+    <string name="stats_no_data_legend">⚪ कोई डेटा नहीं</string>
+    <string name="stats_retention_note">डेटा अधिकतम 30 दिनों के लिए स्थानीय रूप से सहेजा जाता है। दिन के औसत BPM को Days BPM कहा जाता है।</string>
+    <string name="stats_y_axis_label">BPM (पलकें / मिनट)</string>
+    <string name="stats_x_axis_label">समय (Time)</string>
 
     <!-- Settings Screen -->
     <string name="settings_title">सेटिंग्स</string>

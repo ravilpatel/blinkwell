@@ -69,7 +69,7 @@ class BlinkMonitorService : Service(), LifecycleOwner {
     private var dutyCycleJob: Job? = null
     private var minuteLoggingJob: Job? = null
     private var gracePeriodJob: Job? = null
-    private var isScreenOn = true
+    private var isScreenUnlockedAndActive = true
     private var isCameraBound = false
     private var alertCount = 0
 
@@ -80,8 +80,14 @@ class BlinkMonitorService : Service(), LifecycleOwner {
         blinkDetector = BlinkWellApp.blinkDetector
         cameraExecutor = Executors.newSingleThreadExecutor()
 
+        val km = getSystemService(Context.KEYGUARD_SERVICE) as? android.app.KeyguardManager
+        val pm = getSystemService(Context.POWER_SERVICE) as? android.os.PowerManager
+        val isInteractive = pm?.isInteractive ?: true
+        val isLocked = km?.isKeyguardLocked ?: false
+        isScreenUnlockedAndActive = isInteractive && !isLocked
+
         screenReceiver = ScreenReceiver(
-            onScreenOn = { handleScreenOn() },
+            onUserUnlocked = { handleUserUnlocked() },
             onScreenOff = { handleScreenOff() }
         )
         screenReceiver.register(this)
@@ -128,10 +134,15 @@ class BlinkMonitorService : Service(), LifecycleOwner {
             val threshold = settingsRepo.bpmThreshold.first()
             blinkDetector.setThreshold(threshold)
 
+            // Prune any data older than 30 days locally
+            repository.pruneDataOlderThan30Days()
+
             currentSessionId = repository.createSession(mode = "background")
             settingsRepo.setActiveSessionId(currentSessionId)
 
-            setupDutyCycleBurst()
+            if (isScreenUnlockedAndActive) {
+                setupDutyCycleBurst()
+            }
             startMinuteLogging()
             startGracePeriodTicker()
         }
@@ -142,7 +153,7 @@ class BlinkMonitorService : Service(), LifecycleOwner {
         gracePeriodJob = serviceScope.launch {
             while (isActive && isRunning) {
                 delay(1000L)
-                if (isScreenOn) {
+                if (isScreenUnlockedAndActive) {
                     blinkDetector.checkGracePeriod()
                 }
             }
@@ -154,7 +165,7 @@ class BlinkMonitorService : Service(), LifecycleOwner {
         dutyCycleJob = serviceScope.launch {
             // Standard Duty-Cycled Burst: Sample for 45s, pause camera for 120s
             while (isActive && isRunning) {
-                if (isScreenOn) {
+                if (isScreenUnlockedAndActive) {
                     bindCamera()
                     blinkDetector.setSamplingActive(true)
                     delay(45_000L)
@@ -167,11 +178,13 @@ class BlinkMonitorService : Service(), LifecycleOwner {
     }
 
     private fun bindCamera() {
-        if (isCameraBound || !isScreenOn) return
+        if (isCameraBound || !isScreenUnlockedAndActive) return
 
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
         cameraProviderFuture.addListener({
             try {
+                if (!isScreenUnlockedAndActive) return@addListener
+
                 cameraProvider = cameraProviderFuture.get()
                 cameraProvider?.unbindAll()
 
@@ -214,14 +227,17 @@ class BlinkMonitorService : Service(), LifecycleOwner {
         }
     }
 
-    private fun handleScreenOn() {
-        isScreenOn = true
-        setupDutyCycleBurst()
+    private fun handleUserUnlocked() {
+        if (!isScreenUnlockedAndActive) {
+            isScreenUnlockedAndActive = true
+            setupDutyCycleBurst()
+        }
     }
 
     private fun handleScreenOff() {
-        isScreenOn = false
-        // Hard requirement: Never analyze with screen off - unbind immediately
+        isScreenUnlockedAndActive = false
+        // Hard requirement: Never analyze with screen off or locked - unbind immediately
+        dutyCycleJob?.cancel()
         unbindCamera()
         blinkDetector.setSamplingActive(false)
     }
@@ -232,7 +248,7 @@ class BlinkMonitorService : Service(), LifecycleOwner {
             while (isActive && isRunning) {
                 delay(60_000L)
                 val sid = currentSessionId
-                if (sid != null && isScreenOn) {
+                if (sid != null && isScreenUnlockedAndActive) {
                     val currentBpm = blinkDetector.metrics.value.currentBpm
                     BlinkWellApp.repository.logMinuteBpm(sid, currentBpm)
                 }

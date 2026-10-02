@@ -51,5 +51,11 @@ class BlinkWellApp : Application() {
 
         // Schedule periodic sync worker
         BlinkSyncWorker.schedulePeriodicSync(this)
+
+        // Requirement 3: Enforce 30-day max storage limit on startup
+        kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
+            repository.pruneDataOlderThan30Days()
+        }
     }
 }
+

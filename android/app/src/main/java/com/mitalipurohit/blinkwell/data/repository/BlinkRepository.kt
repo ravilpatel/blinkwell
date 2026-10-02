@@ -77,8 +77,35 @@ class BlinkRepository(private val blinkDao: BlinkDao) {
         return blinkDao.getMinuteLogsForSession(sessionId)
     }
 
+    fun getMinuteLogsSince(sinceTimestamp: Long): Flow<List<BlinkMinuteLogEntity>> {
+        return blinkDao.getMinuteLogsSince(sinceTimestamp)
+    }
+
+    fun getSessionsSince(sinceTimestamp: Long): Flow<List<BlinkSessionEntity>> {
+        return blinkDao.getSessionsSince(sinceTimestamp)
+    }
+
+    suspend fun getMinuteLogsListSince(sinceTimestamp: Long): List<BlinkMinuteLogEntity> {
+        return blinkDao.getMinuteLogsListSince(sinceTimestamp)
+    }
+
+    suspend fun getSessionsListSince(sinceTimestamp: Long): List<BlinkSessionEntity> {
+        return blinkDao.getSessionsListSince(sinceTimestamp)
+    }
+
+    /**
+     * Requirement 3: Strictly store data only for 30 days at max.
+     * Automatically removes records older than 30 days from local Room database.
+     */
+    suspend fun pruneDataOlderThan30Days() {
+        val thirtyDaysAgoMs = System.currentTimeMillis() - (30L * 24 * 60 * 60 * 1000L)
+        blinkDao.pruneMinuteLogsOlderThan(thirtyDaysAgoMs)
+        blinkDao.pruneSessionsOlderThan(thirtyDaysAgoMs)
+    }
+
     suspend fun deleteAllData() {
         blinkDao.deleteAllMinuteLogs()
         blinkDao.deleteAllSessions()
     }
 }
+

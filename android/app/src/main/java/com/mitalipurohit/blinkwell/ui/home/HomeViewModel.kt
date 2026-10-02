@@ -126,6 +126,9 @@ class HomeViewModel(
                 blinkDetector.setThreshold(threshold)
                 blinkDetector.setSamplingActive(true)
 
+                // Enforce 30-day max data retention
+                blinkRepository.pruneDataOlderThan30Days()
+
                 inAppSessionId = blinkRepository.createSession(mode = "app_only")
                 settingsRepository.setActiveSessionId(inAppSessionId)
 
