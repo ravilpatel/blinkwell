@@ -117,14 +117,17 @@ class HomeViewModel(
         val mode = _uiState.value.currentMode
         _uiState.value = _uiState.value.copy(isMonitoring = true)
 
+        blinkDetector.resetSession()
+        blinkDetector.setSamplingActive(true)
+
         if (mode == "background") {
             BlinkMonitorService.start(context)
+            startInAppGracePeriodTicker()
         } else {
             // App-Only Mode: create local session and start logging
             viewModelScope.launch {
                 val threshold = settingsRepository.bpmThreshold.first()
                 blinkDetector.setThreshold(threshold)
-                blinkDetector.setSamplingActive(true)
 
                 // Enforce 30-day max data retention
                 blinkRepository.pruneDataOlderThan30Days()
@@ -141,12 +144,12 @@ class HomeViewModel(
     fun stopMonitoring(context: Context) {
         val mode = _uiState.value.currentMode
         _uiState.value = _uiState.value.copy(isMonitoring = false)
+        inAppGracePeriodJob?.cancel()
 
         if (mode == "background") {
             BlinkMonitorService.stop(context)
         } else {
             inAppLoggingJob?.cancel()
-            inAppGracePeriodJob?.cancel()
             notificationHelper.cancelStatusNotification()
 
             val sid = inAppSessionId
@@ -157,8 +160,8 @@ class HomeViewModel(
                     com.mitalipurohit.blinkwell.data.remote.sync.BlinkSyncWorker.triggerOneTimeSync(context)
                 }
             }
-            blinkDetector.resetSession()
         }
+        blinkDetector.resetSession()
     }
 
     private fun startInAppGracePeriodTicker() {

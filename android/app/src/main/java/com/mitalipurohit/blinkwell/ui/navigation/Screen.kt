@@ -18,6 +18,6 @@ sealed class Screen(val route: String, val titleResId: Int, val icon: ImageVecto
     object About : Screen("about", R.string.nav_about, Icons.Default.Info)
 
     companion object {
-        val bottomNavItems = listOf(Home, Stats, Streak, Settings, About)
+        val bottomNavItems = listOf(Stats, Streak, Home, Settings, About)
     }
 }

@@ -70,8 +70,17 @@ class BlinkDetector(
         this.isSamplingActive = active
         if (active) {
             lastFaceSeenTimestamp = System.currentTimeMillis()
+            if (sessionStartTimestamp == 0L) {
+                sessionStartTimestamp = System.currentTimeMillis()
+            }
+            _metrics.value = _metrics.value.copy(
+                isSamplingActive = true,
+                isWarmedUp = false,
+                warmupSecondsElapsed = 0L
+            )
+        } else {
+            _metrics.value = _metrics.value.copy(isSamplingActive = false)
         }
-        _metrics.value = _metrics.value.copy(isSamplingActive = active)
     }
 
     /**
