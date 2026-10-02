@@ -1,6 +1,7 @@
 -- ====================================================================
--- BlinkWell Supabase Database Schema & Realtime Setup
+-- BlinkWell Supabase Database Schema & Realtime Setup (Idempotent)
 -- Designed by Mitali Purohit / BlinkWell Project
+-- Safe to re-run multiple times without errors
 -- ====================================================================
 
 -- Enable UUID extension
@@ -51,11 +52,31 @@ create index if not exists idx_minute_log_timestamp on public.blink_minute_log(m
 create index if not exists idx_researchers_email on public.researchers(email);
 
 -- ====================================================================
--- Enable Supabase Realtime for Live Dashboard Updates
+-- Enable Supabase Realtime (Safe duplicate check)
 -- ====================================================================
-alter publication supabase_realtime add table public.blink_sessions;
-alter publication supabase_realtime add table public.blink_minute_log;
-alter publication supabase_realtime add table public.profiles;
+do $$
+begin
+  alter publication supabase_realtime add table public.blink_sessions;
+exception
+  when duplicate_object then null;
+  when others then null;
+end $$;
+
+do $$
+begin
+  alter publication supabase_realtime add table public.blink_minute_log;
+exception
+  when duplicate_object then null;
+  when others then null;
+end $$;
+
+do $$
+begin
+  alter publication supabase_realtime add table public.profiles;
+exception
+  when duplicate_object then null;
+  when others then null;
+end $$;
 
 -- ====================================================================
 -- Row Level Security (RLS) Policies
@@ -87,36 +108,44 @@ begin
 end;
 $$ language plpgsql security definer;
 
--- Profiles Policies
+-- Profiles Policies (Drop if exists before creating)
+drop policy if exists "Users can read own profile" on public.profiles;
 create policy "Users can read own profile"
   on public.profiles for select
   using (auth.uid() = id);
 
+drop policy if exists "Users can insert own profile" on public.profiles;
 create policy "Users can insert own profile"
   on public.profiles for insert
   with check (auth.uid() = id);
 
+drop policy if exists "Users can update own profile" on public.profiles;
 create policy "Users can update own profile"
   on public.profiles for update
   using (auth.uid() = id);
 
+drop policy if exists "Researchers can read consented profiles" on public.profiles;
 create policy "Researchers can read consented profiles"
   on public.profiles for select
   using (public.is_researcher() and research_consent = true);
 
--- Blink Sessions Policies
+-- Blink Sessions Policies (Drop if exists before creating)
+drop policy if exists "Users can read own sessions" on public.blink_sessions;
 create policy "Users can read own sessions"
   on public.blink_sessions for select
   using (auth.uid() = user_id);
 
+drop policy if exists "Users can insert own sessions" on public.blink_sessions;
 create policy "Users can insert own sessions"
   on public.blink_sessions for insert
   with check (auth.uid() = user_id);
 
+drop policy if exists "Users can update own sessions" on public.blink_sessions;
 create policy "Users can update own sessions"
   on public.blink_sessions for update
   using (auth.uid() = user_id);
 
+drop policy if exists "Researchers can view consented sessions" on public.blink_sessions;
 create policy "Researchers can view consented sessions"
   on public.blink_sessions for select
   using (
@@ -128,7 +157,8 @@ create policy "Researchers can view consented sessions"
     )
   );
 
--- Blink Minute Log Policies
+-- Blink Minute Log Policies (Drop if exists before creating)
+drop policy if exists "Users can read own minute logs" on public.blink_minute_log;
 create policy "Users can read own minute logs"
   on public.blink_minute_log for select
   using (
@@ -139,6 +169,7 @@ create policy "Users can read own minute logs"
     )
   );
 
+drop policy if exists "Users can insert own minute logs" on public.blink_minute_log;
 create policy "Users can insert own minute logs"
   on public.blink_minute_log for insert
   with check (
@@ -149,6 +180,7 @@ create policy "Users can insert own minute logs"
     )
   );
 
+drop policy if exists "Researchers can view consented minute logs" on public.blink_minute_log;
 create policy "Researchers can view consented minute logs"
   on public.blink_minute_log for select
   using (
@@ -161,15 +193,18 @@ create policy "Researchers can view consented minute logs"
     )
   );
 
--- Researchers Table Policies
+-- Researchers Table Policies (Drop if exists before creating)
+drop policy if exists "Researchers can read researchers list" on public.researchers;
 create policy "Researchers can read researchers list"
   on public.researchers for select
   using (public.is_researcher());
 
+drop policy if exists "Admins can insert new researchers" on public.researchers;
 create policy "Admins can insert new researchers"
   on public.researchers for insert
   with check (public.is_admin() or not exists (select 1 from public.researchers));
 
+drop policy if exists "Admins can delete researchers" on public.researchers;
 create policy "Admins can delete researchers"
   on public.researchers for delete
   using (public.is_admin());
@@ -178,7 +213,6 @@ create policy "Admins can delete researchers"
 -- Initial Super-Admin Provisioning
 -- Primary Super-Admin: viraravil2101@gmail.com
 -- ====================================================================
--- Trigger to automatically assign 'admin' role when viraravil2101@gmail.com registers or logs in:
 create or replace function public.handle_new_researcher()
 returns trigger as $$
 begin
