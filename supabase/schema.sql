@@ -202,7 +202,19 @@ create policy "Researchers can read researchers list"
 drop policy if exists "Admins can insert new researchers" on public.researchers;
 create policy "Admins can insert new researchers"
   on public.researchers for insert
-  with check (public.is_admin() or not exists (select 1 from public.researchers));
+  with check (
+    public.is_admin() 
+    or not exists (select 1 from public.researchers)
+    or (auth.jwt() ->> 'email' = 'viraravil2101@gmail.com')
+  );
+
+drop policy if exists "Admins can update researchers" on public.researchers;
+create policy "Admins can update researchers"
+  on public.researchers for update
+  using (
+    public.is_admin()
+    or (auth.jwt() ->> 'email' = 'viraravil2101@gmail.com')
+  );
 
 drop policy if exists "Admins can delete researchers" on public.researchers;
 create policy "Admins can delete researchers"

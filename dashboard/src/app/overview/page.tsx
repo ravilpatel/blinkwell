@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
-import { supabase } from '@/lib/supabaseClient';
+import { supabase, isSupabaseConfigured } from '@/lib/supabaseClient';
 import { 
   Users, 
   Activity, 
@@ -11,7 +11,10 @@ import {
   Clock, 
   Download, 
   RefreshCw,
-  Zap
+  Zap,
+  Info,
+  Smartphone,
+  Database
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -43,37 +46,44 @@ export default function OverviewPage() {
     fetchDashboardData();
 
     // Setup Supabase Realtime Channel
-    const channel = supabase
-      .channel('dashboard-realtime-overview')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'blink_sessions' },
-        (payload) => {
-          showRealtimeToast('New blink session synced from participant!');
-          fetchDashboardData();
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'blink_minute_log' },
-        (payload) => {
-          const newLog = payload.new as any;
-          if (newLog) {
-            setRecentMinuteLogs((prev) => [
-              ...prev.slice(-99),
-              {
-                time: format(new Date(newLog.minute_timestamp), 'MM/dd HH:mm'),
-                bpm: Number(newLog.bpm),
-              }
-            ]);
-            showRealtimeToast(`Live BPM received: ${Number(newLog.bpm).toFixed(1)} BPM`);
+    let channel: any = null;
+    try {
+      channel = supabase
+        .channel('dashboard-realtime-overview')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'blink_sessions' },
+          () => {
+            showRealtimeToast('New blink session synced from participant!');
+            fetchDashboardData();
           }
-        }
-      )
-      .subscribe();
+        )
+        .on(
+          'postgres_changes',
+          { event: 'INSERT', schema: 'public', table: 'blink_minute_log' },
+          (payload) => {
+            const newLog = payload.new as any;
+            if (newLog) {
+              setRecentMinuteLogs((prev) => [
+                ...prev.slice(-99),
+                {
+                  time: format(new Date(newLog.minute_timestamp), 'MM/dd HH:mm'),
+                  bpm: Number(newLog.bpm),
+                }
+              ]);
+              showRealtimeToast(`Live BPM received: ${Number(newLog.bpm).toFixed(1)} BPM`);
+            }
+          }
+        )
+        .subscribe();
+    } catch (ignored) {}
 
     return () => {
-      supabase.removeChannel(channel);
+      if (channel) {
+        try {
+          supabase.removeChannel(channel);
+        } catch (ignored) {}
+      }
     };
   }, [dateRangeDays]);
 
@@ -215,7 +225,8 @@ export default function OverviewPage() {
 
             <button
               onClick={exportCSV}
-              className="inline-flex items-center px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold rounded-xl shadow-sm transition-colors"
+              disabled={recentMinuteLogs.length === 0}
+              className="inline-flex items-center px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold rounded-xl shadow-sm transition-colors disabled:opacity-50"
             >
               <Download className="w-4 h-4 mr-2" />
               Export CSV
@@ -278,6 +289,39 @@ export default function OverviewPage() {
             </div>
           </div>
         </div>
+
+        {/* Empty State / Quickstart Banner if no sessions yet */}
+        {!loading && totalUsers === 0 && totalSessions === 0 && (
+          <div className="mb-8 p-6 bg-white rounded-2xl border border-slate-200 shadow-sm">
+            <div className="flex items-start space-x-4">
+              <div className="p-3 bg-teal-50 rounded-2xl text-teal-600 flex-shrink-0">
+                <Info className="w-6 h-6" />
+              </div>
+              <div className="flex-1 space-y-3">
+                <h3 className="text-base font-bold text-slate-900">Waiting for Participant Data</h3>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Your Supabase portal is active! As soon as an Android participant opens BlinkWell with <strong>Research Data Sharing</strong> enabled and runs a monitoring session, their pseudonymous metrics will automatically appear and stream here in real time.
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs pt-2">
+                  <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-start space-x-2.5">
+                    <Database className="w-4 h-4 text-teal-600 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <strong className="block text-slate-800">1. Database Schema</strong>
+                      <span className="text-slate-500">Ensure <code className="bg-white px-1.5 py-0.5 rounded border text-[11px]">supabase/schema.sql</code> is executed in your Supabase SQL Editor.</span>
+                    </div>
+                  </div>
+                  <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-start space-x-2.5">
+                    <Smartphone className="w-4 h-4 text-teal-600 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <strong className="block text-slate-800">2. Android App Sync</strong>
+                      <span className="text-slate-500">Enable &quot;Contribute to Research&quot; in the mobile app to sync anonymized session logs.</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Charts Section */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">

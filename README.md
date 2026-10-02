@@ -27,7 +27,8 @@ BlinkWell/
 ├── .github/workflows/
 │   ├── android-build.yml      # CI debug APK compilation on push/PR
 │   ├── android-release.yml    # Release signed APK / AAB bundling
-│   └── dashboard-deploy.yml   # Next.js researcher portal CI
+│   ├── dashboard-deploy.yml   # Next.js researcher portal CI verification
+│   └── dashboard-pages.yml    # GitHub Pages static export & deployment
 ├── android/                   # Kotlin + Jetpack Compose Android app
 │   ├── app/
 │   │   ├── src/main/java/com/mitalipurohit/blinkwell/
@@ -41,11 +42,11 @@ BlinkWell/
 │   ├── gradlew / gradlew.bat
 │   └── build.gradle.kts
 ├── dashboard/                 # Next.js 15 App Router researcher portal
-│   ├── src/app/               # Overview, Users directory, Per-user drilldown
-│   ├── src/components/        # Navbar, Recharts components
+│   ├── src/app/               # Overview, Users directory, Per-user drilldown, Team management
+│   ├── src/components/        # Navbar, SupabaseConfigModal, Recharts components
 │   └── package.json
 ├── supabase/
-│   └── schema.sql             # Postgres tables & Row-Level Security (RLS) policies
+│   └── schema.sql             # Postgres tables, Realtime publication & RLS policies
 ├── PRIVACY_POLICY.md          # Comprehensive user privacy policy
 ├── PLAY_STORE_DATA_SAFETY.md  # Google Play Console compliance guide
 └── PRD.md                     # Product Requirements Document
@@ -69,13 +70,14 @@ Since this project is configured to build without requiring a local Android Stud
 
 ---
 
-## 📊 Supabase Setup (Optional for Research Sync)
+## 📊 Supabase Setup (For Realtime Researcher Dashboard & Sync)
 
 1. Create a free project at [supabase.com](https://supabase.com).
-2. Go to the **SQL Editor** in Supabase and paste the contents of [`supabase/schema.sql`](file:///d:/BlinkWell/supabase/schema.sql). Run the script to create tables and RLS policies.
-3. In your GitHub repository settings, under **Secrets and variables → Actions**, add:
-   - `SUPABASE_URL` = `https://your-project.supabase.co`
-   - `SUPABASE_ANON_KEY` = `your-anon-key`
+2. Go to the **SQL Editor** in your Supabase project dashboard and paste the entire contents of [`supabase/schema.sql`](supabase/schema.sql). Click **Run** to provision the tables, Realtime publication, and Row-Level Security (RLS) policies.
+3. In your GitHub repository settings, under **Settings → Secrets and variables → Actions**, add the following Repository Secrets:
+   - `NEXT_PUBLIC_SUPABASE_URL` (or `SUPABASE_URL`) = `https://your-project-ref.supabase.co`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY` (or `SUPABASE_ANON_KEY`) = `your-anon-public-key`
+4. **Instant In-Browser Connection**: If visiting the live dashboard on GitHub Pages before a redeploy has occurred, click **"Configure Supabase"** on the login page or in the top navigation bar to input your Supabase URL & Anon Key directly.
 
 ---
 
