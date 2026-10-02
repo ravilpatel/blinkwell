@@ -306,7 +306,7 @@ fun SessionItemCard(session: BlinkSessionEntity) {
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
-                    text = "Mode: ${session.mode.replace('_', ' ').capitalize(Locale.ROOT)}",
+                    text = "Mode: ${session.mode.replace('_', ' ').replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() }}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
