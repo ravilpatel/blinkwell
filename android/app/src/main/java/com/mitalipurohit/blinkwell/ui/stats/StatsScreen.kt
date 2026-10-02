@@ -84,7 +84,6 @@ fun StatsScreen(
     viewModel: StatsViewModel
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    var selectedDayInfo by remember { mutableStateOf<DayStreakInfo?>(null) }
     var selectedGraphPoint by remember { mutableStateOf<GraphPoint?>(null) }
 
     Surface(
@@ -97,53 +96,21 @@ fun StatsScreen(
                 .padding(horizontal = 16.dp, vertical = 14.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Screen Header with Live Telemetry Badge
+            // Screen Header
             item {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column {
-                        Text(
-                            text = stringResource(R.string.stats_title),
-                            style = MaterialTheme.typography.headlineMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onBackground
-                        )
-                        Spacer(modifier = Modifier.height(2.dp))
-                        Text(
-                            text = "Eye Health & Blink Wellness Analytics",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-
-                    Surface(
-                        shape = RoundedCornerShape(20.dp),
-                        color = AccentEmerald.copy(alpha = 0.12f),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, AccentEmerald.copy(alpha = 0.3f))
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.FiberManualRecord,
-                                contentDescription = null,
-                                tint = AccentEmerald,
-                                modifier = Modifier.size(8.dp)
-                            )
-                            Spacer(modifier = Modifier.width(5.dp))
-                            Text(
-                                text = "On-Device AI",
-                                style = MaterialTheme.typography.labelSmall,
-                                fontWeight = FontWeight.SemiBold,
-                                color = AccentEmerald,
-                                fontSize = 10.sp
-                            )
-                        }
-                    }
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = stringResource(R.string.stats_title),
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = "Eye Health & Blink Wellness Analytics",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
 
@@ -200,7 +167,7 @@ fun StatsScreen(
                 }
             }
 
-            // Time Range Filters (15 min, 1 hour, 1 day, 7 day, 30 day)
+            // Time Range Filters (1 hour, 1 day, 7 day, 30 day)
             item {
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Text(
@@ -212,7 +179,7 @@ fun StatsScreen(
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         TimeRangeFilter.values().forEach { filter ->
                             val isSelected = uiState.selectedTimeRange == filter
@@ -225,7 +192,8 @@ fun StatsScreen(
                                 label = {
                                     Text(
                                         text = filter.displayName,
-                                        fontSize = 11.sp,
+                                        fontSize = 12.sp,
+                                        maxLines = 1,
                                         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
                                     )
                                 },
@@ -337,237 +305,6 @@ fun StatsScreen(
                 }
             }
 
-            // 30-Day Streak Viewer Card with Green/Red Color Coding & 30-Day Storage
-            item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    shape = RoundedCornerShape(18.dp),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, BorderColor)
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Column {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(28.dp)
-                                            .clip(CircleShape)
-                                            .background(TealPrimary.copy(alpha = 0.12f)),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.CalendarMonth,
-                                            contentDescription = null,
-                                            tint = TealPrimary,
-                                            modifier = Modifier.size(16.dp)
-                                        )
-                                    }
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text(
-                                        text = stringResource(R.string.stats_streak_title),
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                }
-                                Spacer(modifier = Modifier.height(2.dp))
-                                Text(
-                                    text = "Green for healthy • Red for not-healthy",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(14.dp))
-
-                        // Streak Badges Row
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            StreakPillBadge(
-                                icon = Icons.Default.LocalFireDepartment,
-                                title = "Current",
-                                value = "${uiState.streakSummary.currentHealthyStreak}d",
-                                tint = AccentAmber,
-                                modifier = Modifier.weight(1f)
-                            )
-                            StreakPillBadge(
-                                icon = Icons.Default.Star,
-                                title = "Best",
-                                value = "${uiState.streakSummary.bestHealthyStreak}d",
-                                tint = TealPrimary,
-                                modifier = Modifier.weight(1f)
-                            )
-                            StreakPillBadge(
-                                icon = Icons.Default.CheckCircle,
-                                title = "Healthy",
-                                value = "${uiState.streakSummary.totalHealthyDays}/30",
-                                tint = AccentEmerald,
-                                modifier = Modifier.weight(1f)
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.height(14.dp))
-
-                        // Selected Day Detail Box
-                        AnimatedVisibility(visible = selectedDayInfo != null) {
-                            selectedDayInfo?.let { day ->
-                                Surface(
-                                    shape = RoundedCornerShape(10.dp),
-                                    color = when (day.status) {
-                                        StreakStatus.HEALTHY -> AccentEmerald.copy(alpha = 0.12f)
-                                        StreakStatus.NOT_HEALTHY -> AccentRose.copy(alpha = 0.12f)
-                                        StreakStatus.NO_DATA -> MaterialTheme.colorScheme.surfaceVariant
-                                    },
-                                    border = androidx.compose.foundation.BorderStroke(
-                                        1.dp,
-                                        when (day.status) {
-                                            StreakStatus.HEALTHY -> AccentEmerald.copy(alpha = 0.3f)
-                                            StreakStatus.NOT_HEALTHY -> AccentRose.copy(alpha = 0.3f)
-                                            StreakStatus.NO_DATA -> BorderColor
-                                        }
-                                    ),
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(bottom = 12.dp)
-                                ) {
-                                    Row(
-                                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-                                        horizontalArrangement = Arrangement.SpaceBetween,
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Column {
-                                            Text(
-                                                text = "${day.dateFormatted} (Day ${day.dayIndex})${if (day.isToday) " • Today" else ""}",
-                                                style = MaterialTheme.typography.bodySmall,
-                                                fontWeight = FontWeight.Bold
-                                            )
-                                            Text(
-                                                text = when (day.status) {
-                                                    StreakStatus.HEALTHY -> "🟢 Healthy (Goal Met)"
-                                                    StreakStatus.NOT_HEALTHY -> "🔴 Not-Healthy (Low Rate)"
-                                                    StreakStatus.NO_DATA -> "⚪ No Monitoring Data"
-                                                },
-                                                style = MaterialTheme.typography.labelSmall,
-                                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                                            )
-                                        }
-                                        Text(
-                                            text = if (day.daysBpm > 0) "Days BPM: %.1f".format(day.daysBpm) else "No Data",
-                                            style = MaterialTheme.typography.bodyMedium,
-                                            fontWeight = FontWeight.Bold,
-                                            color = when (day.status) {
-                                                StreakStatus.HEALTHY -> AccentEmerald
-                                                StreakStatus.NOT_HEALTHY -> AccentRose
-                                                StreakStatus.NO_DATA -> MaterialTheme.colorScheme.onSurfaceVariant
-                                            }
-                                        )
-                                    }
-                                }
-                            }
-                        }
-
-                        // 30-Day Grid Viewer (6 columns x 5 rows)
-                        Text(
-                            text = "30-Day Heatmap (Tap day to view):",
-                            style = MaterialTheme.typography.labelMedium,
-                            fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        FlowRow(
-                            modifier = Modifier.fillMaxWidth(),
-                            maxItemsInEachRow = 6,
-                            horizontalArrangement = Arrangement.spacedBy(6.dp),
-                            verticalArrangement = Arrangement.spacedBy(6.dp)
-                        ) {
-                            uiState.streakSummary.thirtyDaysStreakList.forEach { day ->
-                                val isSelected = selectedDayInfo?.dayIndex == day.dayIndex
-                                DayStreakTile(
-                                    day = day,
-                                    isSelected = isSelected,
-                                    onClick = {
-                                        selectedDayInfo = if (isSelected) null else day
-                                    },
-                                    modifier = Modifier.weight(1f)
-                                )
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(14.dp))
-
-                        // Color Coding Legend Box
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(10.dp))
-                                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-                                .border(1.dp, BorderColor, RoundedCornerShape(10.dp))
-                                .padding(10.dp),
-                            verticalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            Text(
-                                text = "Color Coding Legend:",
-                                style = MaterialTheme.typography.labelSmall,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Box(modifier = Modifier.size(10.dp).clip(CircleShape).background(AccentEmerald))
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Text(
-                                        text = "Healthy (Days BPM ≥ ${uiState.thresholdBpm})",
-                                        style = MaterialTheme.typography.labelSmall,
-                                        fontSize = 10.sp
-                                    )
-                                }
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Box(modifier = Modifier.size(10.dp).clip(CircleShape).background(AccentRose))
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Text(
-                                        text = "Not-Healthy (< ${uiState.thresholdBpm})",
-                                        style = MaterialTheme.typography.labelSmall,
-                                        fontSize = 10.sp
-                                    )
-                                }
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(10.dp))
-
-                        // 30-Day Retention Footnote
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Info,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                                modifier = Modifier.size(14.dp)
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                text = stringResource(R.string.stats_retention_note),
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                                fontSize = 10.sp
-                            )
-                        }
-                    }
-                }
-            }
-
             // Recent Sessions Section
             item {
                 Text(
@@ -658,105 +395,6 @@ fun StatMetricCard(
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                 fontSize = 10.sp
-            )
-        }
-    }
-}
-
-@Composable
-fun StreakPillBadge(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    title: String,
-    value: String,
-    tint: Color,
-    modifier: Modifier = Modifier
-) {
-    Surface(
-        shape = RoundedCornerShape(12.dp),
-        color = tint.copy(alpha = 0.12f),
-        border = androidx.compose.foundation.BorderStroke(1.dp, tint.copy(alpha = 0.25f)),
-        modifier = modifier
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = tint,
-                modifier = Modifier.size(16.dp)
-            )
-            Spacer(modifier = Modifier.width(4.dp))
-            Column {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontSize = 9.sp
-                )
-                Text(
-                    text = value,
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = tint
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun DayStreakTile(
-    day: DayStreakInfo,
-    isSelected: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val backgroundColor = when (day.status) {
-        StreakStatus.HEALTHY -> AccentEmerald
-        StreakStatus.NOT_HEALTHY -> AccentRose
-        StreakStatus.NO_DATA -> MaterialTheme.colorScheme.surfaceVariant
-    }
-
-    val contentColor = when (day.status) {
-        StreakStatus.HEALTHY, StreakStatus.NOT_HEALTHY -> Color.White
-        StreakStatus.NO_DATA -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-    }
-
-    Box(
-        modifier = modifier
-            .height(48.dp)
-            .clip(RoundedCornerShape(10.dp))
-            .background(backgroundColor)
-            .then(
-                if (isSelected) {
-                    Modifier.border(2.dp, TealPrimary, RoundedCornerShape(10.dp))
-                } else if (day.isToday) {
-                    Modifier.border(1.5.dp, Color.Black.copy(alpha = 0.4f), RoundedCornerShape(10.dp))
-                } else {
-                    Modifier
-                }
-            )
-            .clickable { onClick() },
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Text(
-                text = "D${day.dayIndex}",
-                fontSize = 9.sp,
-                fontWeight = FontWeight.Bold,
-                color = contentColor
-            )
-            Text(
-                text = if (day.daysBpm > 0) "%.0f".format(day.daysBpm) else "--",
-                fontSize = 11.sp,
-                fontWeight = FontWeight.ExtraBold,
-                color = contentColor
             )
         }
     }

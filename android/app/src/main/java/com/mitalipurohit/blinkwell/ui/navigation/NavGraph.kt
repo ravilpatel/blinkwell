@@ -29,6 +29,7 @@ import com.mitalipurohit.blinkwell.ui.settings.SettingsScreen
 import com.mitalipurohit.blinkwell.ui.settings.SettingsViewModel
 import com.mitalipurohit.blinkwell.ui.stats.StatsScreen
 import com.mitalipurohit.blinkwell.ui.stats.StatsViewModel
+import com.mitalipurohit.blinkwell.ui.streak.StreakScreen
 import com.mitalipurohit.blinkwell.ui.theme.TealPrimary
 
 @Composable
@@ -115,6 +116,11 @@ fun BlinkWellNavGraph(
             composable(Screen.Stats.route) {
                 val statsViewModel: StatsViewModel = viewModel()
                 StatsScreen(viewModel = statsViewModel)
+            }
+
+            composable(Screen.Streak.route) {
+                val statsViewModel: StatsViewModel = viewModel()
+                StreakScreen(viewModel = statsViewModel)
             }
 
             composable(Screen.Settings.route) {

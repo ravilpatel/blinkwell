@@ -117,38 +117,6 @@ class StatsViewModel(
         val dateFormat = SimpleDateFormat("MMM d", Locale.getDefault())
 
         return when (range) {
-            TimeRangeFilter.LAST_15_MIN -> {
-                val cutoff = now - (15 * 60 * 1000L)
-                val relevantLogs = logs.filter { it.minuteTimestamp >= cutoff }.sortedBy { it.minuteTimestamp }
-                val points = relevantLogs.map { log ->
-                    GraphPoint(
-                        timestamp = log.minuteTimestamp,
-                        xLabel = timeFormat.format(Date(log.minuteTimestamp)),
-                        bpm = log.bpm,
-                        isDaysBpm = false
-                    )
-                }
-                val avg = if (points.isNotEmpty()) points.map { it.bpm }.average() else 0.0
-                val min = if (points.isNotEmpty()) points.minOf { it.bpm } else 0.0
-                val max = if (points.isNotEmpty()) points.maxOf { it.bpm } else 0.0
-
-                // Numeric X annotations: 15m, 10m, 5m, 0m (or timestamps)
-                val xAnnotations = listOf("-15m", "-10m", "-5m", "Now")
-                val yAnnotations = calculateYAnnotations(max.coerceAtLeast(30.0))
-
-                GraphUiData(
-                    timeRange = range,
-                    points = points,
-                    averageBpm = avg,
-                    minBpm = min,
-                    maxBpm = max,
-                    isDaysBpm = false,
-                    xNumericAnnotations = xAnnotations,
-                    yNumericAnnotations = yAnnotations,
-                    thresholdBpm = threshold
-                )
-            }
-
             TimeRangeFilter.LAST_1_HOUR -> {
                 val cutoff = now - (60 * 60 * 1000L)
                 val relevantLogs = logs.filter { it.minuteTimestamp >= cutoff }.sortedBy { it.minuteTimestamp }

@@ -7,6 +7,7 @@
     <!-- Navigation -->
     <string name="nav_home">होम</string>
     <string name="nav_stats">आँकड़े</string>
+    <string name="nav_streak">स्ट्रीक</string>
     <string name="nav_settings">सेटिंग्स</string>
     <string name="nav_about">के बारे में</string>
 
