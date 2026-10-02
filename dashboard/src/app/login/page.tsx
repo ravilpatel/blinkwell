@@ -128,7 +128,7 @@ export default function LoginPage() {
           </h2>
           <div className="flex items-center justify-center space-x-2 mt-1">
             <span className="text-xs text-slate-500 font-medium">
-              By Mitali Purohit • IRB Protocol #2024-884-BW
+              By Mitali Purohit
             </span>
           </div>
         </div>

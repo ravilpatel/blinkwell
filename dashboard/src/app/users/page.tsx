@@ -177,7 +177,7 @@ export default function UsersDirectoryPage() {
               </h1>
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-teal-100 text-teal-800">
                 <ShieldCheck className="w-3.5 h-3.5 mr-1 text-teal-600" />
-                IRB-2024-884
+                Zero PII
               </span>
             </div>
             <p className="text-xs text-slate-500 mt-1">

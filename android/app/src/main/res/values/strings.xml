@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">BlinkWell</string>
-    <string name="developer_credit">By Mitali Purohit</string>
+    <string name="ideator_credit">Ideated by Mitali Purohit</string>
+    <string name="developer_credit">Developed by Ravil Patel</string>
+    <string name="developer_linkedin_url">https://linkedin.com/in/ravilpatel</string>
     <string name="tagline">Mindful Eye Care &amp; Blink Wellness</string>
 
     <!-- Navigation -->
@@ -124,7 +126,7 @@
     <!-- About Screen -->
     <string name="about_title">About BlinkWell</string>
     <string name="about_version">Version 1.0.0</string>
-    <string name="about_dev_credit">Developed by Mitali Purohit</string>
+    <string name="about_dev_credit">Developed by Ravil Patel</string>
     <string name="about_disclaimer_title">Wellness Disclaimer</string>
     <string name="disclaimer_text">BlinkWell is a general wellness tool that estimates your blink rate using your device\'s camera. It is not a medical device and does not diagnose, treat, or prevent any condition. Lighting, glasses, and camera angle can affect accuracy. If you have concerns about dry eyes, eye strain, or vision changes, please consult an eye care professional.</string>
 

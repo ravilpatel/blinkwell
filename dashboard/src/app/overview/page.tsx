@@ -281,7 +281,7 @@ export default function OverviewPage() {
     }
   }
 
-  const exportIRBDataset = (fileType: 'csv' | 'json') => {
+  const exportResearchDataset = (fileType: 'csv' | 'json') => {
     if (fileType === 'csv') {
       const headers = 'MinuteTimestamp,BlinksPerMinute,Threshold,NormalLower,NormalUpper\n';
       const rows = recentMinuteLogs.map(r => `"${r.time}",${r.bpm},10,15,20`).join('\n');
@@ -289,12 +289,12 @@ export default function OverviewPage() {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `BlinkWell-IRB-Dataset-${format(new Date(), 'yyyy-MM-dd')}.csv`;
+      a.download = `BlinkWell-Research-Dataset-${format(new Date(), 'yyyy-MM-dd')}.csv`;
       a.click();
     } else {
       const exportPayload = {
-        studyProtocol: 'IRB Protocol #2024-884-BW',
-        principalInvestigator: 'Dr. Mitali Purohit',
+        studyProtocol: 'BlinkWell Clinical Ergonomics Protocol',
+        investigator: 'Mitali Purohit',
         exportDate: new Date().toISOString(),
         monitoredSessionsTotal: totalSessions,
         populationMeanBpm: avgBpm,
@@ -307,7 +307,7 @@ export default function OverviewPage() {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `BlinkWell-IRB-Dataset-${format(new Date(), 'yyyy-MM-dd')}.json`;
+      a.download = `BlinkWell-Research-Dataset-${format(new Date(), 'yyyy-MM-dd')}.json`;
       a.click();
     }
   };
@@ -382,7 +382,7 @@ export default function OverviewPage() {
             {/* Export Dataset Actions */}
             <div className="flex items-center space-x-2">
               <button
-                onClick={() => exportIRBDataset('csv')}
+                onClick={() => exportResearchDataset('csv')}
                 className="inline-flex items-center px-3.5 py-2 bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold rounded-xl shadow-xs transition-colors"
                 title="Export De-identified Research Dataset"
               >
@@ -390,7 +390,7 @@ export default function OverviewPage() {
                 Export CSV
               </button>
               <button
-                onClick={() => exportIRBDataset('json')}
+                onClick={() => exportResearchDataset('json')}
                 className="inline-flex items-center px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl border border-slate-200 transition-colors"
                 title="Export Protocol JSON Schema"
               >
@@ -826,7 +826,7 @@ export default function OverviewPage() {
           </div>
         </div>
 
-        {/* Bottom IRB Ethics & Verification Audit Dossier */}
+        {/* Bottom Ethics & Privacy Verification Audit Banner */}
         <div className="p-6 bg-white rounded-2xl border border-slate-200 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4 text-xs text-slate-500">
           <div className="flex items-start space-x-3">
             <div className="p-2 bg-slate-100 rounded-xl text-slate-700 mt-0.5">
@@ -834,7 +834,7 @@ export default function OverviewPage() {
             </div>
             <div>
               <strong className="text-slate-900 block font-bold">
-                IRB Protocol #2024-884-BW • Human Subjects Protection Approved
+                Privacy-First Architecture • Zero-PII Compliance
               </strong>
               <span className="text-[11px] text-slate-500">
                 All session telemetry is processed on-device via ML Kit. Zero camera frames are recorded or transmitted. 
@@ -848,7 +848,7 @@ export default function OverviewPage() {
               href="/protocols/"
               className="px-3.5 py-2 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold rounded-xl border border-slate-200 transition-colors whitespace-nowrap"
             >
-              Protocol Dossier
+              Study Protocols
             </Link>
             <Link
               href="/team/"

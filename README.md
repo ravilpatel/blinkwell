@@ -1,6 +1,7 @@
 # BlinkWell — Mindful Eye Care & Blink Wellness App
 
-**Developed by:** Mitali Purohit  
+**Ideated by:** Mitali Purohit  
+**Developed by:** [Ravil Patel](https://linkedin.com/in/ravilpatel)  
 **Package Name:** `com.mitalipurohit.blinkwell`  
 **License:** Apache 2.0  
 
@@ -42,7 +43,7 @@ BlinkWell/
 │   ├── gradlew / gradlew.bat
 │   └── build.gradle.kts
 ├── dashboard/                 # Next.js 15 Clinical Research Portal & Analytics Dashboard
-│   ├── src/app/               # Overview, Cohort Explorer, Subject Drill-Down, Study Protocols & IRB, Team
+│   ├── src/app/               # Overview, Cohort Explorer, Session Drill-Down, Study Protocols, Team
 │   ├── src/components/        # Navbar, SupabaseConfigModal, Recharts clinical components
 │   └── package.json
 ├── supabase/
@@ -63,21 +64,21 @@ The BlinkWell Research Portal has been redesigned for high-precision clinical er
   - Multi-arm study cohort segmentation (Software Engineers, Remote Students, Control Group).
   - 24-Hour Diurnal Blink Suppression analysis curve with physiological normal baseline (15–20 BPM) and severe asthenopia threshold (<10 BPM).
   - Gaussian Blink Rate Distribution histogram.
-  - One-click IRB Dataset Export in CSV and JSON schema formats.
-- **Participant Directory & Risk Stratification (`/users/`)**:
-  - SHA-256 de-identified subject registry.
-  - Filter by cohort arms, asthenopia risk tiers, and preferred monitoring mode.
-- **Longitudinal Subject Telemetry Inspector (`/users/detail/`)**:
+  - One-click Research Dataset Export in CSV and JSON schema formats.
+- **Session Telemetry & Cohort Explorer (`/users/`)**:
+  - De-identified session stream registry.
+  - Filter by cohort arms, asthenopia strain tiers, and preferred monitoring mode.
+- **Longitudinal Session Telemetry Inspector (`/users/detail/`)**:
   - High-resolution minute-by-minute continuous rolling BPM waveform.
   - Inter-Blink Interval (IBI in ms) and eye openness probability tracking.
   - Haptic notification intervention response and post-alert blink recovery rate (+68.4%).
   - RAW CSV time-series telemetry exporter.
-- **Study Protocols & IRB Governance (`/protocols/`)**:
-  - Formal clinical protocol dossier (#2024-884-BW) documentation.
+- **Study Protocols & Settings (`/protocols/`)**:
+  - Clinical protocol specifications and parameter tuning.
   - Statistical ANOVA hypothesis workbench (p < 0.001 significance, Pearson r = -0.74).
   - Zero-PII cryptographic privacy verification.
 - **Access & Permissions (`/team/`)**:
-  - Role-based permissions for Principal Investigators, Clinical Coordinators, and Biostatisticians.
+  - Role-based permissions for Researchers, Coordinators, and Biostatisticians.
 
 ---
 
@@ -112,4 +113,4 @@ Since this project is configured to build without requiring a local Android Stud
 
 > "BlinkWell is a general wellness tool that estimates your blink rate using your device's camera. It is not a medical device and does not diagnose, treat, or prevent any condition. Lighting, glasses, and camera angle can affect accuracy. If you have concerns about dry eyes, eye strain, or vision changes, please consult an eye care professional."
 > 
-> BlinkWell — By Mitali Purohit
+> BlinkWell — Ideated by Mitali Purohit • Developed by [Ravil Patel](https://linkedin.com/in/ravilpatel)

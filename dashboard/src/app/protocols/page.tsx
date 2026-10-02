@@ -49,13 +49,11 @@ export default function ProtocolsPage() {
     setTimeout(() => setSavedSuccess(false), 3000);
   };
 
-  const downloadIRBDossier = () => {
-    const content = `# Institutional Review Board (IRB) Protocol Dossier
-Protocol Reference: IRB-2024-884-BW
+  const downloadProtocolDossier = () => {
+    const content = `# BlinkWell Clinical Study Protocol Dossier
 Study Title: Digital Ergonomics & Non-Invasive Blink Rate Modulation in High-Screen Cohorts
-Principal Investigator: Dr. Mitali Purohit, PhD
+Investigator: Mitali Purohit
 Affiliation: BlinkWell Ophthalmic Ergonomics Research Group
-Approval Status: Approved by Human Subjects Protection Review Board
 Data Protocol: Fully De-Identified, Zero-PII, On-Device Face Mesh Classification via ML Kit
 
 1. Study Arms:
@@ -74,7 +72,7 @@ No camera images or video frames are ever recorded, stored, or transmitted. ML K
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `BlinkWell-IRB-Protocol-Dossier-2024-884.md`;
+    a.download = `BlinkWell-Study-Protocol-Dossier.md`;
     a.click();
   };
 
@@ -88,12 +86,8 @@ No camera images or video frames are ever recorded, stored, or transmitted. ML K
           <div>
             <div className="flex flex-wrap items-center gap-2.5">
               <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
-                Study Protocols &amp; IRB Governance
+                Study Protocols &amp; Methodology
               </h1>
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-teal-100 text-teal-800">
-                <ShieldCheck className="w-3.5 h-3.5 mr-1 text-teal-600" />
-                IRB Protocol #2024-884-BW
-              </span>
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
                 Active Enrolling (Phase II)
               </span>
@@ -104,11 +98,11 @@ No camera images or video frames are ever recorded, stored, or transmitted. ML K
           </div>
 
           <button
-            onClick={downloadIRBDossier}
+            onClick={downloadProtocolDossier}
             className="inline-flex items-center px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold rounded-xl shadow-xs transition-colors self-start lg:self-auto"
           >
             <Download className="w-3.5 h-3.5 mr-1.5" />
-            Download IRB Protocol Dossier
+            Download Study Protocol Dossier
           </button>
         </div>
 

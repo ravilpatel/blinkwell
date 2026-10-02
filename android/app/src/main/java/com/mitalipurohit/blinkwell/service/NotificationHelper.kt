@@ -136,14 +136,14 @@ class NotificationHelper(private val context: Context) {
             .setContentTitle(content.title)
             .setContentText(content.body)
             .setSubText(content.subtext)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.drawable.ic_notification)
             .setColor(content.color)
             .setColorized(true)
             .setOngoing(true)
             .setOnlyAlertOnce(true)
             .setContentIntent(pendingIntent)
             .addAction(
-                R.drawable.ic_launcher_foreground,
+                R.drawable.ic_notification,
                 context.getString(R.string.notification_action_stop),
                 stopPendingIntent
             )
@@ -221,7 +221,7 @@ class NotificationHelper(private val context: Context) {
             .setContentTitle(title)
             .setContentText(body)
             .setStyle(NotificationCompat.BigTextStyle().bigText(body))
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.drawable.ic_notification)
             .setColor(COLOR_RED)
             .setColorized(true)
             .setAutoCancel(true)
@@ -250,7 +250,7 @@ class NotificationHelper(private val context: Context) {
             .setContentTitle(context.getString(R.string.notification_alert_title))
             .setContentText(body)
             .setStyle(NotificationCompat.BigTextStyle().bigText(body))
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.drawable.ic_notification)
             .setColor(COLOR_RED)
             .setAutoCancel(true)
             .setContentIntent(pendingIntent)

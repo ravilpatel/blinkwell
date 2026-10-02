@@ -157,7 +157,7 @@ export default function TeamManagementPage() {
               </span>
             </div>
             <p className="text-xs text-slate-500 mt-1">
-              Manage authorized Principal Investigators, Clinical Coordinators, and Biostatisticians for IRB Protocol #2024-884-BW
+              Manage authorized researchers, clinical coordinators, and biostatisticians for the BlinkWell research portal
             </p>
           </div>
         </div>
@@ -236,7 +236,7 @@ export default function TeamManagementPage() {
                 >
                   <option value="researcher">Clinical Investigator (Telemetry View &amp; Export)</option>
                   <option value="analyst">Biostatistician (Statistical Dataset Modeling)</option>
-                  <option value="admin">Principal Investigator (Full IRB Administration)</option>
+                  <option value="admin">Administrator (Full Portal Administration)</option>
                 </select>
               </div>
 

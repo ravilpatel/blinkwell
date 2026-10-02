@@ -230,7 +230,7 @@ fun WelcomeStep() {
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = stringResource(R.string.developer_credit),
+            text = stringResource(R.string.ideator_credit),
             style = MaterialTheme.typography.labelLarge,
             color = TealPrimary,
             fontWeight = FontWeight.SemiBold

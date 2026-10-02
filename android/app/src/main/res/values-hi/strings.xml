@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">BlinkWell</string>
-    <string name="developer_credit">मिताली पुरोहित द्वारा</string>
+    <string name="ideator_credit">मिताली पुरोहित द्वारा परिकल्पित</string>
+    <string name="developer_credit">राविल पटेल द्वारा विकसित</string>
+    <string name="developer_linkedin_url">https://linkedin.com/in/ravilpatel</string>
     <string name="tagline">सजग नेत्र देखभाल और पलक झपकाने का स्वास्थ्य</string>
 
     <!-- Navigation -->
@@ -113,7 +115,7 @@
     <!-- About Screen -->
     <string name="about_title">BlinkWell के बारे में</string>
     <string name="about_version">संस्करण 1.0.0</string>
-    <string name="about_dev_credit">मिताली पुरोहित द्वारा विकसित</string>
+    <string name="about_dev_credit">राविल पटेल द्वारा विकसित</string>
     <string name="about_disclaimer_title">स्वास्थ्य अस्वीकरण (Disclaimer)</string>
     <string name="disclaimer_text">BlinkWell एक सामान्य स्वास्थ्य उपकरण है जो आपके डिवाइस के कैमरे का उपयोग करके आपकी पलक झपकाने की दर का अनुमान लगाता है। यह कोई चिकित्सा उपकरण नहीं है और किसी भी स्थिति का निदान, उपचार या रोकथाम नहीं करता है। प्रकाश, चश्मा और कैमरे का कोण सटीकता को प्रभावित कर सकता है। यदि आपको सूखी आँखों या दृष्टि संबंधी कोई चिंता है, तो कृपया किसी नेत्र रोग विशेषज्ञ से परामर्श लें।</string>
 

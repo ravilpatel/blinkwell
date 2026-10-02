@@ -91,7 +91,7 @@ fun AboutScreen() {
             )
 
             Text(
-                text = stringResource(R.string.developer_credit),
+                text = stringResource(R.string.ideator_credit),
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.SemiBold,
                 color = TealPrimary
@@ -154,11 +154,50 @@ fun AboutScreen() {
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "BlinkWell — Mindful Eye Care & Blink Wellness\nBuilt with Privacy-First On-Device AI",
+                text = "BlinkWell — Mindful Eye Care & Blink Wellness\nBuilt with Privacy First On-Device monitoring",
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                 textAlign = TextAlign.Center
             )
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Surface(
+                onClick = {
+                    val linkedinIntent = Intent(
+                        Intent.ACTION_VIEW,
+                        Uri.parse("https://linkedin.com/in/ravilpatel")
+                    )
+                    context.startActivity(linkedinIntent)
+                },
+                shape = RoundedCornerShape(12.dp),
+                color = TealPrimary.copy(alpha = 0.08f),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 12.dp, horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = stringResource(R.string.developer_credit),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = TealPrimary
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Icon(
+                        imageVector = Icons.Default.OpenInNew,
+                        contentDescription = "LinkedIn Profile",
+                        tint = TealPrimary,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
         }
     }
 }

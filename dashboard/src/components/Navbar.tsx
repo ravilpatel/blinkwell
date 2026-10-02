@@ -67,7 +67,7 @@ export default function Navbar() {
   const navLinks = [
     { name: 'Overview', href: '/overview/', icon: Activity },
     { name: 'Session Telemetry & Cohorts', href: '/users/', icon: Activity },
-    { name: 'Study Protocols & IRB', href: '/protocols/', icon: FileText },
+    { name: 'Study Protocols', href: '/protocols/', icon: FileText },
     { name: 'Team & Permissions', href: '/team/', icon: UserCheck },
   ];
 
@@ -95,9 +95,6 @@ export default function Navbar() {
                 <div>
                   <div className="flex items-center space-x-2">
                     <span className="font-bold text-base text-slate-900 tracking-tight">BlinkWell</span>
-                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-teal-50 text-teal-700 border border-teal-200">
-                      IRB-2024-884
-                    </span>
                   </div>
                   <span className="text-[11px] text-slate-500 font-medium hidden sm:block">
                     Clinical Research Portal • By Mitali Purohit
