@@ -68,6 +68,7 @@ class BlinkMonitorService : Service(), LifecycleOwner {
     private var currentSessionId: String? = null
     private var dutyCycleJob: Job? = null
     private var minuteLoggingJob: Job? = null
+    private var gracePeriodJob: Job? = null
     private var isScreenOn = true
     private var isCameraBound = false
     private var alertCount = 0
@@ -90,7 +91,11 @@ class BlinkMonitorService : Service(), LifecycleOwner {
     }
 
     private fun startForegroundNotification() {
-        val notification = notificationHelper.buildServiceNotification()
+        val initialMetrics = blinkDetector.metrics.value
+        val notification = notificationHelper.buildStatusNotification(
+            category = initialMetrics.statusCategory,
+            bpm = initialMetrics.currentBpm
+        )
         val type = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             ServiceInfo.FOREGROUND_SERVICE_TYPE_CAMERA
         } else {
@@ -128,6 +133,19 @@ class BlinkMonitorService : Service(), LifecycleOwner {
 
             setupDutyCycleOrContinuous()
             startMinuteLogging()
+            startGracePeriodTicker()
+        }
+    }
+
+    private fun startGracePeriodTicker() {
+        gracePeriodJob?.cancel()
+        gracePeriodJob = serviceScope.launch {
+            while (isActive && isRunning) {
+                delay(1000L)
+                if (isScreenOn) {
+                    blinkDetector.checkGracePeriod()
+                }
+            }
         }
     }
 
@@ -230,6 +248,19 @@ class BlinkMonitorService : Service(), LifecycleOwner {
     }
 
     private fun observeAlertsAndSettings() {
+        // Observe real-time metrics and update dynamic color-coded sticky notification
+        serviceScope.launch {
+            blinkDetector.metrics.collect { metrics ->
+                val threshold = BlinkWellApp.settingsRepository.bpmThreshold.first()
+                notificationHelper.updateStatusNotification(
+                    category = metrics.statusCategory,
+                    bpm = metrics.currentBpm,
+                    thresholdBpm = threshold
+                )
+            }
+        }
+
+        // Observe low-blink alert events
         serviceScope.launch {
             blinkDetector.alertEvents.collect { message ->
                 val alertsEnabled = BlinkWellApp.settingsRepository.alertsEnabled.first()
@@ -245,9 +276,11 @@ class BlinkMonitorService : Service(), LifecycleOwner {
         isRunning = false
         dutyCycleJob?.cancel()
         minuteLoggingJob?.cancel()
+        gracePeriodJob?.cancel()
         unbindCamera()
         blinkAnalyzer?.release()
         blinkAnalyzer = null
+        notificationHelper.cancelStatusNotification()
 
         val sid = currentSessionId
         if (sid != null) {

@@ -20,6 +20,7 @@ class BlinkDetector(
         const val MAX_BLINK_DURATION_MS = 600L
         const val ROLLING_WINDOW_MS = 60 * 1000L // 60 seconds
         const val ALERT_SUSTAINED_DURATION_MS = 2 * 60 * 1000L // 2 consecutive minutes
+        const val FACE_LOST_GRACE_PERIOD_MS = 10_000L // 10 seconds grace period before Yellow
     }
 
     private val _metrics = MutableStateFlow(BlinkMetrics())
@@ -51,34 +52,10 @@ class BlinkDetector(
         rightEyeProb: Float?,
         timestamp: Long = System.currentTimeMillis()
     ) {
-        if (!faceDetected || leftEyeProb == null || rightEyeProb == null) {
-            // Pause counting if no face is present rather than registering false zeros
-            _metrics.value = _metrics.value.copy(
-                isFaceDetected = false
-            )
-            return
-        }
+        val hasFaceAndEyes = faceDetected && leftEyeProb != null && rightEyeProb != null
 
-        lastFaceSeenTimestamp = timestamp
-        val eyeOpenScore = (leftEyeProb + rightEyeProb) / 2.0f
-
-        // State Machine for Eye Blink Detection
-        when (eyeState) {
-            EyeState.OPEN, EyeState.OPENING -> {
-                if (eyeOpenScore < EYE_CLOSED_THRESHOLD) {
-                    eyeState = EyeState.CLOSED
-                    eyeClosedTimestamp = timestamp
-                }
-            }
-            EyeState.CLOSED, EyeState.CLOSING -> {
-                if (eyeOpenScore > EYE_OPEN_THRESHOLD) {
-                    val duration = timestamp - eyeClosedTimestamp
-                    if (duration in MIN_BLINK_DURATION_MS..MAX_BLINK_DURATION_MS) {
-                        registerBlink(timestamp)
-                    }
-                    eyeState = EyeState.OPEN
-                }
-            }
+        if (hasFaceAndEyes) {
+            lastFaceSeenTimestamp = timestamp
         }
 
         // Clean up timestamps outside the rolling 60-second window
@@ -90,16 +67,85 @@ class BlinkDetector(
         // Calculate rolling BPM
         val currentBpm = blinkTimestamps.size.toDouble()
 
-        // Check Low-BPM Alert Condition
-        checkAlertCondition(currentBpm, timestamp)
+        if (hasFaceAndEyes) {
+            val eyeOpenScore = (leftEyeProb!! + rightEyeProb!!) / 2.0f
+
+            // State Machine for Eye Blink Detection
+            when (eyeState) {
+                EyeState.OPEN, EyeState.OPENING -> {
+                    if (eyeOpenScore < EYE_CLOSED_THRESHOLD) {
+                        eyeState = EyeState.CLOSED
+                        eyeClosedTimestamp = timestamp
+                    }
+                }
+                EyeState.CLOSED, EyeState.CLOSING -> {
+                    if (eyeOpenScore > EYE_OPEN_THRESHOLD) {
+                        val duration = timestamp - eyeClosedTimestamp
+                        if (duration in MIN_BLINK_DURATION_MS..MAX_BLINK_DURATION_MS) {
+                            registerBlink(timestamp)
+                        }
+                        eyeState = EyeState.OPEN
+                    }
+                }
+            }
+
+            // Check Low-BPM Alert Condition
+            checkAlertCondition(currentBpm, timestamp)
+        }
+
+        // Determine status category respecting 10-second grace period
+        val isGracePeriodActive = lastFaceSeenTimestamp > 0L && (timestamp - lastFaceSeenTimestamp <= FACE_LOST_GRACE_PERIOD_MS)
+        val isFacePresentOrInGrace = hasFaceAndEyes || isGracePeriodActive
+
+        val statusCategory = when {
+            !isFacePresentOrInGrace -> BlinkStatusCategory.FACE_NOT_DETECTED
+            currentBpm < alertThresholdBpm -> BlinkStatusCategory.LOW_RATE
+            else -> BlinkStatusCategory.NORMAL
+        }
 
         _metrics.value = BlinkMetrics(
             currentBpm = currentBpm,
             totalBlinksInSession = totalBlinksCount,
-            isFaceDetected = true,
-            lastEyeOpenScore = eyeOpenScore,
-            isSamplingActive = true
+            isFaceDetected = hasFaceAndEyes,
+            lastEyeOpenScore = if (hasFaceAndEyes) ((leftEyeProb!! + rightEyeProb!!) / 2.0f) else _metrics.value.lastEyeOpenScore,
+            isSamplingActive = true,
+            statusCategory = statusCategory
         )
+    }
+
+    /**
+     * Periodic check to transition to FACE_NOT_DETECTED (Yellow) after 10-second grace period
+     * even if camera frames stop arriving or face is not in frame.
+     */
+    @Synchronized
+    fun checkGracePeriod(timestamp: Long = System.currentTimeMillis()) {
+        val windowStart = timestamp - ROLLING_WINDOW_MS
+        while (!blinkTimestamps.isEmpty() && (blinkTimestamps.peekFirst() ?: Long.MAX_VALUE) < windowStart) {
+            blinkTimestamps.pollFirst()
+        }
+        val currentBpm = blinkTimestamps.size.toDouble()
+
+        val isGracePeriodActive = lastFaceSeenTimestamp > 0L && (timestamp - lastFaceSeenTimestamp <= FACE_LOST_GRACE_PERIOD_MS)
+
+        if (!isGracePeriodActive && _metrics.value.statusCategory != BlinkStatusCategory.FACE_NOT_DETECTED) {
+            _metrics.value = _metrics.value.copy(
+                currentBpm = currentBpm,
+                isFaceDetected = false,
+                statusCategory = BlinkStatusCategory.FACE_NOT_DETECTED
+            )
+        } else if (isGracePeriodActive) {
+            val statusCategory = if (currentBpm < alertThresholdBpm) {
+                BlinkStatusCategory.LOW_RATE
+            } else {
+                BlinkStatusCategory.NORMAL
+            }
+            if (_metrics.value.statusCategory != statusCategory || _metrics.value.currentBpm != currentBpm) {
+                _metrics.value = _metrics.value.copy(
+                    currentBpm = currentBpm,
+                    statusCategory = statusCategory
+                )
+            }
+        }
     }
 
     private fun registerBlink(timestamp: Long) {
@@ -131,7 +177,8 @@ class BlinkDetector(
         blinkTimestamps.clear()
         totalBlinksCount = 0
         lowBpmStartTimestamp = null
+        lastFaceSeenTimestamp = 0L
         eyeState = EyeState.OPEN
-        _metrics.value = BlinkMetrics()
+        _metrics.value = BlinkMetrics(statusCategory = BlinkStatusCategory.FACE_NOT_DETECTED)
     }
 }

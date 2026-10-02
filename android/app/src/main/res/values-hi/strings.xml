@@ -107,8 +107,17 @@
     <string name="notification_alert_title">आँखों को थोड़ा आराम दें</string>
     <string name="notification_alert_body">आपकी पलक झपकाने की दर कम लग रही है — 20 सेकंड का ब्रेक लें और कुछ बार पलकें झपकाएं।</string>
 
+    <!-- Sticky Status Notifications -->
+    <string name="notification_status_normal_title">🟢 सामान्य दर: %1$d BPM</string>
+    <string name="notification_status_normal_body">पलक झपकाने की दर सामान्य है • ऐसे ही बनाए रखें!</string>
+    <string name="notification_status_low_title">🔴 कम दर: %1$d BPM</string>
+    <string name="notification_status_low_body">दर लक्ष्य (%1$d BPM) से कम है • कृपया पलकें झपकाएं</string>
+    <string name="notification_status_not_detected_title">🟡 चेहरा / आँखें नहीं दिख रही हैं</string>
+    <string name="notification_status_not_detected_body">पर्याप्त रोशनी रखें और कैमरे के सामने चेहरा रखें</string>
+    <string name="notification_action_stop">निगरानी रोकें</string>
+
     <!-- Common -->
     <string name="next">आगे</string>
     <string name="skip">छोड़ें</string>
-    <string name="done">संपन्न</string>
+    <string name="done">Done</string>
 </resources>

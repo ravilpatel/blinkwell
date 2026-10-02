@@ -107,6 +107,15 @@
     <string name="notification_alert_title">Gentle Eye Break</string>
     <string name="notification_alert_body">Your blink rate looks low right now — take a 20-second break and blink a few times.</string>
 
+    <!-- Sticky Status Notifications -->
+    <string name="notification_status_normal_title">🟢 Normal Blink Rate: %1$d BPM</string>
+    <string name="notification_status_normal_body">Eye blink frequency is healthy • Keep it up!</string>
+    <string name="notification_status_low_title">🔴 Low Blink Rate: %1$d BPM</string>
+    <string name="notification_status_low_body">Blink rate is below target (%1$d BPM) • Remember to blink</string>
+    <string name="notification_status_not_detected_title">🟡 Face / Eyes Not Detected</string>
+    <string name="notification_status_not_detected_body">Ensure good lighting and face the camera directly</string>
+    <string name="notification_action_stop">Stop Monitoring</string>
+
     <!-- Common -->
     <string name="next">Next</string>
     <string name="skip">Skip</string>

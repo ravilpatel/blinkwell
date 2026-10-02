@@ -7,6 +7,9 @@ import com.mitalipurohit.blinkwell.data.remote.sync.BlinkSyncWorker
 import com.mitalipurohit.blinkwell.data.repository.BlinkRepository
 import com.mitalipurohit.blinkwell.data.repository.SettingsRepository
 import com.mitalipurohit.blinkwell.detection.BlinkDetector
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 
 class BlinkWellApp : Application() {
 
@@ -29,6 +32,13 @@ class BlinkWellApp : Application() {
         val blinkDetector: BlinkDetector by lazy {
             BlinkDetector()
         }
+    }
+
+    private val _stopMonitoringTrigger = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+    val stopMonitoringTrigger: SharedFlow<Unit> = _stopMonitoringTrigger.asSharedFlow()
+
+    fun requestStopMonitoring() {
+        _stopMonitoringTrigger.tryEmit(Unit)
     }
 
     override fun onCreate() {

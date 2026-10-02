@@ -45,6 +45,14 @@
             android:foregroundServiceType="camera" />
 
         <receiver
+            android:name=".service.StopMonitoringReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.mitalipurohit.blinkwell.action.STOP_MONITORING" />
+            </intent-filter>
+        </receiver>
+
+        <receiver
             android:name=".widget.BlinkWellWidgetReceiver"
             android:exported="true">
             <intent-filter>

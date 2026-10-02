@@ -9,12 +9,14 @@ import com.mitalipurohit.blinkwell.data.repository.SettingsRepository
 import com.mitalipurohit.blinkwell.detection.BlinkDetector
 import com.mitalipurohit.blinkwell.detection.BlinkMetrics
 import com.mitalipurohit.blinkwell.service.BlinkMonitorService
+import com.mitalipurohit.blinkwell.service.NotificationHelper
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -32,6 +34,8 @@ class HomeViewModel(
     val blinkDetector: BlinkDetector = BlinkWellApp.blinkDetector
 ) : ViewModel() {
 
+    private val notificationHelper = NotificationHelper(BlinkWellApp.instance)
+
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
@@ -40,17 +44,49 @@ class HomeViewModel(
 
     private var inAppSessionId: String? = null
     private var inAppLoggingJob: Job? = null
+    private var inAppGracePeriodJob: Job? = null
 
     init {
+        // Collect metrics and update sticky status notification
         viewModelScope.launch {
             blinkDetector.metrics.collect { metrics ->
                 _uiState.value = _uiState.value.copy(metrics = metrics)
+                if (_uiState.value.isMonitoring && _uiState.value.currentMode == "app_only") {
+                    val threshold = settingsRepository.bpmThreshold.first()
+                    notificationHelper.updateStatusNotification(
+                        category = metrics.statusCategory,
+                        bpm = metrics.currentBpm,
+                        thresholdBpm = threshold
+                    )
+                }
             }
         }
 
+        // Collect monitoring mode changes
         viewModelScope.launch {
             settingsRepository.monitoringMode.collect { mode ->
                 _uiState.value = _uiState.value.copy(currentMode = mode)
+            }
+        }
+
+        // Listen for stop request from notification action
+        viewModelScope.launch {
+            BlinkWellApp.instance.stopMonitoringTrigger.collect {
+                if (_uiState.value.isMonitoring) {
+                    stopMonitoring(BlinkWellApp.instance)
+                }
+            }
+        }
+
+        // Observe alert events in app-only mode
+        viewModelScope.launch {
+            blinkDetector.alertEvents.collect {
+                if (_uiState.value.isMonitoring && _uiState.value.currentMode == "app_only") {
+                    val alertsEnabled = settingsRepository.alertsEnabled.first()
+                    if (alertsEnabled) {
+                        notificationHelper.showAlertNotification()
+                    }
+                }
             }
         }
     }
@@ -70,11 +106,24 @@ class HomeViewModel(
         if (mode == "background") {
             BlinkMonitorService.start(context)
         } else {
-            // App-Only Mode: create local session and start in-app logging
+            // App-Only Mode: create local session, start logging & show sticky notification
             viewModelScope.launch {
+                val threshold = settingsRepository.bpmThreshold.first()
+                blinkDetector.setThreshold(threshold)
+
                 inAppSessionId = blinkRepository.createSession(mode = "app_only")
                 settingsRepository.setActiveSessionId(inAppSessionId)
+
                 startInAppMinuteLogging()
+                startInAppGracePeriodTicker()
+
+                val initialMetrics = blinkDetector.metrics.value
+                notificationHelper.updateStatusNotification(
+                    category = initialMetrics.statusCategory,
+                    bpm = initialMetrics.currentBpm,
+                    thresholdBpm = threshold,
+                    force = true
+                )
             }
         }
     }
@@ -87,6 +136,9 @@ class HomeViewModel(
             BlinkMonitorService.stop(context)
         } else {
             inAppLoggingJob?.cancel()
+            inAppGracePeriodJob?.cancel()
+            notificationHelper.cancelStatusNotification()
+
             val sid = inAppSessionId
             if (sid != null) {
                 viewModelScope.launch {
@@ -95,6 +147,16 @@ class HomeViewModel(
                 }
             }
             blinkDetector.resetSession()
+        }
+    }
+
+    private fun startInAppGracePeriodTicker() {
+        inAppGracePeriodJob?.cancel()
+        inAppGracePeriodJob = viewModelScope.launch {
+            while (isActive && _uiState.value.isMonitoring) {
+                delay(1000L)
+                blinkDetector.checkGracePeriod()
+            }
         }
     }
 
@@ -114,6 +176,8 @@ class HomeViewModel(
 
     override fun onCleared() {
         inAppLoggingJob?.cancel()
+        inAppGracePeriodJob?.cancel()
+        notificationHelper.cancelStatusNotification()
         super.onCleared()
     }
 }

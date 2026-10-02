@@ -1,6 +1,11 @@
 package com.mitalipurohit.blinkwell.ui.home
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
 import android.util.Size
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.lifecycle.ProcessCameraProvider
@@ -22,7 +27,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -31,21 +35,16 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -53,12 +52,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import com.mitalipurohit.blinkwell.R
 import com.mitalipurohit.blinkwell.detection.BlinkAnalyzer
+import com.mitalipurohit.blinkwell.detection.BlinkStatusCategory
 import com.mitalipurohit.blinkwell.ui.theme.AccentAmber
 import com.mitalipurohit.blinkwell.ui.theme.AccentEmerald
 import com.mitalipurohit.blinkwell.ui.theme.AccentRose
@@ -72,6 +71,12 @@ fun HomeScreen(
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
+
+    val notificationLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) {
+        viewModel.startMonitoring(context)
+    }
 
     // In App-Only mode, bind CameraX when monitoring is active
     DisposableEffect(uiState.isMonitoring, uiState.currentMode) {
@@ -152,20 +157,34 @@ fun HomeScreen(
                     )
                 }
 
-                // Face Status Indicator
-                val faceDetected = uiState.metrics.isFaceDetected
+                // Status Indicator (matches sticky notification color code: Green / Red / Yellow)
+                val statusCategory = uiState.metrics.statusCategory
+                val statusTint = when {
+                    !uiState.isMonitoring -> MaterialTheme.colorScheme.outlineVariant
+                    statusCategory == BlinkStatusCategory.NORMAL -> AccentEmerald
+                    statusCategory == BlinkStatusCategory.LOW_RATE -> AccentRose
+                    else -> AccentAmber
+                }
+
+                val statusText = when {
+                    !uiState.isMonitoring -> stringResource(R.string.home_status_ready)
+                    statusCategory == BlinkStatusCategory.NORMAL -> stringResource(R.string.home_face_detected)
+                    statusCategory == BlinkStatusCategory.LOW_RATE -> "Low Rate • Blink More"
+                    else -> stringResource(R.string.home_no_face_detected)
+                }
+
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
                         imageVector = Icons.Default.FiberManualRecord,
                         contentDescription = null,
-                        tint = if (faceDetected) AccentEmerald else if (uiState.isMonitoring) AccentAmber else MaterialTheme.colorScheme.outlineVariant,
+                        tint = statusTint,
                         modifier = Modifier.size(12.dp)
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = if (faceDetected) stringResource(R.string.home_face_detected) else if (uiState.isMonitoring) stringResource(R.string.home_no_face_detected) else stringResource(R.string.home_status_ready),
+                        text = statusText,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -201,9 +220,21 @@ fun HomeScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Start / Stop Toggle Button
+            // Start / Stop Toggle Button with permission check
             Button(
-                onClick = { viewModel.toggleMonitoring(context) },
+                onClick = {
+                    if (uiState.isMonitoring) {
+                        viewModel.stopMonitoring(context)
+                    } else {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                            ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+                        ) {
+                            notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                        } else {
+                            viewModel.startMonitoring(context)
+                        }
+                    }
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
