@@ -28,6 +28,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.FiberManualRecord
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocalFireDepartment
@@ -38,7 +39,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -76,6 +76,8 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+private val BorderColor = Color(0xFFE2E8F0)
+
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun StatsScreen(
@@ -92,19 +94,60 @@ fun StatsScreen(
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 18.dp, vertical = 14.dp),
+                .padding(horizontal = 16.dp, vertical = 14.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Screen Header
+            // Screen Header with Live Telemetry Badge
             item {
-                Text(
-                    text = stringResource(R.string.stats_title),
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Bold
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(
+                            text = stringResource(R.string.stats_title),
+                            style = MaterialTheme.typography.headlineMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = "Eye Health & Blink Wellness Analytics",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+
+                    Surface(
+                        shape = RoundedCornerShape(20.dp),
+                        color = AccentEmerald.copy(alpha = 0.12f),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, AccentEmerald.copy(alpha = 0.3f))
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.FiberManualRecord,
+                                contentDescription = null,
+                                tint = AccentEmerald,
+                                modifier = Modifier.size(8.dp)
+                            )
+                            Spacer(modifier = Modifier.width(5.dp))
+                            Text(
+                                text = "On-Device AI",
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.SemiBold,
+                                color = AccentEmerald,
+                                fontSize = 10.sp
+                            )
+                        }
+                    }
+                }
             }
 
-            // Overview Metric Summary Cards
+            // Top 4 Metric Overview Cards (2x2 Grid)
             item {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -121,7 +164,7 @@ fun StatsScreen(
                     )
                     StatMetricCard(
                         title = "Healthy Streak",
-                        subTitle = "Consecutive",
+                        subTitle = "Target ≥ ${uiState.thresholdBpm} BPM",
                         value = "${uiState.streakSummary.currentHealthyStreak}",
                         unit = "Days",
                         icon = Icons.Default.LocalFireDepartment,
@@ -138,7 +181,7 @@ fun StatsScreen(
                 ) {
                     StatMetricCard(
                         title = stringResource(R.string.stats_alerts_today),
-                        subTitle = "Low blink alerts",
+                        subTitle = "Low-blink alerts",
                         value = "${uiState.todayAlerts}",
                         unit = "Alerts",
                         icon = Icons.Default.NotificationsActive,
@@ -183,12 +226,20 @@ fun StatsScreen(
                                     Text(
                                         text = filter.displayName,
                                         fontSize = 11.sp,
-                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
                                     )
                                 },
+                                shape = RoundedCornerShape(50),
                                 colors = FilterChipDefaults.filterChipColors(
                                     selectedContainerColor = TealPrimary,
-                                    selectedLabelColor = Color.White
+                                    selectedLabelColor = Color.White,
+                                    containerColor = MaterialTheme.colorScheme.surface,
+                                    labelColor = MaterialTheme.colorScheme.onSurfaceVariant
+                                ),
+                                border = FilterChipDefaults.filterChipBorder(
+                                    enabled = true,
+                                    selected = isSelected,
+                                    borderColor = if (isSelected) TealPrimary else BorderColor
                                 ),
                                 modifier = Modifier.weight(1f)
                             )
@@ -197,12 +248,13 @@ fun StatsScreen(
                 }
             }
 
-            // Interactive Annotated Graph View
+            // Interactive Annotated Graph View Card
             item {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    shape = RoundedCornerShape(18.dp)
+                    shape = RoundedCornerShape(18.dp),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, BorderColor)
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Row(
@@ -225,7 +277,8 @@ fun StatsScreen(
 
                             Surface(
                                 shape = RoundedCornerShape(12.dp),
-                                color = TealPrimary.copy(alpha = 0.12f)
+                                color = TealPrimary.copy(alpha = 0.12f),
+                                border = androidx.compose.foundation.BorderStroke(1.dp, TealPrimary.copy(alpha = 0.25f))
                             ) {
                                 Text(
                                     text = "Avg: %.1f BPM".format(uiState.graphData.averageBpm),
@@ -237,7 +290,7 @@ fun StatsScreen(
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(14.dp))
 
                         // Selected Point Info Banner
                         AnimatedVisibility(visible = selectedGraphPoint != null) {
@@ -260,7 +313,8 @@ fun StatsScreen(
                                             fontWeight = FontWeight.SemiBold
                                         )
                                         Text(
-                                            text = "${if (point.isDaysBpm) "Days BPM" else "BPM"}: %.1f".format(point.bpm),
+                                            text = "${if (point.isDaysBpm) "Days BPM" else "BPM"}: %.1f".format(point.bpm) +
+                                                    if (point.bpm >= uiState.thresholdBpm) " • 🟢 Healthy" else " • 🔴 Low Rate",
                                             style = MaterialTheme.typography.bodySmall,
                                             fontWeight = FontWeight.Bold,
                                             color = if (point.bpm >= uiState.thresholdBpm) AccentEmerald else AccentRose
@@ -283,12 +337,13 @@ fun StatsScreen(
                 }
             }
 
-            // Streak Viewer Card with Green/Red Color Coding & 30-Day Storage
+            // 30-Day Streak Viewer Card with Green/Red Color Coding & 30-Day Storage
             item {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    shape = RoundedCornerShape(18.dp)
+                    shape = RoundedCornerShape(18.dp),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, BorderColor)
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Row(
@@ -298,28 +353,37 @@ fun StatsScreen(
                         ) {
                             Column {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(
-                                        imageVector = Icons.Default.CalendarMonth,
-                                        contentDescription = null,
-                                        tint = TealPrimary,
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Box(
+                                        modifier = Modifier
+                                            .size(28.dp)
+                                            .clip(CircleShape)
+                                            .background(TealPrimary.copy(alpha = 0.12f)),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.CalendarMonth,
+                                            contentDescription = null,
+                                            tint = TealPrimary,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.width(8.dp))
                                     Text(
                                         text = stringResource(R.string.stats_streak_title),
                                         style = MaterialTheme.typography.titleMedium,
                                         fontWeight = FontWeight.Bold
                                     )
                                 }
+                                Spacer(modifier = Modifier.height(2.dp))
                                 Text(
-                                    text = "Color-coded eye health history (30 days max)",
+                                    text = "Green for healthy • Red for not-healthy",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(14.dp))
 
                         // Streak Badges Row
                         Row(
@@ -361,6 +425,14 @@ fun StatsScreen(
                                         StreakStatus.NOT_HEALTHY -> AccentRose.copy(alpha = 0.12f)
                                         StreakStatus.NO_DATA -> MaterialTheme.colorScheme.surfaceVariant
                                     },
+                                    border = androidx.compose.foundation.BorderStroke(
+                                        1.dp,
+                                        when (day.status) {
+                                            StreakStatus.HEALTHY -> AccentEmerald.copy(alpha = 0.3f)
+                                            StreakStatus.NOT_HEALTHY -> AccentRose.copy(alpha = 0.3f)
+                                            StreakStatus.NO_DATA -> BorderColor
+                                        }
+                                    ),
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .padding(bottom = 12.dp)
@@ -378,9 +450,9 @@ fun StatsScreen(
                                             )
                                             Text(
                                                 text = when (day.status) {
-                                                    StreakStatus.HEALTHY -> "🟢 Healthy (Target Met)"
+                                                    StreakStatus.HEALTHY -> "🟢 Healthy (Goal Met)"
                                                     StreakStatus.NOT_HEALTHY -> "🔴 Not-Healthy (Low Rate)"
-                                                    StreakStatus.NO_DATA -> "⚪ No Session Recorded"
+                                                    StreakStatus.NO_DATA -> "⚪ No Monitoring Data"
                                                 },
                                                 style = MaterialTheme.typography.labelSmall,
                                                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -403,7 +475,7 @@ fun StatsScreen(
 
                         // 30-Day Grid Viewer (6 columns x 5 rows)
                         Text(
-                            text = "Last 30 Days (Tap to view details):",
+                            text = "30-Day Heatmap (Tap day to view):",
                             style = MaterialTheme.typography.labelMedium,
                             fontWeight = FontWeight.SemiBold,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -431,12 +503,13 @@ fun StatsScreen(
 
                         Spacer(modifier = Modifier.height(14.dp))
 
-                        // Color Coding Legend
+                        // Color Coding Legend Box
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(10.dp))
                                 .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                                .border(1.dp, BorderColor, RoundedCornerShape(10.dp))
                                 .padding(10.dp),
                             verticalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
@@ -472,7 +545,7 @@ fun StatsScreen(
 
                         Spacer(modifier = Modifier.height(10.dp))
 
-                        // 30-Day Retention Notice
+                        // 30-Day Retention Footnote
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically
@@ -534,7 +607,8 @@ fun StatMetricCard(
     Card(
         modifier = modifier,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        shape = RoundedCornerShape(16.dp)
+        shape = RoundedCornerShape(18.dp),
+        border = androidx.compose.foundation.BorderStroke(1.dp, BorderColor)
     ) {
         Column(modifier = Modifier.padding(14.dp)) {
             Row(
@@ -578,6 +652,13 @@ fun StatMetricCard(
                     modifier = Modifier.padding(bottom = 2.dp)
                 )
             }
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = subTitle,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                fontSize = 10.sp
+            )
         }
     }
 }
@@ -593,6 +674,7 @@ fun StreakPillBadge(
     Surface(
         shape = RoundedCornerShape(12.dp),
         color = tint.copy(alpha = 0.12f),
+        border = androidx.compose.foundation.BorderStroke(1.dp, tint.copy(alpha = 0.25f)),
         modifier = modifier
     ) {
         Row(
@@ -646,13 +728,13 @@ fun DayStreakTile(
     Box(
         modifier = modifier
             .height(48.dp)
-            .clip(RoundedCornerShape(8.dp))
+            .clip(RoundedCornerShape(10.dp))
             .background(backgroundColor)
             .then(
                 if (isSelected) {
-                    Modifier.border(2.dp, TealPrimary, RoundedCornerShape(8.dp))
+                    Modifier.border(2.dp, TealPrimary, RoundedCornerShape(10.dp))
                 } else if (day.isToday) {
-                    Modifier.border(1.5.dp, Color.Black.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
+                    Modifier.border(1.5.dp, Color.Black.copy(alpha = 0.4f), RoundedCornerShape(10.dp))
                 } else {
                     Modifier
                 }
@@ -715,7 +797,7 @@ fun AnnotatedBpmGraph(
                     color = onSurfaceVariant
                 )
                 Text(
-                    text = "Start monitoring to view graph",
+                    text = "Start monitoring to populate graph",
                     style = MaterialTheme.typography.labelSmall,
                     color = onSurfaceVariant.copy(alpha = 0.7f)
                 )
@@ -725,7 +807,7 @@ fun AnnotatedBpmGraph(
     }
 
     Column(modifier = modifier) {
-        // Y-Axis label
+        // Y-Axis Top Info Bar
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -738,7 +820,7 @@ fun AnnotatedBpmGraph(
                 color = TealPrimary
             )
             Text(
-                text = "Target: $threshold BPM",
+                text = "Target: ${graphData.thresholdBpm} BPM",
                 style = MaterialTheme.typography.labelSmall,
                 color = AccentEmerald,
                 fontWeight = FontWeight.SemiBold
@@ -948,7 +1030,8 @@ fun SessionItemCard(
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        shape = RoundedCornerShape(12.dp)
+        shape = RoundedCornerShape(14.dp),
+        border = androidx.compose.foundation.BorderStroke(1.dp, BorderColor)
     ) {
         Row(
             modifier = Modifier.padding(14.dp),
@@ -962,11 +1045,18 @@ fun SessionItemCard(
                     fontWeight = FontWeight.SemiBold
                 )
                 Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = "Mode: ${session.mode.replace('_', ' ').replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() }}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                Surface(
+                    shape = RoundedCornerShape(6.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant
+                ) {
+                    Text(
+                        text = session.mode.replace('_', ' ').replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() },
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontSize = 10.sp,
+                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                    )
+                }
             }
 
             Column(horizontalAlignment = Alignment.End) {

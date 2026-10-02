@@ -18,6 +18,7 @@ import androidx.lifecycle.LifecycleRegistry
 import com.mitalipurohit.blinkwell.BlinkWellApp
 import com.mitalipurohit.blinkwell.detection.BlinkAnalyzer
 import com.mitalipurohit.blinkwell.detection.BlinkDetector
+import com.mitalipurohit.blinkwell.detection.BlinkStatusCategory
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -140,12 +141,24 @@ class BlinkMonitorService : Service(), LifecycleOwner {
             currentSessionId = repository.createSession(mode = "background")
             settingsRepo.setActiveSessionId(currentSessionId)
 
-            if (isScreenUnlockedAndActive) {
-                setupDutyCycleBurst()
+            val samplingMode = settingsRepo.samplingMode.first()
+            if (samplingMode == "continuous") {
+                startContinuousMonitoring()
+            } else {
+                if (isScreenUnlockedAndActive) {
+                    setupDutyCycleBurst()
+                }
             }
-            startMinuteLogging()
-            startGracePeriodTicker()
         }
+    }
+
+    private fun startContinuousMonitoring() {
+        if (isScreenUnlockedAndActive) {
+            bindCamera()
+            blinkDetector.setSamplingActive(true)
+        }
+        startMinuteLogging()
+        startGracePeriodTicker()
     }
 
     private fun startGracePeriodTicker() {
@@ -162,16 +175,71 @@ class BlinkMonitorService : Service(), LifecycleOwner {
 
     private fun setupDutyCycleBurst() {
         dutyCycleJob?.cancel()
+        minuteLoggingJob?.cancel()
+        gracePeriodJob?.cancel()
+
         dutyCycleJob = serviceScope.launch {
-            // Standard Duty-Cycled Burst: Sample for 45s, pause camera for 120s
+            // Standard Duty-Cycled Burst: Sample for 45s, pause camera for 120s (2 minutes)
             while (isActive && isRunning) {
                 if (isScreenUnlockedAndActive) {
+                    // 1. Bind Camera and Start 45s burst scan
                     bindCamera()
-                    blinkDetector.setSamplingActive(true)
+                    blinkDetector.startBurstScan()
+
+                    // 2. Sample for 45 seconds
                     delay(45_000L)
-                    unbindCamera()
-                    blinkDetector.setSamplingActive(false)
+
+                    if (isScreenUnlockedAndActive && isRunning) {
+                        // 3. Complete the 45-second scan and convert to BPM
+                        val burstResult = blinkDetector.finishBurstScan(scanDurationSeconds = 45.0)
+                        unbindCamera()
+
+                        val threshold = BlinkWellApp.settingsRepository.bpmThreshold.first()
+
+                        if (burstResult.faceDetected) {
+                            val bpm = burstResult.bpm
+
+                            // Log completed burst reading to database
+                            currentSessionId?.let { sid ->
+                                BlinkWellApp.repository.logMinuteBpm(sid, bpm)
+                            }
+
+                            // Update ongoing status notification with the new BPM
+                            val category = if (burstResult.isLowRate) BlinkStatusCategory.LOW_RATE else BlinkStatusCategory.NORMAL
+                            notificationHelper.updateStatusNotification(
+                                category = category,
+                                bpm = bpm,
+                                thresholdBpm = threshold,
+                                isWarmedUp = true,
+                                force = true
+                            )
+
+                            // If BPM is normal: do nothing. If BPM fell below threshold: send notification!
+                            if (burstResult.isLowRate) {
+                                val alertsEnabled = BlinkWellApp.settingsRepository.alertsEnabled.first()
+                                if (alertsEnabled) {
+                                    alertCount++
+                                    notificationHelper.showGreenToRedAlertNotification(bpm, threshold)
+                                }
+                            }
+                        } else {
+                            // Face not detected during the 45s scan
+                            notificationHelper.updateStatusNotification(
+                                category = BlinkStatusCategory.FACE_NOT_DETECTED,
+                                bpm = 0.0,
+                                thresholdBpm = threshold,
+                                isWarmedUp = true,
+                                force = true
+                            )
+                        }
+                    } else {
+                        // Cancelled mid-burst (e.g. screen off)
+                        blinkDetector.cancelBurst()
+                        unbindCamera()
+                    }
                 }
+
+                // 4. Pause camera for 2 minutes (120 seconds)
                 delay(120_000L)
             }
         }
@@ -230,7 +298,14 @@ class BlinkMonitorService : Service(), LifecycleOwner {
     private fun handleUserUnlocked() {
         if (!isScreenUnlockedAndActive) {
             isScreenUnlockedAndActive = true
-            setupDutyCycleBurst()
+            serviceScope.launch {
+                val samplingMode = BlinkWellApp.settingsRepository.samplingMode.first()
+                if (samplingMode == "continuous") {
+                    startContinuousMonitoring()
+                } else {
+                    setupDutyCycleBurst()
+                }
+            }
         }
     }
 
@@ -238,8 +313,10 @@ class BlinkMonitorService : Service(), LifecycleOwner {
         isScreenUnlockedAndActive = false
         // Hard requirement: Never analyze with screen off or locked - unbind immediately
         dutyCycleJob?.cancel()
+        minuteLoggingJob?.cancel()
+        gracePeriodJob?.cancel()
+        blinkDetector.cancelBurst()
         unbindCamera()
-        blinkDetector.setSamplingActive(false)
     }
 
     private fun startMinuteLogging() {
@@ -257,38 +334,47 @@ class BlinkMonitorService : Service(), LifecycleOwner {
     }
 
     private fun observeAlertsAndSettings() {
-        // Observe real-time metrics and update dynamic sticky notification once warmed up (30s)
+        // Collect metrics and update dynamic sticky notification in continuous mode
         serviceScope.launch {
             blinkDetector.metrics.collect { metrics ->
-                val threshold = BlinkWellApp.settingsRepository.bpmThreshold.first()
-                notificationHelper.updateStatusNotification(
-                    category = metrics.statusCategory,
-                    bpm = metrics.currentBpm,
-                    thresholdBpm = threshold,
-                    isWarmedUp = metrics.isWarmedUp
-                )
-            }
-        }
-
-        // Observe Green-to-Red movement for immediate visible alert
-        serviceScope.launch {
-            blinkDetector.greenToRedTransitions.collect { bpm ->
-                val alertsEnabled = BlinkWellApp.settingsRepository.alertsEnabled.first()
-                if (alertsEnabled) {
+                val samplingMode = BlinkWellApp.settingsRepository.samplingMode.first()
+                if (samplingMode == "continuous") {
                     val threshold = BlinkWellApp.settingsRepository.bpmThreshold.first()
-                    alertCount++
-                    notificationHelper.showGreenToRedAlertNotification(bpm, threshold)
+                    notificationHelper.updateStatusNotification(
+                        category = metrics.statusCategory,
+                        bpm = metrics.currentBpm,
+                        thresholdBpm = threshold,
+                        isWarmedUp = metrics.isWarmedUp
+                    )
                 }
             }
         }
 
-        // Observe sustained low-blink alert events
+        // Collect continuous mode Green-to-Red movements for immediate visible alert
+        serviceScope.launch {
+            blinkDetector.greenToRedTransitions.collect { bpm ->
+                val samplingMode = BlinkWellApp.settingsRepository.samplingMode.first()
+                if (samplingMode == "continuous") {
+                    val alertsEnabled = BlinkWellApp.settingsRepository.alertsEnabled.first()
+                    if (alertsEnabled) {
+                        val threshold = BlinkWellApp.settingsRepository.bpmThreshold.first()
+                        alertCount++
+                        notificationHelper.showGreenToRedAlertNotification(bpm, threshold)
+                    }
+                }
+            }
+        }
+
+        // Collect continuous mode sustained low-blink alert events
         serviceScope.launch {
             blinkDetector.alertEvents.collect {
-                val alertsEnabled = BlinkWellApp.settingsRepository.alertsEnabled.first()
-                if (alertsEnabled) {
-                    alertCount++
-                    notificationHelper.showAlertNotification()
+                val samplingMode = BlinkWellApp.settingsRepository.samplingMode.first()
+                if (samplingMode == "continuous") {
+                    val alertsEnabled = BlinkWellApp.settingsRepository.alertsEnabled.first()
+                    if (alertsEnabled) {
+                        alertCount++
+                        notificationHelper.showAlertNotification()
+                    }
                 }
             }
         }
@@ -299,6 +385,7 @@ class BlinkMonitorService : Service(), LifecycleOwner {
         dutyCycleJob?.cancel()
         minuteLoggingJob?.cancel()
         gracePeriodJob?.cancel()
+        blinkDetector.cancelBurst()
         unbindCamera()
         blinkAnalyzer?.release()
         blinkAnalyzer = null
@@ -307,7 +394,6 @@ class BlinkMonitorService : Service(), LifecycleOwner {
         val sid = currentSessionId
         if (sid != null) {
             serviceScope.launch(Dispatchers.IO) {
-                val metrics = blinkDetector.metrics.value
                 BlinkWellApp.repository.endSession(sid, alertCount)
                 BlinkWellApp.settingsRepository.setActiveSessionId(null)
             }

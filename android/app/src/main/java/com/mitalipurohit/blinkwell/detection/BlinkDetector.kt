@@ -8,6 +8,13 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import java.util.concurrent.ConcurrentLinkedDeque
 
+data class BurstResult(
+    val faceDetected: Boolean,
+    val bpm: Double,
+    val blinkCount: Int,
+    val isLowRate: Boolean
+)
+
 class BlinkDetector(
     private var alertThresholdBpm: Int = 13,
     private val alertCooldownMs: Long = 10 * 60 * 1000L // 10 minutes
@@ -48,6 +55,13 @@ class BlinkDetector(
     private var isSamplingActive: Boolean = true
     private var previousCategory: BlinkStatusCategory? = null
 
+    // Burst scanning state for Background Mode Duty Cycling
+    private var isBurstActive: Boolean = false
+    private var burstStartTimestamp: Long = 0L
+    private var burstBlinkCount: Int = 0
+    private var burstHasFace: Boolean = false
+    private var lastBurstCompletedBpm: Double = 0.0
+
     fun setThreshold(thresholdBpm: Int) {
         this.alertThresholdBpm = thresholdBpm
     }
@@ -60,6 +74,94 @@ class BlinkDetector(
         _metrics.value = _metrics.value.copy(isSamplingActive = active)
     }
 
+    /**
+     * Starts a dedicated 45-second burst scan in background mode.
+     * Resets burst counters and avoids triggering premature 0-BPM alerts.
+     */
+    @Synchronized
+    fun startBurstScan(timestamp: Long = System.currentTimeMillis()) {
+        isBurstActive = true
+        burstStartTimestamp = timestamp
+        burstBlinkCount = 0
+        burstHasFace = false
+        lastFaceSeenTimestamp = timestamp
+        eyeState = EyeState.OPEN
+        isSamplingActive = true
+        _metrics.value = _metrics.value.copy(
+            isSamplingActive = true,
+            isFaceDetected = true
+        )
+    }
+
+    /**
+     * Completes the 45-second burst scan:
+     * - Converts the 45s blink count into BPM.
+     * - Updates metrics and status category.
+     * - Returns BurstResult for alert evaluation.
+     */
+    @Synchronized
+    fun finishBurstScan(scanDurationSeconds: Double = 45.0): BurstResult {
+        isBurstActive = false
+        isSamplingActive = false
+
+        if (!burstHasFace) {
+            val statusCategory = BlinkStatusCategory.FACE_NOT_DETECTED
+            previousCategory = statusCategory
+            _metrics.value = _metrics.value.copy(
+                isSamplingActive = false,
+                isFaceDetected = false,
+                statusCategory = statusCategory
+            )
+            return BurstResult(
+                faceDetected = false,
+                bpm = 0.0,
+                blinkCount = 0,
+                isLowRate = false
+            )
+        }
+
+        val elapsedSeconds = if (burstStartTimestamp > 0L) {
+            ((System.currentTimeMillis() - burstStartTimestamp) / 1000.0).coerceIn(10.0, 60.0)
+        } else {
+            scanDurationSeconds
+        }
+
+        val computedBpm = (burstBlinkCount * 60.0) / elapsedSeconds
+        lastBurstCompletedBpm = computedBpm
+        val isLowRate = computedBpm < alertThresholdBpm
+        val statusCategory = if (isLowRate) BlinkStatusCategory.LOW_RATE else BlinkStatusCategory.NORMAL
+        previousCategory = statusCategory
+
+        _metrics.value = _metrics.value.copy(
+            currentBpm = computedBpm,
+            totalBlinksInSession = totalBlinksCount,
+            isFaceDetected = true,
+            isSamplingActive = false,
+            isWarmedUp = true,
+            warmupSecondsElapsed = 30L,
+            statusCategory = statusCategory
+        )
+
+        return BurstResult(
+            faceDetected = true,
+            bpm = computedBpm,
+            blinkCount = burstBlinkCount,
+            isLowRate = isLowRate
+        )
+    }
+
+    /**
+     * Cancels an in-progress burst scan (e.g. when screen turns off mid-scan).
+     */
+    @Synchronized
+    fun cancelBurst() {
+        isBurstActive = false
+        isSamplingActive = false
+        _metrics.value = _metrics.value.copy(
+            isSamplingActive = false
+        )
+    }
+
     @Synchronized
     fun onFrameProcessed(
         faceDetected: Boolean,
@@ -67,14 +169,66 @@ class BlinkDetector(
         rightEyeProb: Float?,
         timestamp: Long = System.currentTimeMillis()
     ) {
-        if (sessionStartTimestamp == 0L) {
-            sessionStartTimestamp = timestamp
-        }
-
         val hasFaceAndEyes = faceDetected && leftEyeProb != null && rightEyeProb != null
 
         if (hasFaceAndEyes) {
             lastFaceSeenTimestamp = timestamp
+        }
+
+        // --- BURST MODE HANDLING ---
+        if (isBurstActive) {
+            if (hasFaceAndEyes) {
+                burstHasFace = true
+                val eyeOpenScore = (leftEyeProb!! + rightEyeProb!!) / 2.0f
+
+                when (eyeState) {
+                    EyeState.OPEN, EyeState.OPENING -> {
+                        if (eyeOpenScore < EYE_CLOSED_THRESHOLD) {
+                            eyeState = EyeState.CLOSED
+                            eyeClosedTimestamp = timestamp
+                        }
+                    }
+                    EyeState.CLOSED, EyeState.CLOSING -> {
+                        if (eyeOpenScore > EYE_OPEN_THRESHOLD) {
+                            val duration = timestamp - eyeClosedTimestamp
+                            if (duration in MIN_BLINK_DURATION_MS..MAX_BLINK_DURATION_MS) {
+                                burstBlinkCount++
+                                totalBlinksCount++
+                                _blinkEvents.tryEmit(timestamp)
+                            }
+                            eyeState = EyeState.OPEN
+                        }
+                    }
+                }
+            }
+
+            val isGracePeriodActive = lastFaceSeenTimestamp > 0L && (timestamp - lastFaceSeenTimestamp <= FACE_LOST_GRACE_PERIOD_MS)
+            val isFacePresentOrInGrace = hasFaceAndEyes || isGracePeriodActive
+
+            val statusCategory = when {
+                !isFacePresentOrInGrace -> BlinkStatusCategory.FACE_NOT_DETECTED
+                lastBurstCompletedBpm > 0.0 -> {
+                    if (lastBurstCompletedBpm < alertThresholdBpm) BlinkStatusCategory.LOW_RATE else BlinkStatusCategory.NORMAL
+                }
+                else -> BlinkStatusCategory.NORMAL
+            }
+
+            _metrics.value = BlinkMetrics(
+                currentBpm = if (lastBurstCompletedBpm > 0.0) lastBurstCompletedBpm else 0.0,
+                totalBlinksInSession = totalBlinksCount,
+                isFaceDetected = hasFaceAndEyes,
+                lastEyeOpenScore = if (hasFaceAndEyes) ((leftEyeProb!! + rightEyeProb!!) / 2.0f) else _metrics.value.lastEyeOpenScore,
+                isSamplingActive = true,
+                isWarmedUp = true,
+                warmupSecondsElapsed = 30L,
+                statusCategory = statusCategory
+            )
+            return
+        }
+
+        // --- CONTINUOUS MODE HANDLING ---
+        if (sessionStartTimestamp == 0L) {
+            sessionStartTimestamp = timestamp
         }
 
         val elapsedSinceStart = timestamp - sessionStartTimestamp
@@ -139,6 +293,7 @@ class BlinkDetector(
 
         val statusCategory = when {
             !isFacePresentOrInGrace -> BlinkStatusCategory.FACE_NOT_DETECTED
+            !isWarmedUp -> BlinkStatusCategory.NORMAL
             currentBpm < alertThresholdBpm -> BlinkStatusCategory.LOW_RATE
             else -> BlinkStatusCategory.NORMAL
         }
@@ -165,26 +320,18 @@ class BlinkDetector(
 
     /**
      * Periodic check to update warmup state, normalized BPM, and handle 10s grace period.
-     * When camera is paused in Duty-Cycle Burst mode (isSamplingActive == false),
-     * it does NOT switch to Yellow and remembers the last rate measured.
+     * In burst mode or when sampling is paused, skips rolling window modification.
      */
     @Synchronized
     fun checkGracePeriod(timestamp: Long = System.currentTimeMillis()) {
+        if (isBurstActive || !isSamplingActive) {
+            return
+        }
+
         if (sessionStartTimestamp == 0L) return
 
         val elapsedSinceStart = timestamp - sessionStartTimestamp
         val isWarmedUp = elapsedSinceStart >= WARMUP_PERIOD_MS
-
-        // If camera is paused for duty cycle burst, remember last measured rate and category
-        if (!isSamplingActive) {
-            if (_metrics.value.isWarmedUp != isWarmedUp) {
-                _metrics.value = _metrics.value.copy(
-                    isWarmedUp = isWarmedUp,
-                    warmupSecondsElapsed = (elapsedSinceStart / 1000L).coerceAtMost(30L)
-                )
-            }
-            return
-        }
 
         val windowStart = if (elapsedSinceStart >= ROLLING_WINDOW_MS) {
             timestamp - ROLLING_WINDOW_MS
@@ -213,6 +360,7 @@ class BlinkDetector(
 
         val statusCategory = when {
             !isGracePeriodActive -> BlinkStatusCategory.FACE_NOT_DETECTED
+            !isWarmedUp -> BlinkStatusCategory.NORMAL
             currentBpm < alertThresholdBpm -> BlinkStatusCategory.LOW_RATE
             else -> BlinkStatusCategory.NORMAL
         }
@@ -258,6 +406,7 @@ class BlinkDetector(
         }
     }
 
+    @Synchronized
     fun resetSession() {
         blinkTimestamps.clear()
         sessionStartTimestamp = 0L
@@ -266,6 +415,11 @@ class BlinkDetector(
         lastFaceSeenTimestamp = 0L
         eyeState = EyeState.OPEN
         isSamplingActive = true
+        isBurstActive = false
+        burstStartTimestamp = 0L
+        burstBlinkCount = 0
+        burstHasFace = false
+        lastBurstCompletedBpm = 0.0
         previousCategory = null
         _metrics.value = BlinkMetrics(statusCategory = BlinkStatusCategory.NORMAL)
     }
