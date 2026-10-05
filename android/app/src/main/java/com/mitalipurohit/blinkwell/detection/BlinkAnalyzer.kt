@@ -20,7 +20,8 @@ class BlinkAnalyzer(
             .setClassificationMode(FaceDetectorOptions.CLASSIFICATION_MODE_ALL)
             .setLandmarkMode(FaceDetectorOptions.LANDMARK_MODE_NONE)
             .setContourMode(FaceDetectorOptions.CONTOUR_MODE_NONE)
-            .setMinFaceSize(0.2f)
+            .setMinFaceSize(0.15f)
+            .enableTracking()
             .build()
 
         detector = FaceDetection.getClient(options)
@@ -44,12 +45,16 @@ class BlinkAnalyzer(
                     val primaryFace = faces[0]
                     val leftProb = primaryFace.leftEyeOpenProbability
                     val rightProb = primaryFace.rightEyeOpenProbability
+                    val eulerX = primaryFace.headEulerAngleX
+                    val eulerY = primaryFace.headEulerAngleY
 
                     blinkDetector.onFrameProcessed(
                         faceDetected = true,
                         leftEyeProb = leftProb,
                         rightEyeProb = rightProb,
-                        timestamp = currentTimestamp
+                        timestamp = currentTimestamp,
+                        headEulerAngleX = eulerX,
+                        headEulerAngleY = eulerY
                     )
                 } else {
                     blinkDetector.onFrameProcessed(

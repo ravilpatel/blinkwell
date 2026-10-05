@@ -495,7 +495,7 @@ class BlinkMonitorService : Service(), LifecycleOwner {
                 blinkAnalyzer = BlinkAnalyzer(blinkDetector)
 
                 val imageAnalysis = ImageAnalysis.Builder()
-                    .setTargetResolution(Size(320, 240))
+                    .setTargetResolution(Size(480, 360))
                     .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                     .build()
 

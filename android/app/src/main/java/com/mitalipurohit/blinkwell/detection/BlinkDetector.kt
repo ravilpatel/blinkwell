@@ -23,8 +23,14 @@ class BlinkDetector(
     companion object {
         const val EYE_CLOSED_THRESHOLD = 0.40f
         const val EYE_OPEN_THRESHOLD = 0.60f
+        const val DEFAULT_EYE_OPEN_BASELINE = 0.75f
+        const val MIN_EYE_OPEN_BASELINE = 0.45f
+        const val MAX_EYE_OPEN_BASELINE = 0.95f
         const val MIN_BLINK_DURATION_MS = 60L
         const val MAX_BLINK_DURATION_MS = 600L
+        const val MIN_INTER_BLINK_INTERVAL_MS = 150L // Physiological refractory period
+        const val MAX_RELIABLE_HEAD_YAW_DEG = 35.0f
+        const val MAX_RELIABLE_HEAD_PITCH_DEG = 30.0f
         const val WARMUP_PERIOD_MS = 30_000L // 30 seconds initial warmup
         const val ROLLING_WINDOW_MS = 60_000L // 60 seconds rolling window
         const val ALERT_SUSTAINED_DURATION_MS = 2 * 60 * 1000L // 2 consecutive minutes
@@ -58,6 +64,12 @@ class BlinkDetector(
     private var isSamplingActive: Boolean = true
     private var previousCategory: BlinkStatusCategory? = null
 
+    // Adaptive baseline & temporal smoothing state
+    private var eyeOpenBaseline: Float = DEFAULT_EYE_OPEN_BASELINE
+    private var lastBlinkTimestamp: Long = 0L
+    private var lastFrameTimestamp: Long = 0L
+    private var smoothedEyeScore: Float? = null
+
     // 5-minute Burst Mode state
     private var is5MinBurstActive: Boolean = false
     private var burstElapsedSecondsCount: Long = 0L
@@ -68,6 +80,8 @@ class BlinkDetector(
     private var burstBlinkCount: Int = 0
     private var burstHasFace: Boolean = false
     private var lastBurstCompletedBpm: Double = 0.0
+
+    fun getEyeOpenBaseline(): Float = eyeOpenBaseline
 
     fun setThreshold(thresholdBpm: Int) {
         this.alertThresholdBpm = thresholdBpm
@@ -103,6 +117,11 @@ class BlinkDetector(
         burstHasFace = false
         lastFaceSeenTimestamp = timestamp
         eyeState = EyeState.OPEN
+        eyeClosedTimestamp = 0L
+        lastBlinkTimestamp = 0L
+        lastFrameTimestamp = 0L
+        smoothedEyeScore = null
+        eyeOpenBaseline = DEFAULT_EYE_OPEN_BASELINE
         isSamplingActive = true
         _metrics.value = BlinkMetrics(
             currentBpm = 0.0,
@@ -113,7 +132,8 @@ class BlinkDetector(
             warmupSecondsElapsed = 0L,
             statusCategory = BlinkStatusCategory.NORMAL,
             burstElapsedSeconds = 0L,
-            burstTotalSeconds = 300L
+            burstTotalSeconds = 300L,
+            eyeOpenBaseline = eyeOpenBaseline
         )
     }
 
@@ -157,7 +177,8 @@ class BlinkDetector(
             totalBlinksInSession = burstBlinkCount,
             isSamplingActive = false,
             burstElapsedSeconds = durationSeconds.toLong(),
-            statusCategory = statusCategory
+            statusCategory = statusCategory,
+            eyeOpenBaseline = eyeOpenBaseline
         )
 
         _burstCompletionEvents.tryEmit(result)
@@ -176,11 +197,17 @@ class BlinkDetector(
         burstHasFace = false
         lastFaceSeenTimestamp = timestamp
         eyeState = EyeState.OPEN
+        eyeClosedTimestamp = 0L
+        lastBlinkTimestamp = 0L
+        lastFrameTimestamp = 0L
+        smoothedEyeScore = null
+        eyeOpenBaseline = DEFAULT_EYE_OPEN_BASELINE
         isSamplingActive = true
         _metrics.value = _metrics.value.copy(
             isSamplingActive = true,
             isFaceDetected = true,
-            warmupSecondsElapsed = 0L
+            warmupSecondsElapsed = 0L,
+            eyeOpenBaseline = eyeOpenBaseline
         )
     }
 
@@ -201,7 +228,8 @@ class BlinkDetector(
             _metrics.value = _metrics.value.copy(
                 isSamplingActive = false,
                 isFaceDetected = false,
-                statusCategory = statusCategory
+                statusCategory = statusCategory,
+                eyeOpenBaseline = eyeOpenBaseline
             )
             return BurstResult(
                 faceDetected = false,
@@ -230,7 +258,8 @@ class BlinkDetector(
             isSamplingActive = false,
             isWarmedUp = true,
             warmupSecondsElapsed = elapsedSeconds.toLong(),
-            statusCategory = statusCategory
+            statusCategory = statusCategory,
+            eyeOpenBaseline = eyeOpenBaseline
         )
 
         return BurstResult(
@@ -279,8 +308,103 @@ class BlinkDetector(
         previousCategory = BlinkStatusCategory.FACE_NOT_DETECTED
         _metrics.value = _metrics.value.copy(
             isFaceDetected = false,
-            statusCategory = BlinkStatusCategory.FACE_NOT_DETECTED
+            statusCategory = BlinkStatusCategory.FACE_NOT_DETECTED,
+            eyeOpenBaseline = eyeOpenBaseline
         )
+    }
+
+    /**
+     * Core state machine evaluation for a single frame.
+     * Implements adaptive thresholding, bilateral validation, wink rejection,
+     * physiological debouncing (refractory period), and responsive smoothing.
+     * Returns true if a valid blink completed on this frame.
+     */
+    private fun processEyeState(
+        leftEyeProb: Float?,
+        rightEyeProb: Float?,
+        timestamp: Long,
+        headEulerAngleX: Float?,
+        headEulerAngleY: Float?
+    ): Boolean {
+        // Head pose gating: ignore frames when user is turned away from camera
+        if (headEulerAngleY != null && Math.abs(headEulerAngleY) > MAX_RELIABLE_HEAD_YAW_DEG) {
+            return false
+        }
+        if (headEulerAngleX != null && Math.abs(headEulerAngleX) > MAX_RELIABLE_HEAD_PITCH_DEG) {
+            return false
+        }
+
+        // Single-eye fallback vs Bilateral evaluation
+        val rawScore: Float
+        val isWink: Boolean
+
+        if (leftEyeProb != null && rightEyeProb != null) {
+            rawScore = (leftEyeProb + rightEyeProb) / 2.0f
+            val dynClosed = (eyeOpenBaseline * 0.45f).coerceIn(0.20f, 0.40f)
+            val dynOpen = (eyeOpenBaseline * 0.75f).coerceIn(0.45f, 0.60f)
+            // A wink occurs when one eye is closed while the other eye remains wide open
+            isWink = (leftEyeProb < dynClosed && rightEyeProb > dynOpen) ||
+                     (rightEyeProb < dynClosed && leftEyeProb > dynOpen)
+        } else if (leftEyeProb != null) {
+            rawScore = leftEyeProb
+            isWink = false
+        } else if (rightEyeProb != null) {
+            rawScore = rightEyeProb
+            isWink = false
+        } else {
+            smoothedEyeScore = null
+            return false
+        }
+
+        // Responsive temporal smoothing:
+        // For sparse frames (e.g. unit tests or frame gaps > 150ms), snap directly to rawScore.
+        // For continuous 15-30fps stream, apply EMA to suppress single-frame sensor glitches.
+        val currentSmoothed = smoothedEyeScore
+        val smoothed = if (currentSmoothed == null || (timestamp - lastFrameTimestamp > 150L)) {
+            rawScore
+        } else {
+            (0.15f * currentSmoothed) + (0.85f * rawScore)
+        }
+        smoothedEyeScore = smoothed
+        lastFrameTimestamp = timestamp
+
+        // Adapt baseline when eye is open and stable
+        if (eyeState == EyeState.OPEN && rawScore >= 0.45f && !isWink) {
+            eyeOpenBaseline = (eyeOpenBaseline * 0.95f + rawScore * 0.05f).coerceIn(MIN_EYE_OPEN_BASELINE, MAX_EYE_OPEN_BASELINE)
+        }
+
+        val dynamicClosedThreshold = (eyeOpenBaseline * 0.45f).coerceIn(0.20f, 0.40f)
+        val dynamicOpenThreshold = (eyeOpenBaseline * 0.75f).coerceIn(0.45f, 0.60f)
+
+        var blinkCompleted = false
+
+        when (eyeState) {
+            EyeState.OPEN, EyeState.OPENING -> {
+                if (isWink) {
+                    // Suppress winks
+                } else if (smoothed < dynamicClosedThreshold) {
+                    // Refractory period check: suppress post-blink bounce/rebound artifacts
+                    if ((timestamp - lastBlinkTimestamp) >= MIN_INTER_BLINK_INTERVAL_MS) {
+                        eyeState = EyeState.CLOSED
+                        eyeClosedTimestamp = timestamp
+                    }
+                }
+            }
+            EyeState.CLOSED, EyeState.CLOSING -> {
+                if (isWink) {
+                    eyeState = EyeState.OPEN
+                } else if (smoothed > dynamicOpenThreshold || rawScore > dynamicOpenThreshold) {
+                    val duration = timestamp - eyeClosedTimestamp
+                    if (duration in MIN_BLINK_DURATION_MS..MAX_BLINK_DURATION_MS) {
+                        lastBlinkTimestamp = timestamp
+                        blinkCompleted = true
+                    }
+                    eyeState = EyeState.OPEN
+                }
+            }
+        }
+
+        return blinkCompleted
     }
 
     @Synchronized
@@ -288,43 +412,36 @@ class BlinkDetector(
         faceDetected: Boolean,
         leftEyeProb: Float?,
         rightEyeProb: Float?,
-        timestamp: Long = System.currentTimeMillis()
+        timestamp: Long = System.currentTimeMillis(),
+        headEulerAngleX: Float? = null,
+        headEulerAngleY: Float? = null
     ) {
-        val hasFaceAndEyes = faceDetected && leftEyeProb != null && rightEyeProb != null
+        val hasFaceAndAnyEye = faceDetected && (leftEyeProb != null || rightEyeProb != null)
+        val currentEyeScore: Float? = when {
+            leftEyeProb != null && rightEyeProb != null -> (leftEyeProb + rightEyeProb) / 2.0f
+            leftEyeProb != null -> leftEyeProb
+            rightEyeProb != null -> rightEyeProb
+            else -> null
+        }
 
-        if (hasFaceAndEyes) {
+        if (hasFaceAndAnyEye) {
             lastFaceSeenTimestamp = timestamp
         }
 
         // --- 5-MINUTE BURST MODE HANDLING (Silent, continuous measurement) ---
         if (is5MinBurstActive) {
-            if (hasFaceAndEyes) {
+            if (hasFaceAndAnyEye) {
                 burstHasFace = true
-                val eyeOpenScore = (leftEyeProb!! + rightEyeProb!!) / 2.0f
-
-                when (eyeState) {
-                    EyeState.OPEN, EyeState.OPENING -> {
-                        if (eyeOpenScore < EYE_CLOSED_THRESHOLD) {
-                            eyeState = EyeState.CLOSED
-                            eyeClosedTimestamp = timestamp
-                        }
-                    }
-                    EyeState.CLOSED, EyeState.CLOSING -> {
-                        if (eyeOpenScore > EYE_OPEN_THRESHOLD) {
-                            val duration = timestamp - eyeClosedTimestamp
-                            if (duration in MIN_BLINK_DURATION_MS..MAX_BLINK_DURATION_MS) {
-                                burstBlinkCount++
-                                totalBlinksCount++
-                                _blinkEvents.tryEmit(timestamp)
-                            }
-                            eyeState = EyeState.OPEN
-                        }
-                    }
+                val blinkCompleted = processEyeState(leftEyeProb, rightEyeProb, timestamp, headEulerAngleX, headEulerAngleY)
+                if (blinkCompleted) {
+                    burstBlinkCount++
+                    totalBlinksCount++
+                    _blinkEvents.tryEmit(timestamp)
                 }
             }
 
             val isGracePeriodActive = lastFaceSeenTimestamp > 0L && (timestamp - lastFaceSeenTimestamp <= FACE_LOST_GRACE_PERIOD_MS)
-            val isFacePresentOrInGrace = hasFaceAndEyes || isGracePeriodActive
+            val isFacePresentOrInGrace = hasFaceAndAnyEye || isGracePeriodActive
             val effectiveSeconds = burstElapsedSecondsCount.coerceAtLeast(1L).toDouble()
             val liveBpm = (burstBlinkCount * 60.0) / effectiveSeconds
 
@@ -332,46 +449,32 @@ class BlinkDetector(
                 currentBpm = liveBpm,
                 totalBlinksInSession = burstBlinkCount,
                 isFaceDetected = isFacePresentOrInGrace,
-                lastEyeOpenScore = if (hasFaceAndEyes) ((leftEyeProb!! + rightEyeProb!!) / 2.0f) else _metrics.value.lastEyeOpenScore,
+                lastEyeOpenScore = currentEyeScore ?: _metrics.value.lastEyeOpenScore,
                 isSamplingActive = true,
                 isWarmedUp = true,
                 warmupSecondsElapsed = burstElapsedSecondsCount,
                 statusCategory = if (isFacePresentOrInGrace) BlinkStatusCategory.NORMAL else BlinkStatusCategory.FACE_NOT_DETECTED,
                 burstElapsedSeconds = burstElapsedSecondsCount,
-                burstTotalSeconds = 300L
+                burstTotalSeconds = 300L,
+                eyeOpenBaseline = eyeOpenBaseline
             )
             return
         }
 
         // --- MONITORING DUTY-CYCLE BURST HANDLING ---
         if (isBurstActive) {
-            if (hasFaceAndEyes) {
+            if (hasFaceAndAnyEye) {
                 burstHasFace = true
-                val eyeOpenScore = (leftEyeProb!! + rightEyeProb!!) / 2.0f
-
-                when (eyeState) {
-                    EyeState.OPEN, EyeState.OPENING -> {
-                        if (eyeOpenScore < EYE_CLOSED_THRESHOLD) {
-                            eyeState = EyeState.CLOSED
-                            eyeClosedTimestamp = timestamp
-                        }
-                    }
-                    EyeState.CLOSED, EyeState.CLOSING -> {
-                        if (eyeOpenScore > EYE_OPEN_THRESHOLD) {
-                            val duration = timestamp - eyeClosedTimestamp
-                            if (duration in MIN_BLINK_DURATION_MS..MAX_BLINK_DURATION_MS) {
-                                burstBlinkCount++
-                                totalBlinksCount++
-                                _blinkEvents.tryEmit(timestamp)
-                            }
-                            eyeState = EyeState.OPEN
-                        }
-                    }
+                val blinkCompleted = processEyeState(leftEyeProb, rightEyeProb, timestamp, headEulerAngleX, headEulerAngleY)
+                if (blinkCompleted) {
+                    burstBlinkCount++
+                    totalBlinksCount++
+                    _blinkEvents.tryEmit(timestamp)
                 }
             }
 
             val isGracePeriodActive = lastFaceSeenTimestamp > 0L && (timestamp - lastFaceSeenTimestamp <= FACE_LOST_GRACE_PERIOD_MS)
-            val isFacePresentOrInGrace = hasFaceAndEyes || isGracePeriodActive
+            val isFacePresentOrInGrace = hasFaceAndAnyEye || isGracePeriodActive
 
             val elapsedSeconds = if (burstStartTimestamp > 0L) {
                 ((timestamp - burstStartTimestamp) / 1000.0).coerceAtLeast(1.0)
@@ -391,12 +494,13 @@ class BlinkDetector(
             _metrics.value = BlinkMetrics(
                 currentBpm = liveBpm,
                 totalBlinksInSession = totalBlinksCount,
-                isFaceDetected = hasFaceAndEyes,
-                lastEyeOpenScore = if (hasFaceAndEyes) ((leftEyeProb!! + rightEyeProb!!) / 2.0f) else _metrics.value.lastEyeOpenScore,
+                isFaceDetected = hasFaceAndAnyEye,
+                lastEyeOpenScore = currentEyeScore ?: _metrics.value.lastEyeOpenScore,
                 isSamplingActive = true,
                 isWarmedUp = true,
                 warmupSecondsElapsed = elapsedSeconds.toLong(),
-                statusCategory = statusCategory
+                statusCategory = statusCategory,
+                eyeOpenBaseline = eyeOpenBaseline
             )
             return
         }
@@ -434,26 +538,10 @@ class BlinkDetector(
             }
         }
 
-        if (hasFaceAndEyes) {
-            val eyeOpenScore = (leftEyeProb!! + rightEyeProb!!) / 2.0f
-
-            // State Machine for Eye Blink Detection
-            when (eyeState) {
-                EyeState.OPEN, EyeState.OPENING -> {
-                    if (eyeOpenScore < EYE_CLOSED_THRESHOLD) {
-                        eyeState = EyeState.CLOSED
-                        eyeClosedTimestamp = timestamp
-                    }
-                }
-                EyeState.CLOSED, EyeState.CLOSING -> {
-                    if (eyeOpenScore > EYE_OPEN_THRESHOLD) {
-                        val duration = timestamp - eyeClosedTimestamp
-                        if (duration in MIN_BLINK_DURATION_MS..MAX_BLINK_DURATION_MS) {
-                            registerBlink(timestamp)
-                        }
-                        eyeState = EyeState.OPEN
-                    }
-                }
+        if (hasFaceAndAnyEye) {
+            val blinkCompleted = processEyeState(leftEyeProb, rightEyeProb, timestamp, headEulerAngleX, headEulerAngleY)
+            if (blinkCompleted) {
+                registerBlink(timestamp)
             }
 
             // Check Low-BPM Alert Condition (once warmed up)
@@ -464,7 +552,7 @@ class BlinkDetector(
 
         // Determine status category
         val isGracePeriodActive = lastFaceSeenTimestamp > 0L && (timestamp - lastFaceSeenTimestamp <= FACE_LOST_GRACE_PERIOD_MS)
-        val isFacePresentOrInGrace = hasFaceAndEyes || isGracePeriodActive
+        val isFacePresentOrInGrace = hasFaceAndAnyEye || isGracePeriodActive
 
         val statusCategory = when {
             !isFacePresentOrInGrace -> BlinkStatusCategory.FACE_NOT_DETECTED
@@ -484,12 +572,13 @@ class BlinkDetector(
         _metrics.value = BlinkMetrics(
             currentBpm = currentBpm,
             totalBlinksInSession = totalBlinksCount,
-            isFaceDetected = hasFaceAndEyes,
-            lastEyeOpenScore = if (hasFaceAndEyes) ((leftEyeProb!! + rightEyeProb!!) / 2.0f) else _metrics.value.lastEyeOpenScore,
+            isFaceDetected = hasFaceAndAnyEye,
+            lastEyeOpenScore = currentEyeScore ?: _metrics.value.lastEyeOpenScore,
             isSamplingActive = isSamplingActive,
             isWarmedUp = isWarmedUp,
             warmupSecondsElapsed = (elapsedSinceStart / 1000L).coerceAtMost(30L),
-            statusCategory = statusCategory
+            statusCategory = statusCategory,
+            eyeOpenBaseline = eyeOpenBaseline
         )
     }
 
@@ -552,7 +641,8 @@ class BlinkDetector(
             isFaceDetected = isGracePeriodActive,
             isWarmedUp = isWarmedUp,
             warmupSecondsElapsed = (elapsedSinceStart / 1000L).coerceAtMost(30L),
-            statusCategory = statusCategory
+            statusCategory = statusCategory,
+            eyeOpenBaseline = eyeOpenBaseline
         )
     }
 
@@ -589,6 +679,11 @@ class BlinkDetector(
         lowBpmStartTimestamp = null
         lastFaceSeenTimestamp = 0L
         eyeState = EyeState.OPEN
+        eyeClosedTimestamp = 0L
+        lastBlinkTimestamp = 0L
+        lastFrameTimestamp = 0L
+        smoothedEyeScore = null
+        eyeOpenBaseline = DEFAULT_EYE_OPEN_BASELINE
         isSamplingActive = true
         is5MinBurstActive = false
         burstElapsedSecondsCount = 0L
@@ -598,6 +693,6 @@ class BlinkDetector(
         burstHasFace = false
         lastBurstCompletedBpm = 0.0
         previousCategory = null
-        _metrics.value = BlinkMetrics(statusCategory = BlinkStatusCategory.NORMAL)
+        _metrics.value = BlinkMetrics(statusCategory = BlinkStatusCategory.NORMAL, eyeOpenBaseline = DEFAULT_EYE_OPEN_BASELINE)
     }
 }

@@ -18,7 +18,8 @@ data class BlinkMetrics(
     val alertMessage: String? = null,
     val statusCategory: BlinkStatusCategory = BlinkStatusCategory.NORMAL,
     val burstElapsedSeconds: Long = 0L,
-    val burstTotalSeconds: Long = 300L
+    val burstTotalSeconds: Long = 300L,
+    val eyeOpenBaseline: Float = 0.75f
 )
 
 data class BurstSessionResult(
