@@ -13,12 +13,15 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 data class SettingsUiState(
+    val appMode: String = "burst", // "burst" (default) or "monitoring"
     val bpmThreshold: Int = 13,
-    val monitoringMode: String = "app_only",
+    val monitoringMode: String = "background",
     val samplingMode: String = "duty_cycle",
     val alertsEnabled: Boolean = true,
     val researchConsent: Boolean = true,
-    val selectedLanguage: String = "system"
+    val selectedLanguage: String = "system",
+    val batteryGuardEnabled: Boolean = true,
+    val batteryGuardThreshold: Int = 25
 )
 
 class SettingsViewModel(
@@ -30,6 +33,11 @@ class SettingsViewModel(
     val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
 
     init {
+        viewModelScope.launch {
+            settingsRepository.appMode.collect { mode ->
+                _uiState.value = _uiState.value.copy(appMode = mode)
+            }
+        }
         viewModelScope.launch {
             settingsRepository.bpmThreshold.collect { threshold ->
                 _uiState.value = _uiState.value.copy(bpmThreshold = threshold)
@@ -61,6 +69,22 @@ class SettingsViewModel(
                 _uiState.value = _uiState.value.copy(selectedLanguage = lang)
             }
         }
+        viewModelScope.launch {
+            settingsRepository.batteryGuardEnabled.collect { enabled ->
+                _uiState.value = _uiState.value.copy(batteryGuardEnabled = enabled)
+            }
+        }
+        viewModelScope.launch {
+            settingsRepository.batteryGuardThreshold.collect { threshold ->
+                _uiState.value = _uiState.value.copy(batteryGuardThreshold = threshold)
+            }
+        }
+    }
+
+    fun setAppMode(mode: String) {
+        viewModelScope.launch {
+            settingsRepository.setAppMode(mode)
+        }
     }
 
     fun setThreshold(threshold: Int) {
@@ -73,7 +97,6 @@ class SettingsViewModel(
         viewModelScope.launch {
             settingsRepository.setMonitoringMode(mode)
             if (mode == "app_only" && BlinkMonitorService.isRunning) {
-                // Switching from background to app-only immediately removes foreground service
                 BlinkMonitorService.stop(context)
             }
         }
@@ -111,6 +134,18 @@ class SettingsViewModel(
     fun setSelectedLanguage(lang: String) {
         viewModelScope.launch {
             settingsRepository.setSelectedLanguage(lang)
+        }
+    }
+
+    fun setBatteryGuardEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            settingsRepository.setBatteryGuardEnabled(enabled)
+        }
+    }
+
+    fun setBatteryGuardThreshold(threshold: Int) {
+        viewModelScope.launch {
+            settingsRepository.setBatteryGuardThreshold(threshold)
         }
     }
 

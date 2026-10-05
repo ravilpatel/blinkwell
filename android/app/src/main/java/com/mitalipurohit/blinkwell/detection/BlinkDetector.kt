@@ -43,6 +43,9 @@ class BlinkDetector(
     private val _greenToRedTransitions = MutableSharedFlow<Double>(extraBufferCapacity = 5)
     val greenToRedTransitions: SharedFlow<Double> = _greenToRedTransitions.asSharedFlow()
 
+    private val _burstCompletionEvents = MutableSharedFlow<BurstSessionResult>(extraBufferCapacity = 5)
+    val burstCompletionEvents: SharedFlow<BurstSessionResult> = _burstCompletionEvents.asSharedFlow()
+
     private var eyeState: EyeState = EyeState.OPEN
     private var eyeClosedTimestamp: Long = 0L
     private val blinkTimestamps = ConcurrentLinkedDeque<Long>()
@@ -55,7 +58,11 @@ class BlinkDetector(
     private var isSamplingActive: Boolean = true
     private var previousCategory: BlinkStatusCategory? = null
 
-    // Burst scanning state for Background Mode Duty Cycling
+    // 5-minute Burst Mode state
+    private var is5MinBurstActive: Boolean = false
+    private var burstElapsedSecondsCount: Long = 0L
+
+    // Duty-cycled burst scanning state for Monitoring Mode Duty Cycling
     private var isBurstActive: Boolean = false
     private var burstStartTimestamp: Long = 0L
     private var burstBlinkCount: Int = 0
@@ -81,6 +88,80 @@ class BlinkDetector(
         } else {
             _metrics.value = _metrics.value.copy(isSamplingActive = false)
         }
+    }
+
+    /**
+     * Starts the dedicated 5-minute Burst Mode assessment session.
+     */
+    @Synchronized
+    fun start5MinBurst(timestamp: Long = System.currentTimeMillis()) {
+        is5MinBurstActive = true
+        isBurstActive = false
+        burstStartTimestamp = timestamp
+        burstBlinkCount = 0
+        burstElapsedSecondsCount = 0L
+        burstHasFace = false
+        lastFaceSeenTimestamp = timestamp
+        eyeState = EyeState.OPEN
+        isSamplingActive = true
+        _metrics.value = BlinkMetrics(
+            currentBpm = 0.0,
+            totalBlinksInSession = 0,
+            isFaceDetected = true,
+            isSamplingActive = true,
+            isWarmedUp = true,
+            warmupSecondsElapsed = 0L,
+            statusCategory = BlinkStatusCategory.NORMAL,
+            burstElapsedSeconds = 0L,
+            burstTotalSeconds = 300L
+        )
+    }
+
+    /**
+     * Updates elapsed seconds in the 5-minute burst assessment.
+     */
+    @Synchronized
+    fun updateBurstElapsedSeconds(elapsedSeconds: Long) {
+        burstElapsedSecondsCount = elapsedSeconds
+        val effectiveSeconds = elapsedSeconds.coerceAtLeast(1L).toDouble()
+        val currentBpm = (burstBlinkCount * 60.0) / effectiveSeconds
+        _metrics.value = _metrics.value.copy(
+            currentBpm = currentBpm,
+            burstElapsedSeconds = elapsedSeconds,
+            totalBlinksInSession = burstBlinkCount
+        )
+    }
+
+    /**
+     * Completes the 5-minute burst assessment and emits the final result.
+     */
+    @Synchronized
+    fun finish5MinBurst(durationSeconds: Double = 300.0): BurstSessionResult {
+        is5MinBurstActive = false
+        isSamplingActive = false
+
+        val finalBpm = (burstBlinkCount * 60.0) / durationSeconds
+        val isLowRate = finalBpm < alertThresholdBpm
+        val statusCategory = if (isLowRate) BlinkStatusCategory.LOW_RATE else BlinkStatusCategory.NORMAL
+
+        val result = BurstSessionResult(
+            finalBpm = finalBpm,
+            totalBlinks = burstBlinkCount,
+            durationSeconds = durationSeconds.toLong(),
+            statusCategory = statusCategory,
+            completedTimestamp = System.currentTimeMillis()
+        )
+
+        _metrics.value = _metrics.value.copy(
+            currentBpm = finalBpm,
+            totalBlinksInSession = burstBlinkCount,
+            isSamplingActive = false,
+            burstElapsedSeconds = durationSeconds.toLong(),
+            statusCategory = statusCategory
+        )
+
+        _burstCompletionEvents.tryEmit(result)
+        return result
     }
 
     /**
@@ -172,6 +253,36 @@ class BlinkDetector(
         )
     }
 
+    /**
+     * Checks if a face was detected during the active burst scan (e.g. within first 5 seconds).
+     */
+    @Synchronized
+    fun hasSeenFaceInBurst(): Boolean = burstHasFace
+
+    /**
+     * Checks if a face was seen recently within the specified window in milliseconds.
+     */
+    @Synchronized
+    fun hasSeenFaceRecently(windowMs: Long = 5000L, now: Long = System.currentTimeMillis()): Boolean {
+        return lastFaceSeenTimestamp > 0L && (now - lastFaceSeenTimestamp <= windowMs)
+    }
+
+    @Synchronized
+    fun getLastFaceSeenTimestamp(): Long = lastFaceSeenTimestamp
+
+    /**
+     * Explicitly marks face as lost / not detected and updates metrics.
+     */
+    @Synchronized
+    fun markFaceLost() {
+        burstHasFace = false
+        previousCategory = BlinkStatusCategory.FACE_NOT_DETECTED
+        _metrics.value = _metrics.value.copy(
+            isFaceDetected = false,
+            statusCategory = BlinkStatusCategory.FACE_NOT_DETECTED
+        )
+    }
+
     @Synchronized
     fun onFrameProcessed(
         faceDetected: Boolean,
@@ -185,7 +296,54 @@ class BlinkDetector(
             lastFaceSeenTimestamp = timestamp
         }
 
-        // --- BURST MODE HANDLING ---
+        // --- 5-MINUTE BURST MODE HANDLING (Silent, continuous measurement) ---
+        if (is5MinBurstActive) {
+            if (hasFaceAndEyes) {
+                burstHasFace = true
+                val eyeOpenScore = (leftEyeProb!! + rightEyeProb!!) / 2.0f
+
+                when (eyeState) {
+                    EyeState.OPEN, EyeState.OPENING -> {
+                        if (eyeOpenScore < EYE_CLOSED_THRESHOLD) {
+                            eyeState = EyeState.CLOSED
+                            eyeClosedTimestamp = timestamp
+                        }
+                    }
+                    EyeState.CLOSED, EyeState.CLOSING -> {
+                        if (eyeOpenScore > EYE_OPEN_THRESHOLD) {
+                            val duration = timestamp - eyeClosedTimestamp
+                            if (duration in MIN_BLINK_DURATION_MS..MAX_BLINK_DURATION_MS) {
+                                burstBlinkCount++
+                                totalBlinksCount++
+                                _blinkEvents.tryEmit(timestamp)
+                            }
+                            eyeState = EyeState.OPEN
+                        }
+                    }
+                }
+            }
+
+            val isGracePeriodActive = lastFaceSeenTimestamp > 0L && (timestamp - lastFaceSeenTimestamp <= FACE_LOST_GRACE_PERIOD_MS)
+            val isFacePresentOrInGrace = hasFaceAndEyes || isGracePeriodActive
+            val effectiveSeconds = burstElapsedSecondsCount.coerceAtLeast(1L).toDouble()
+            val liveBpm = (burstBlinkCount * 60.0) / effectiveSeconds
+
+            _metrics.value = BlinkMetrics(
+                currentBpm = liveBpm,
+                totalBlinksInSession = burstBlinkCount,
+                isFaceDetected = isFacePresentOrInGrace,
+                lastEyeOpenScore = if (hasFaceAndEyes) ((leftEyeProb!! + rightEyeProb!!) / 2.0f) else _metrics.value.lastEyeOpenScore,
+                isSamplingActive = true,
+                isWarmedUp = true,
+                warmupSecondsElapsed = burstElapsedSecondsCount,
+                statusCategory = if (isFacePresentOrInGrace) BlinkStatusCategory.NORMAL else BlinkStatusCategory.FACE_NOT_DETECTED,
+                burstElapsedSeconds = burstElapsedSecondsCount,
+                burstTotalSeconds = 300L
+            )
+            return
+        }
+
+        // --- MONITORING DUTY-CYCLE BURST HANDLING ---
         if (isBurstActive) {
             if (hasFaceAndEyes) {
                 burstHasFace = true
@@ -341,7 +499,7 @@ class BlinkDetector(
      */
     @Synchronized
     fun checkGracePeriod(timestamp: Long = System.currentTimeMillis()) {
-        if (isBurstActive || !isSamplingActive) {
+        if (is5MinBurstActive || isBurstActive || !isSamplingActive) {
             return
         }
 
@@ -432,6 +590,8 @@ class BlinkDetector(
         lastFaceSeenTimestamp = 0L
         eyeState = EyeState.OPEN
         isSamplingActive = true
+        is5MinBurstActive = false
+        burstElapsedSecondsCount = 0L
         isBurstActive = false
         burstStartTimestamp = 0L
         burstBlinkCount = 0

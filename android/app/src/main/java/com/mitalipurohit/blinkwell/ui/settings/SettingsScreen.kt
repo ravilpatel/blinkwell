@@ -46,6 +46,7 @@ import androidx.core.os.LocaleListCompat
 import com.mitalipurohit.blinkwell.R
 import com.mitalipurohit.blinkwell.ui.theme.AccentRose
 import com.mitalipurohit.blinkwell.ui.theme.TealPrimary
+import com.mitalipurohit.blinkwell.util.BatteryOptimizationHelper
 
 @Composable
 fun SettingsScreen(
@@ -72,9 +73,9 @@ fun SettingsScreen(
                 fontWeight = FontWeight.Bold
             )
 
-            // Section 1: Monitoring Mode
+            // Section 1: Operating Mode
             Text(
-                text = stringResource(R.string.settings_mode_switch_label),
+                text = stringResource(R.string.mode_choice_title),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = TealPrimary
@@ -89,23 +90,23 @@ fun SettingsScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { viewModel.setMonitoringMode(context, "background") },
+                            .clickable { viewModel.setAppMode("burst") },
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         RadioButton(
-                            selected = uiState.monitoringMode == "background",
-                            onClick = { viewModel.setMonitoringMode(context, "background") },
+                            selected = uiState.appMode == "burst",
+                            onClick = { viewModel.setAppMode("burst") },
                             colors = RadioButtonDefaults.colors(selectedColor = TealPrimary)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Column {
                             Text(
-                                text = stringResource(R.string.mode_background_title),
+                                text = stringResource(R.string.mode_burst_title),
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.SemiBold
                             )
                             Text(
-                                text = stringResource(R.string.mode_background_desc),
+                                text = stringResource(R.string.mode_burst_desc),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -117,23 +118,23 @@ fun SettingsScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { viewModel.setMonitoringMode(context, "app_only") },
+                            .clickable { viewModel.setAppMode("monitoring") },
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         RadioButton(
-                            selected = uiState.monitoringMode == "app_only",
-                            onClick = { viewModel.setMonitoringMode(context, "app_only") },
+                            selected = uiState.appMode == "monitoring",
+                            onClick = { viewModel.setAppMode("monitoring") },
                             colors = RadioButtonDefaults.colors(selectedColor = TealPrimary)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Column {
                             Text(
-                                text = stringResource(R.string.mode_app_only_title),
+                                text = stringResource(R.string.mode_monitoring_title),
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.SemiBold
                             )
                             Text(
-                                text = stringResource(R.string.mode_app_only_desc),
+                                text = stringResource(R.string.mode_monitoring_desc),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -172,6 +173,101 @@ fun SettingsScreen(
                             activeTrackColor = TealPrimary
                         )
                     )
+                }
+            }
+
+            // Section 3: Battery & Power Management
+            Text(
+                text = stringResource(R.string.settings_section_power),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = TealPrimary
+            )
+
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    // 1. Battery Guard Toggle (Opted Yes by default)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = stringResource(R.string.settings_battery_guard_title),
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            Text(
+                                text = stringResource(R.string.settings_battery_guard_subtitle),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Switch(
+                            checked = uiState.batteryGuardEnabled,
+                            onCheckedChange = { viewModel.setBatteryGuardEnabled(it) },
+                            colors = SwitchDefaults.colors(checkedThumbColor = TealPrimary)
+                        )
+                    }
+
+                    if (uiState.batteryGuardEnabled) {
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = stringResource(R.string.settings_battery_guard_threshold_label, uiState.batteryGuardThreshold),
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Medium
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Slider(
+                            value = uiState.batteryGuardThreshold.toFloat(),
+                            onValueChange = { viewModel.setBatteryGuardThreshold(it.toInt()) },
+                            valueRange = 10f..50f,
+                            steps = 7,
+                            colors = SliderDefaults.colors(
+                                thumbColor = TealPrimary,
+                                activeTrackColor = TealPrimary
+                            )
+                        )
+                        Text(
+                            text = stringResource(R.string.settings_battery_guard_desc, uiState.batteryGuardThreshold),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // 2. Background Optimization Exemption Status
+                    val isExempt = BatteryOptimizationHelper.isIgnoringBatteryOptimizations(context)
+                    Text(
+                        text = if (isExempt) {
+                            stringResource(R.string.settings_battery_opt_summary_exempt)
+                        } else {
+                            stringResource(R.string.settings_battery_opt_summary_restricted)
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedButton(
+                        onClick = {
+                            BatteryOptimizationHelper.requestIgnoreBatteryOptimizations(context)
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.settings_battery_opt_btn),
+                            color = TealPrimary,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
                 }
             }
 

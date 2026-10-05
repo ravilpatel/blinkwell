@@ -17,6 +17,7 @@ class PreferenceManager(private val context: Context) {
 
     companion object {
         val KEY_ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
+        val KEY_APP_MODE = stringPreferencesKey("app_mode") // "burst" | "monitoring"
         val KEY_MONITORING_MODE = stringPreferencesKey("monitoring_mode") // "background" | "app_only"
         val KEY_SAMPLING_MODE = stringPreferencesKey("sampling_mode") // "duty_cycle" | "continuous"
         val KEY_BPM_THRESHOLD = intPreferencesKey("bpm_threshold") // default: 10
@@ -26,6 +27,8 @@ class PreferenceManager(private val context: Context) {
         val KEY_SELECTED_LANGUAGE = stringPreferencesKey("selected_language") // "system", "en", "hi"
         val KEY_ACTIVE_SESSION_ID = stringPreferencesKey("active_session_id")
         val KEY_DEVICE_REGISTERED = booleanPreferencesKey("device_registered")
+        val KEY_BATTERY_GUARD_ENABLED = booleanPreferencesKey("battery_guard_enabled")
+        val KEY_BATTERY_GUARD_THRESHOLD = intPreferencesKey("battery_guard_threshold")
     }
 
     val isDeviceRegistered: Flow<Boolean> = context.dataStore.data.map { preferences ->
@@ -36,8 +39,12 @@ class PreferenceManager(private val context: Context) {
         preferences[KEY_ONBOARDING_COMPLETED] ?: false
     }
 
+    val appMode: Flow<String> = context.dataStore.data.map { preferences ->
+        preferences[KEY_APP_MODE] ?: "burst"
+    }
+
     val monitoringMode: Flow<String> = context.dataStore.data.map { preferences ->
-        preferences[KEY_MONITORING_MODE] ?: "app_only"
+        preferences[KEY_MONITORING_MODE] ?: "background"
     }
 
     val samplingMode: Flow<String> = context.dataStore.data.map { preferences ->
@@ -68,9 +75,23 @@ class PreferenceManager(private val context: Context) {
         preferences[KEY_ACTIVE_SESSION_ID]
     }
 
+    val batteryGuardEnabled: Flow<Boolean> = context.dataStore.data.map { preferences ->
+        preferences[KEY_BATTERY_GUARD_ENABLED] ?: true
+    }
+
+    val batteryGuardThreshold: Flow<Int> = context.dataStore.data.map { preferences ->
+        preferences[KEY_BATTERY_GUARD_THRESHOLD] ?: 25
+    }
+
     suspend fun setOnboardingCompleted(completed: Boolean) {
         context.dataStore.edit { preferences ->
             preferences[KEY_ONBOARDING_COMPLETED] = completed
+        }
+    }
+
+    suspend fun setAppMode(mode: String) {
+        context.dataStore.edit { preferences ->
+            preferences[KEY_APP_MODE] = mode
         }
     }
 
@@ -129,6 +150,18 @@ class PreferenceManager(private val context: Context) {
     suspend fun setDeviceRegistered(registered: Boolean) {
         context.dataStore.edit { preferences ->
             preferences[KEY_DEVICE_REGISTERED] = registered
+        }
+    }
+
+    suspend fun setBatteryGuardEnabled(enabled: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[KEY_BATTERY_GUARD_ENABLED] = enabled
+        }
+    }
+
+    suspend fun setBatteryGuardThreshold(threshold: Int) {
+        context.dataStore.edit { preferences ->
+            preferences[KEY_BATTERY_GUARD_THRESHOLD] = threshold
         }
     }
 

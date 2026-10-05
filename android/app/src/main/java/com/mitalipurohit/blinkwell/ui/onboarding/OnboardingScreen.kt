@@ -64,6 +64,7 @@ import androidx.compose.ui.unit.sp
 import com.mitalipurohit.blinkwell.R
 import com.mitalipurohit.blinkwell.ui.theme.AccentEmerald
 import com.mitalipurohit.blinkwell.ui.theme.TealPrimary
+import com.mitalipurohit.blinkwell.util.BatteryOptimizationHelper
 
 @Composable
 fun OnboardingScreen(
@@ -660,18 +661,18 @@ fun ModeChoiceStep(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Background Mode Card
-        val isBackground = selectedMode == "background"
+        // Burst Mode Card (Default & Recommended)
+        val isBurst = selectedMode == "burst"
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { onModeSelected("background") },
+                .clickable { onModeSelected("burst") },
             colors = CardDefaults.cardColors(
-                containerColor = if (isBackground) TealPrimary.copy(alpha = 0.12f) else MaterialTheme.colorScheme.surface
+                containerColor = if (isBurst) TealPrimary.copy(alpha = 0.12f) else MaterialTheme.colorScheme.surface
             ),
             border = BorderStroke(
                 2.dp,
-                if (isBackground) TealPrimary else MaterialTheme.colorScheme.outlineVariant
+                if (isBurst) TealPrimary else MaterialTheme.colorScheme.outlineVariant
             ),
             shape = RoundedCornerShape(16.dp)
         ) {
@@ -683,29 +684,53 @@ fun ModeChoiceStep(
                     modifier = Modifier
                         .size(48.dp)
                         .clip(CircleShape)
-                        .background(if (isBackground) TealPrimary else MaterialTheme.colorScheme.surfaceVariant),
+                        .background(if (isBurst) TealPrimary else MaterialTheme.colorScheme.surfaceVariant),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Notifications,
+                        imageVector = Icons.Default.Visibility,
                         contentDescription = null,
-                        tint = if (isBackground) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+                        tint = if (isBurst) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
 
                 Spacer(modifier = Modifier.width(16.dp))
 
-                Column {
-                    Text(
-                        text = stringResource(R.string.mode_background_title),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
+                Column(modifier = Modifier.weight(1f)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = stringResource(R.string.mode_burst_title),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = TealPrimary.copy(alpha = 0.15f)
+                        ) {
+                            Text(
+                                text = "Default",
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = TealPrimary,
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                            )
+                        }
+                    }
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = stringResource(R.string.mode_background_desc),
+                        text = stringResource(R.string.mode_burst_desc),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                if (isBurst) {
+                    Icon(
+                        imageVector = Icons.Default.Check,
+                        contentDescription = "Selected",
+                        tint = TealPrimary,
+                        modifier = Modifier.size(24.dp)
                     )
                 }
             }
@@ -713,18 +738,18 @@ fun ModeChoiceStep(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // App-Only Mode Card
-        val isAppOnly = selectedMode == "app_only"
+        // Monitoring Mode Card
+        val isMonitoring = selectedMode == "monitoring"
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { onModeSelected("app_only") },
+                .clickable { onModeSelected("monitoring") },
             colors = CardDefaults.cardColors(
-                containerColor = if (isAppOnly) TealPrimary.copy(alpha = 0.12f) else MaterialTheme.colorScheme.surface
+                containerColor = if (isMonitoring) TealPrimary.copy(alpha = 0.12f) else MaterialTheme.colorScheme.surface
             ),
             border = BorderStroke(
                 2.dp,
-                if (isAppOnly) TealPrimary else MaterialTheme.colorScheme.outlineVariant
+                if (isMonitoring) TealPrimary else MaterialTheme.colorScheme.outlineVariant
             ),
             shape = RoundedCornerShape(16.dp)
         ) {
@@ -736,29 +761,38 @@ fun ModeChoiceStep(
                     modifier = Modifier
                         .size(48.dp)
                         .clip(CircleShape)
-                        .background(if (isAppOnly) TealPrimary else MaterialTheme.colorScheme.surfaceVariant),
+                        .background(if (isMonitoring) TealPrimary else MaterialTheme.colorScheme.surfaceVariant),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = Icons.Default.PhoneAndroid,
+                        imageVector = Icons.Default.Notifications,
                         contentDescription = null,
-                        tint = if (isAppOnly) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+                        tint = if (isMonitoring) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
 
                 Spacer(modifier = Modifier.width(16.dp))
 
-                Column {
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = stringResource(R.string.mode_app_only_title),
+                        text = stringResource(R.string.mode_monitoring_title),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = stringResource(R.string.mode_app_only_desc),
+                        text = stringResource(R.string.mode_monitoring_desc),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                if (isMonitoring) {
+                    Icon(
+                        imageVector = Icons.Default.Check,
+                        contentDescription = "Selected",
+                        tint = TealPrimary,
+                        modifier = Modifier.size(24.dp)
                     )
                 }
             }
@@ -895,6 +929,59 @@ fun PermissionsStep(
                         Icon(
                             imageVector = Icons.Default.Check,
                             contentDescription = "Granted",
+                            tint = AccentEmerald
+                        )
+                    }
+                }
+            }
+        }
+
+        // Background Monitoring Battery Exemption (Optional/Recommended for Monitoring Mode)
+        val context = LocalContext.current
+        var bgPermissionChecked by remember { mutableStateOf(BatteryOptimizationHelper.isIgnoringBatteryOptimizations(context)) }
+        if (selectedMode == "monitoring") {
+            Spacer(modifier = Modifier.height(16.dp))
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Row(
+                    modifier = Modifier.padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Security,
+                        contentDescription = null,
+                        tint = TealPrimary,
+                        modifier = Modifier.size(32.dp)
+                    )
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = stringResource(R.string.permission_battery_opt_title),
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = stringResource(R.string.permission_battery_opt_reason),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    if (!bgPermissionChecked) {
+                        Button(
+                            onClick = {
+                                BatteryOptimizationHelper.requestIgnoreBatteryOptimizations(context)
+                                bgPermissionChecked = true
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = TealPrimary)
+                        ) {
+                            Text("Allow")
+                        }
+                    } else {
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = "Allowed",
                             tint = AccentEmerald
                         )
                     }

@@ -14,7 +14,7 @@ data class OnboardingUiState(
     val monitorConsent: Boolean = true,
     val researchConsent: Boolean = true,
     val cohortArm: String = "software_engineer", // "software_engineer" | "student" | "general"
-    val selectedMode: String? = null, // "background" or "app_only"
+    val selectedMode: String = "burst", // "burst" (default) or "monitoring"
     val isCompleting: Boolean = false
 )
 
@@ -59,11 +59,11 @@ class OnboardingViewModel(
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isCompleting = true)
 
-            val mode = _uiState.value.selectedMode ?: "app_only"
+            val mode = _uiState.value.selectedMode
             val research = _uiState.value.researchConsent
             val cohort = _uiState.value.cohortArm
 
-            settingsRepository.setMonitoringMode(mode)
+            settingsRepository.setAppMode(mode)
             settingsRepository.setResearchConsent(research)
             settingsRepository.setCohortArm(cohort)
             settingsRepository.setOnboardingCompleted(true)

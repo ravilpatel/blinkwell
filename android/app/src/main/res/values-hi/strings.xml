@@ -33,8 +33,12 @@
     <string name="privacy_policy_link">हमारी गोपनीयता नीति पढ़ें</string>
 
     <!-- Onboarding: Monitoring Mode Choice -->
-    <string name="mode_choice_title">निगरानी मोड चुनें</string>
-    <string name="mode_choice_desc">चुनें कि आप BlinkWell द्वारा आँखों की देखभाल कैसे चाहते हैं:</string>
+    <string name="mode_choice_title">कार्यप्रणाली मोड चुनें</string>
+    <string name="mode_choice_desc">अपना डिफ़ॉल्ट आँखों की देखभाल मोड चुनें (इसे कभी भी बदला जा सकता है):</string>
+    <string name="mode_burst_title">बर्स्ट मोड (5 मिनट)</string>
+    <string name="mode_burst_desc">फोन का उपयोग करते समय 5 मिनट का केंद्रित परीक्षण। बिना किसी चेतावनी के 5 मिनट पूरे होने पर अंतिम दर दिखाता है।</string>
+    <string name="mode_monitoring_title">निगरानी मोड</string>
+    <string name="mode_monitoring_desc">लाइव स्पीडोमीटर और समय पर स्वास्थ्य अलर्ट के साथ निरंतर निगरानी।</string>
     <string name="mode_background_title">पृष्ठभूमि (Background) में चलाएं</string>
     <string name="mode_background_desc">अन्य ऐप्स का उपयोग करते समय भी सूचना के माध्यम से समय-समय पर निगरानी करता है। स्क्रीन बंद होने पर तुरंत रुक जाता है।</string>
     <string name="mode_app_only_title">केवल ऐप खुला होने पर जांचें</string>
@@ -64,8 +68,25 @@
     <string name="home_target_rate">उत्तम: 15–20 BPM</string>
     <string name="home_btn_start">निगरानी शुरू करें</string>
     <string name="home_btn_stop">निगरानी बंद करें</string>
+    <string name="home_mode_badge_burst">मोड: बर्स्ट (5 मिनट)</string>
+    <string name="home_mode_badge_monitoring">मोड: निगरानी</string>
     <string name="home_mode_badge_bg">मोड: बैकग्राउंड</string>
     <string name="home_mode_badge_app">मोड: केवल ऐप में</string>
+    <string name="home_burst_standby_title">5-मिनट पलक झपकाने का परीक्षण</string>
+    <string name="home_burst_standby_desc">सामान्य रूप से फोन का उपयोग करते रहें। BlinkWell 5 मिनट में आपकी वास्तविक पलक दर मापेगा और परिणाम दिखाएगा।</string>
+    <string name="home_burst_active_label">5-मिनट बर्स्ट टेस्ट सक्रिय</string>
+    <string name="home_burst_time_remaining">%1$d:%2$02d शेष</string>
+    <string name="home_burst_paused_label">रुका हुआ (स्क्रीन बंद/लॉक)</string>
+    <string name="home_burst_btn_start">5-मिनट बर्स्ट शुरू करें</string>
+    <string name="home_burst_btn_stop">बर्स्ट टेस्ट रोकें</string>
+    <string name="home_burst_result_title">🎉 बर्स्ट टेस्ट पूरा हुआ!</string>
+    <string name="home_burst_result_subtitle">5-मिनट नेत्र स्वास्थ्य मूल्यांकन</string>
+    <string name="home_burst_result_status_healthy">🟢 स्वस्थ पलक दर</string>
+    <string name="home_burst_result_status_low">🔴 कम पलक दर — आँखों को आराम दें</string>
+    <string name="home_burst_result_advice_healthy">बहुत बढ़िया! आपकी पलक दर स्क्रीन उपयोग के दौरान आँखों की नमी के लिए उत्तम स्तर पर है।</string>
+    <string name="home_burst_result_advice_low">आपकी पलक दर अनुशंसित लक्ष्य (15–20 BPM) से कम थी। आँखों के तनाव से बचने के लिए 20-20-20 नियम अपनाएं।</string>
+    <string name="home_burst_result_blinks_count">%1$d कुल पलकें दर्ज की गईं</string>
+    <string name="home_burst_result_dismiss">हो गया (Done)</string>
 
     <!-- Stats Screen -->
     <string name="stats_title">इतिहास और रुझान</string>
@@ -136,6 +157,44 @@
     <string name="notification_action_stop">निगरानी रोकें</string>
     <string name="notification_green_to_red_title">🔴 कम पलक दर चेतावनी</string>
     <string name="notification_green_to_red_body">आपकी दर घटकर %1$d BPM (लक्ष्य: %2$d BPM) हो गई है। कृपया थोड़ा ब्रेक लें और पलकें झपकाएं।</string>
+    <string name="notification_burst_status_title">BlinkWell • 5-मिनट बर्स्ट टेस्ट</string>
+    <string name="notification_burst_status_body">%1$d:%2$02d शेष • स्वाभाविक रूप से फोन का उपयोग करें</string>
+    <string name="notification_burst_complete_title">🎉 बर्स्ट टेस्ट पूरा हुआ: %1$.0f BPM</string>
+    <string name="notification_burst_complete_body">5 मिनट में आपका औसत %1$.0f पलकें/मिनट रहा (%2$d कुल पलकें)। रिपोर्ट देखने के लिए टैप करें।</string>
+
+    <!-- Info / Education Dialog -->
+    <string name="info_dialog_title">👁️ पलक झपकाना क्यों जरूरी है?</string>
+    <string name="info_dialog_subtitle">स्क्रीन के समय आँखों की सुरक्षा</string>
+    <string name="info_dialog_what_title">BlinkWell क्या करता है</string>
+    <string name="info_dialog_what_desc">BlinkWell बिना कोई वीडियो या फोटो सहेजे, सीधे आपके डिवाइस पर ही पलक झपकाने की दर को मापता है।</string>
+    <string name="info_dialog_why_title">आँखों के सूखेपन और तनाव से बचाव</string>
+    <string name="info_dialog_why_desc">स्क्रीन देखते समय हमारी पलक झपकाने की दर 60%% तक घट जाती है। हर बार पलक झपकाने से कॉर्निया पर नमी की परत बनती है। कम पलक झपकाने से आँखें सूखने लगती हैं, तनाव बढ़ता है और दृष्टि धुंधली हो सकती है।</string>
+    <string name="info_dialog_tip">💡 उत्तम दर: 15–20 पलकें प्रति मिनट। 20-20-20 का नियम याद रखें!</string>
+    <string name="info_dialog_btn">समझ गया (Got It)</string>
+
+    <!-- Background Usage & Battery Optimization Permission -->
+    <string name="bg_permission_dialog_title">🛡️ बैकग्राउंड निगरानी अनुमति</string>
+    <string name="bg_permission_dialog_subtitle">निरंतर निगरानी मोड के लिए आवश्यक</string>
+    <string name="bg_permission_dialog_desc">अन्य ऐप्स का उपयोग करते समय भी रीयल-टाइम पलक दर मापने और स्वास्थ्य अलर्ट देने के लिए, BlinkWell को बिना बैटरी सेवर प्रतिबंधों के बैकग्राउंड में चलने की अनुमति की आवश्यकता है।</string>
+    <string name="bg_permission_privacy_header">सुरक्षा और बैटरी सुरक्षा गारंटी:</string>
+    <string name="bg_permission_rule_screen_off">🔒 स्क्रीन बंद सुरक्षा: स्क्रीन बंद या लॉक होने पर कैमरे का उपयोग कभी नहीं किया जाता है।</string>
+    <string name="bg_permission_rule_5s_noface">⚡ 5-सेकंड पावर सेवर: यदि स्क्रीन चालू है लेकिन पहले 5 सेकंड में कोई चेहरा नहीं दिखता है, तो बैटरी बचाने के लिए कैमरा तुरंत बंद हो जाता है।</string>
+    <string name="bg_permission_btn_allow">बैकग्राउंड में अनुमति दें</string>
+    <string name="bg_permission_btn_skip">अभी नहीं (ऐसे ही शुरू करें)</string>
+    <string name="permission_battery_opt_title">बैकग्राउंड बैटरी ऑप्टिमाइज़ेशन</string>
+    <string name="permission_battery_opt_reason">अन्य ऐप्स का उपयोग करते समय भी निर्बाध रीयल-टाइम निगरानी सुनिश्चित करता है।</string>
+    <string name="settings_battery_opt_title">बैकग्राउंड निष्पादन</string>
+    <string name="settings_battery_opt_summary_exempt">अप्रतिबंधित • बैकग्राउंड निगरानी सक्रिय</string>
+    <string name="settings_battery_opt_summary_restricted">प्रतिबंधित • बैकग्राउंड अनुमति देने के लिए टैप करें</string>
+    <string name="settings_battery_opt_btn">बैकग्राउंड अनुमति कॉन्फ़िगर करें</string>
+    <string name="settings_section_power">बैटरी और पावर प्रबंधन</string>
+    <string name="settings_battery_guard_title">कम बैटरी और पावर सेवर सुरक्षा</string>
+    <string name="settings_battery_guard_subtitle">कम पावर में बैटरी की बचत करें</string>
+    <string name="settings_battery_guard_threshold_label">रोकने की सीमा: %d%%</string>
+    <string name="settings_battery_guard_desc">बैटरी %d%% से कम होने पर (चार्ज न होने पर) या बैटरी सेवर चालू होने पर निगरानी मोड अपने आप रुक जाएगा और शुरू नहीं होगा।</string>
+    <string name="home_battery_guard_alert_title">⚡ बैटरी सेवर सुरक्षा सक्रिय</string>
+    <string name="home_battery_guard_alert_body">निगरानी मोड शुरू नहीं हो सकता क्योंकि आपकी बैटरी %1$d%% (%2$d%%) से कम है या बैटरी सेवर चालू है। चार्जर कनेक्ट करें या सेटिंग्स में इसे बदलें।</string>
+    <string name="home_battery_guard_dismiss">समझ गया (OK)</string>
 
     <!-- Common -->
     <string name="next">आगे</string>

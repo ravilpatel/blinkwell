@@ -16,7 +16,17 @@ data class BlinkMetrics(
     val warmupSecondsElapsed: Long = 0L,
     val alertTriggered: Boolean = false,
     val alertMessage: String? = null,
-    val statusCategory: BlinkStatusCategory = BlinkStatusCategory.NORMAL
+    val statusCategory: BlinkStatusCategory = BlinkStatusCategory.NORMAL,
+    val burstElapsedSeconds: Long = 0L,
+    val burstTotalSeconds: Long = 300L
+)
+
+data class BurstSessionResult(
+    val finalBpm: Double,
+    val totalBlinks: Int,
+    val durationSeconds: Long = 300L,
+    val statusCategory: BlinkStatusCategory = BlinkStatusCategory.NORMAL,
+    val completedTimestamp: Long = System.currentTimeMillis()
 )
 
 enum class EyeState {

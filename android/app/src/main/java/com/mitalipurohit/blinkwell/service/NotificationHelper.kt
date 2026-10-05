@@ -22,6 +22,7 @@ class NotificationHelper(private val context: Context) {
         const val SERVICE_NOTIFICATION_ID = 1001
         const val ALERT_NOTIFICATION_ID = 1002
         const val ALERT_TRANSITION_NOTIFICATION_ID = 1003
+        const val BURST_COMPLETION_NOTIFICATION_ID = 1004
 
         const val ACTION_STOP_MONITORING = "com.mitalipurohit.blinkwell.action.STOP_MONITORING"
 
@@ -29,6 +30,7 @@ class NotificationHelper(private val context: Context) {
         val COLOR_GREEN = Color.parseColor("#10B981") // Green: Normal blink rate
         val COLOR_RED = Color.parseColor("#EF4444")   // Red: Lower blink rate
         val COLOR_YELLOW = Color.parseColor("#F59E0B") // Yellow: Face not detected / lighting issue
+        val COLOR_TEAL = Color.parseColor("#0F766E")   // Teal: Burst Mode Neutral Status
     }
 
     private val notificationManager =
@@ -254,6 +256,104 @@ class NotificationHelper(private val context: Context) {
 
         try {
             NotificationManagerCompat.from(context).notify(ALERT_NOTIFICATION_ID, builder.build())
+        } catch (ignored: SecurityException) {
+        }
+    }
+
+    /**
+     * Builds the quiet, neutral ongoing foreground notification during 5-minute Burst Mode.
+     */
+    fun buildBurstProgressNotification(remainingSeconds: Long): Notification {
+        val intent = Intent(context, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        }
+        val pendingIntent = PendingIntent.getActivity(
+            context,
+            0,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0)
+        )
+
+        val stopIntent = Intent(context, StopMonitoringReceiver::class.java).apply {
+            action = ACTION_STOP_MONITORING
+        }
+        val stopPendingIntent = PendingIntent.getBroadcast(
+            context,
+            2,
+            stopIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0)
+        )
+
+        val minutes = remainingSeconds / 60
+        val seconds = remainingSeconds % 60
+        val body = context.getString(R.string.notification_burst_status_body, minutes, seconds)
+
+        return NotificationCompat.Builder(context, CHANNEL_SERVICE_ID)
+            .setContentTitle(context.getString(R.string.notification_burst_status_title))
+            .setContentText(body)
+            .setSubText("5-Min Test")
+            .setSmallIcon(R.drawable.ic_notification)
+            .setColor(COLOR_TEAL)
+            .setColorized(true)
+            .setOngoing(true)
+            .setOnlyAlertOnce(true)
+            .setContentIntent(pendingIntent)
+            .addAction(
+                R.drawable.ic_notification,
+                context.getString(R.string.notification_action_stop),
+                stopPendingIntent
+            )
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setCategory(NotificationCompat.CATEGORY_SERVICE)
+            .build()
+    }
+
+    /**
+     * Updates ongoing notification during 5-minute Burst Mode.
+     */
+    fun updateBurstStatusNotification(remainingSeconds: Long, force: Boolean = false) {
+        val now = System.currentTimeMillis()
+        if (force || (now - lastNotificationTimeMs >= 1000L)) {
+            lastNotificationTimeMs = now
+            val notification = buildBurstProgressNotification(remainingSeconds)
+            try {
+                NotificationManagerCompat.from(context).notify(SERVICE_NOTIFICATION_ID, notification)
+            } catch (ignored: SecurityException) {
+            }
+        }
+    }
+
+    /**
+     * Shows the completion notification when 5-minute Burst Mode finishes.
+     */
+    fun showBurstCompletionNotification(finalBpm: Double, totalBlinks: Int) {
+        val intent = Intent(context, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        }
+        val pendingIntent = PendingIntent.getActivity(
+            context,
+            4,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0)
+        )
+
+        val title = context.getString(R.string.notification_burst_complete_title, finalBpm)
+        val body = context.getString(R.string.notification_burst_complete_body, finalBpm, totalBlinks)
+
+        val builder = NotificationCompat.Builder(context, CHANNEL_ALERTS_ID)
+            .setContentTitle(title)
+            .setContentText(body)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(body))
+            .setSmallIcon(R.drawable.ic_notification)
+            .setColor(COLOR_TEAL)
+            .setColorized(true)
+            .setAutoCancel(true)
+            .setContentIntent(pendingIntent)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setCategory(NotificationCompat.CATEGORY_STATUS)
+
+        try {
+            NotificationManagerCompat.from(context).notify(BURST_COMPLETION_NOTIFICATION_ID, builder.build())
         } catch (ignored: SecurityException) {
         }
     }

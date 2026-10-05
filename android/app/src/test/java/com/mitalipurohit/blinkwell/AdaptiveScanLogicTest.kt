@@ -124,4 +124,48 @@ class AdaptiveScanLogicTest {
         assertTrue("Live BPM should be > 0 during burst", liveBpm1 > 0.0)
         assertTrue("Sampling active during burst", blinkDetector.metrics.value.isSamplingActive)
     }
+
+    @Test
+    fun testNoFaceDetectedInFirst5SecondsAbortsAndMarksLost() {
+        val startTs = 1000000L
+        blinkDetector.startBurstScan(timestamp = startTs)
+
+        // Frames arrive without face for 5 seconds
+        for (i in 1..5) {
+            val frameTs = startTs + (i * 1000L)
+            blinkDetector.onFrameProcessed(
+                faceDetected = false,
+                leftEyeProb = null,
+                rightEyeProb = null,
+                timestamp = frameTs
+            )
+        }
+
+        // At 5s check:
+        assertFalse("Face should NOT have been seen in burst", blinkDetector.hasSeenFaceInBurst())
+        assertFalse("Face recency check should be false", blinkDetector.hasSeenFaceRecently(5000L, now = startTs + 5000L))
+
+        // Trigger markFaceLost
+        blinkDetector.markFaceLost()
+        assertEquals(BlinkStatusCategory.FACE_NOT_DETECTED, blinkDetector.metrics.value.statusCategory)
+        assertFalse(blinkDetector.metrics.value.isFaceDetected)
+    }
+
+    @Test
+    fun testFaceDetectedInFirst5SecondsAllowsScanCompletion() {
+        val startTs = 1000000L
+        blinkDetector.startBurstScan(timestamp = startTs)
+
+        // Face appears at 2 seconds
+        blinkDetector.onFrameProcessed(
+            faceDetected = true,
+            leftEyeProb = 0.85f,
+            rightEyeProb = 0.85f,
+            timestamp = startTs + 2000L
+        )
+
+        // At 5s check:
+        assertTrue("Face should have been detected in burst", blinkDetector.hasSeenFaceInBurst())
+        assertTrue("Face recency should be true", blinkDetector.hasSeenFaceRecently(5000L, now = startTs + 5000L))
+    }
 }
