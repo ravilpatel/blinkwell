@@ -57,12 +57,15 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import android.content.pm.PackageManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import com.mitalipurohit.blinkwell.R
 import com.mitalipurohit.blinkwell.ui.theme.AccentEmerald
+import com.mitalipurohit.blinkwell.ui.theme.AccentRose
 import com.mitalipurohit.blinkwell.ui.theme.TealPrimary
 import com.mitalipurohit.blinkwell.util.BatteryOptimizationHelper
 
@@ -805,8 +808,19 @@ fun PermissionsStep(
     selectedMode: String?,
     onGranted: () -> Unit
 ) {
-    var cameraGranted by remember { mutableStateOf(false) }
-    var notificationGranted by remember { mutableStateOf(Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) }
+    val context = LocalContext.current
+    var cameraGranted by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
+        )
+    }
+    var notificationGranted by remember {
+        mutableStateOf(
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+            } else true
+        )
+    }
 
     val cameraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
@@ -937,7 +951,6 @@ fun PermissionsStep(
         }
 
         // Background Monitoring Battery Exemption (Optional/Recommended for Monitoring Mode)
-        val context = LocalContext.current
         var bgPermissionChecked by remember { mutableStateOf(BatteryOptimizationHelper.isIgnoringBatteryOptimizations(context)) }
         if (selectedMode == "monitoring") {
             Spacer(modifier = Modifier.height(16.dp))
@@ -991,13 +1004,41 @@ fun PermissionsStep(
 
         Spacer(modifier = Modifier.height(32.dp))
 
+        if (!cameraGranted) {
+            Text(
+                text = stringResource(R.string.permission_camera_required_warning),
+                style = MaterialTheme.typography.bodySmall,
+                color = AccentRose,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+
         Button(
-            onClick = onGranted,
+            onClick = {
+                if (cameraGranted) {
+                    onGranted()
+                } else {
+                    cameraLauncher.launch(Manifest.permission.CAMERA)
+                }
+            },
+            enabled = cameraGranted,
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = TealPrimary)
+            colors = ButtonDefaults.buttonColors(
+                containerColor = TealPrimary,
+                disabledContainerColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
+                disabledContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+            )
         ) {
-            Text("Continue")
+            Text(
+                if (cameraGranted) {
+                    "Continue"
+                } else {
+                    stringResource(R.string.btn_camera_permission_required)
+                }
+            )
         }
     }
 }

@@ -103,9 +103,39 @@ fun HomeScreen(
     var showBgPermissionDialog by remember { mutableStateOf(false) }
     var showBatteryGuardDialog by remember { mutableStateOf(false) }
 
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            val isBatteryBlocked = uiState.appMode == "monitoring" &&
+                BatteryOptimizationHelper.isBatteryGuardTriggered(context, uiState.batteryGuardEnabled, uiState.batteryGuardThreshold)
+
+            if (isBatteryBlocked) {
+                showBatteryGuardDialog = true
+            } else {
+                val needNotification = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                    ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+                
+                if (needNotification) {
+                    notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                } else if (uiState.appMode == "monitoring" && !BatteryOptimizationHelper.isIgnoringBatteryOptimizations(context)) {
+                    showBgPermissionDialog = true
+                } else {
+                    viewModel.startMonitoring(context)
+                }
+            }
+        }
+    }
+
     val notificationLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) {
+        val hasCameraPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
+        if (!hasCameraPermission) {
+            cameraLauncher.launch(Manifest.permission.CAMERA)
+            return@rememberLauncherForActivityResult
+        }
+
         val isBatteryBlocked = uiState.appMode == "monitoring" &&
             BatteryOptimizationHelper.isBatteryGuardTriggered(context, uiState.batteryGuardEnabled, uiState.batteryGuardThreshold)
         
@@ -303,6 +333,12 @@ fun HomeScreen(
                     if (uiState.isMonitoring) {
                         viewModel.stopMonitoring(context)
                     } else {
+                        val hasCameraPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
+                        if (!hasCameraPermission) {
+                            cameraLauncher.launch(Manifest.permission.CAMERA)
+                            return@Button
+                        }
+
                         val isBatteryBlocked = uiState.appMode == "monitoring" &&
                             BatteryOptimizationHelper.isBatteryGuardTriggered(context, uiState.batteryGuardEnabled, uiState.batteryGuardThreshold)
 

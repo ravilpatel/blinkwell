@@ -60,6 +60,8 @@
     <string name="permissions_desc">BlinkWell requires camera access to detect blinks, and notification access for gentle wellness reminders.</string>
     <string name="permission_camera_reason">Camera is used strictly for real-time, on-device eye blink detection.</string>
     <string name="permission_notification_reason">Notifications deliver friendly alerts when your blink rate is low.</string>
+    <string name="permission_camera_required_warning">Camera permission is required to analyze eye blinks on-device.</string>
+    <string name="btn_camera_permission_required">Grant Camera Permission to Continue</string>
     <string name="grant_permissions">Grant Permissions</string>
 
     <!-- Onboarding: Account -->

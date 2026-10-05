@@ -49,6 +49,8 @@
     <string name="permissions_desc">BlinkWell को पलकें पहचानने के लिए कैमरा एक्सेस और स्वास्थ्य अलर्ट के लिए सूचना (Notification) एक्सेस की आवश्यकता है।</string>
     <string name="permission_camera_reason">कैमरे का उपयोग केवल ऑन-डिवाइस पलक झपकाने की पहचान के लिए किया जाता है।</string>
     <string name="permission_notification_reason">कम पलक झपकाने पर नोटिफिकेशन द्वारा याद दिलाया जाता है।</string>
+    <string name="permission_camera_required_warning">डिवाइस पर पलकों के झपकने का विश्लेषण करने के लिए कैमरा अनुमति आवश्यक है।</string>
+    <string name="btn_camera_permission_required">जारी रखने के लिए कैमरा अनुमति दें</string>
     <string name="grant_permissions">अनुमतियाँ दें</string>
 
     <!-- Onboarding: Account -->
