@@ -201,17 +201,49 @@ fi
 # ------------------------------------------------------------------------------
 echo ""
 echo "[*] Streaming APK to $MODEL via USB..."
+
+# Detect package name based on APK type
+PACKAGE_NAME="com.mitalipurohit.blinkwell.debug"
+if [[ "$TARGET_APK" == *"release"* ]]; then
+  PACKAGE_NAME="com.mitalipurohit.blinkwell"
+fi
+
+# Attempt silent installation:
 # -r: Replace existing application (keeps app preferences)
 # -d: Allow version code downgrade
 # -g: Grant all runtime permissions (CAMERA, NOTIFICATIONS) automatically!
-"$ADB_BIN" -s "$DEVICE_ID" install -r -d -g "$TARGET_APK"
+set +e
+INSTALL_OUTPUT="$("$ADB_BIN" -s "$DEVICE_ID" install -r -d -g "$TARGET_APK" 2>&1)"
+INSTALL_STATUS=$?
+set -e
+
+echo "$INSTALL_OUTPUT"
+
+# Auto-handle signature mismatch if an incompatible build was previously installed
+if echo "$INSTALL_OUTPUT" | grep -q -E "INSTALL_FAILED_UPDATE_INCOMPATIBLE|INSTALL_FAILED_VERSION_DOWNGRADE"; then
+  echo ""
+  echo "⚠️  Detected signature/version mismatch on device ($MODEL)."
+  echo "    The previously installed build had a different signing key."
+  echo "    Automatically uninstalling old build to proceed..."
+  "$ADB_BIN" -s "$DEVICE_ID" uninstall "$PACKAGE_NAME" >/dev/null 2>&1 || true
+  "$ADB_BIN" -s "$DEVICE_ID" uninstall "com.mitalipurohit.blinkwell" >/dev/null 2>&1 || true
+  
+  echo "[*] Retrying installation..."
+  "$ADB_BIN" -s "$DEVICE_ID" install -r -d -g "$TARGET_APK"
+fi
+
 echo "[✓] Successfully installed and configured on $MODEL!"
 
 # ------------------------------------------------------------------------------
 # 5. Launch App Immediately on Phone Screen
 # ------------------------------------------------------------------------------
 echo "[*] Launching BlinkWell on device..."
-"$ADB_BIN" -s "$DEVICE_ID" shell am start -n "$PACKAGE_NAME/$MAIN_ACTIVITY" >/dev/null
+RESOLVED_ACTIVITY="$("$ADB_BIN" -s "$DEVICE_ID" shell cmd package resolve-activity --brief "$PACKAGE_NAME" 2>/dev/null | tail -n 1 | tr -d '\r')"
+if [[ -n "$RESOLVED_ACTIVITY" && "$RESOLVED_ACTIVITY" == *"/"* ]]; then
+  "$ADB_BIN" -s "$DEVICE_ID" shell am start -n "$RESOLVED_ACTIVITY" >/dev/null
+else
+  "$ADB_BIN" -s "$DEVICE_ID" shell am start -n "$PACKAGE_NAME/$MAIN_ACTIVITY" >/dev/null
+fi
 echo "[🚀] BlinkWell is now running on your phone!"
 
 # ------------------------------------------------------------------------------
@@ -222,6 +254,7 @@ cleanup() {
     echo ""
     echo "[*] Ephemeral mode: Uninstalling $PACKAGE_NAME from device..."
     "$ADB_BIN" -s "$DEVICE_ID" uninstall "$PACKAGE_NAME" >/dev/null 2>&1 || true
+    "$ADB_BIN" -s "$DEVICE_ID" uninstall "com.mitalipurohit.blinkwell" >/dev/null 2>&1 || true
     echo "[✓] App cleanly removed from phone. Zero leftover footprint."
   fi
   exit 0

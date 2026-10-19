@@ -158,7 +158,7 @@ fun SettingsScreen(
                     )
 
                     Text(
-                        text = "Burst tests averaging ≥ ${uiState.bpmThreshold} BPM count towards your healthy streak.",
+                        text = "Assessments averaging ≥ ${uiState.bpmThreshold} BPM count towards your healthy streak.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 11.sp

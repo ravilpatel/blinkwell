@@ -43,17 +43,9 @@
     <string name="cohort_general_title">General Screen Use</string>
     <string name="cohort_general_desc">Everyday browsing, messaging, media &amp; varied device habits.</string>
 
-    <!-- Onboarding: Monitoring Mode Choice -->
-    <string name="mode_choice_title">Choose Operational Mode</string>
-    <string name="mode_choice_desc">Select your default eye wellness mode (you can change this anytime):</string>
-    <string name="mode_burst_title">Burst Mode (5 min)</string>
-    <string name="mode_burst_desc">5-minute focused assessment while using your phone. Calculates final BPM at 5 minutes with zero mid-session alerts.</string>
-    <string name="mode_monitoring_title">Monitoring Mode</string>
-    <string name="mode_monitoring_desc">Continuous real-time blink rate monitoring with live speedometer and gentle wellness notifications.</string>
-    <string name="mode_background_title">Run in Background</string>
-    <string name="mode_background_desc">Periodically monitors your blink rate while you use other apps via an ongoing notification. Pauses immediately when screen turns off.</string>
-    <string name="mode_app_only_title">Only Check in App</string>
-    <string name="mode_app_only_desc">Monitors blink rate only while BlinkWell is actively open on your screen. Zero background battery or CPU use.</string>
+    <!-- Operational Mode -->
+    <string name="mode_burst_title">5-Minute Eye Assessment</string>
+    <string name="mode_burst_desc">5-minute focused assessment while using your phone. Calculates final BPM at 5 minutes with zero interruptions.</string>
 
     <!-- Onboarding: Permissions -->
     <string name="permissions_title">Required Permissions</string>
@@ -81,18 +73,15 @@
     <string name="home_target_rate">Optimal: 15–20 BPM</string>
     <string name="home_btn_start">Start Monitoring</string>
     <string name="home_btn_stop">Stop Monitoring</string>
-    <string name="home_mode_badge_burst">Mode: Burst (5 min)</string>
-    <string name="home_mode_badge_monitoring">Mode: Monitoring</string>
-    <string name="home_mode_badge_bg">Mode: Background</string>
-    <string name="home_mode_badge_app">Mode: In-App Only</string>
+    <string name="home_mode_badge_burst">5-Minute Assessment</string>
     <string name="home_burst_standby_title">5-Minute Blink Assessment</string>
     <string name="home_burst_standby_desc">Keep using your phone normally. BlinkWell measures your real-world blink rate over 5 minutes and shows your final BPM at the end.</string>
-    <string name="home_burst_active_label">5-Min Burst Test Active</string>
+    <string name="home_burst_active_label">5-Min Assessment Active</string>
     <string name="home_burst_time_remaining">%1$d:%2$02d remaining</string>
     <string name="home_burst_paused_label">Paused (Screen Off/Locked)</string>
-    <string name="home_burst_btn_start">Start 5-Min Burst</string>
-    <string name="home_burst_btn_stop">Stop Burst Test</string>
-    <string name="home_burst_result_title">🎉 Burst Test Complete!</string>
+    <string name="home_burst_btn_start">Start 5-Min Assessment</string>
+    <string name="home_burst_btn_stop">Stop Assessment</string>
+    <string name="home_burst_result_title">🎉 Assessment Complete!</string>
     <string name="home_burst_result_subtitle">5-Minute Eye Wellness Assessment</string>
     <string name="home_burst_result_status_healthy">🟢 Healthy Blink Rate</string>
     <string name="home_burst_result_status_low">🔴 Low Blink Rate — Take a rest</string>
@@ -132,9 +121,8 @@
     <string name="settings_threshold_label">Alert Threshold (BPM)</string>
     <string name="settings_threshold_summary">Alert when blink rate drops below %d BPM for 2 minutes</string>
     <string name="settings_sampling_mode_label">Background Sampling Strategy</string>
-    <string name="settings_sampling_duty_cycle">Duty-Cycled Burst (Recommended - Saves Battery)</string>
+    <string name="settings_sampling_duty_cycle">Duty-Cycled Sampling (Recommended - Saves Battery)</string>
     <string name="settings_sampling_continuous">Continuous Low-FPS (3–5 fps)</string>
-    <string name="settings_mode_switch_label">Monitoring Mode</string>
     <string name="settings_section_notifications">Notifications</string>
     <string name="settings_alerts_enabled">Low-Blink Alerts</string>
     <string name="settings_section_privacy">Privacy &amp; Data</string>
@@ -170,9 +158,9 @@
     <string name="notification_action_stop">Stop Monitoring</string>
     <string name="notification_green_to_red_title">🔴 Low Blink Rate Warning</string>
     <string name="notification_green_to_red_body">Your blink rate dropped to %1$d BPM (Target: %2$d BPM). Remember to take a break and blink consciously.</string>
-    <string name="notification_burst_status_title">BlinkWell • 5-Min Burst Test</string>
+    <string name="notification_burst_status_title">BlinkWell • 5-Min Eye Assessment</string>
     <string name="notification_burst_status_body">%1$d:%2$02d remaining • Keep using your phone naturally</string>
-    <string name="notification_burst_complete_title">🎉 Burst Test Complete: %1$.0f BPM</string>
+    <string name="notification_burst_complete_title">🎉 Assessment Complete: %1$.0f BPM</string>
     <string name="notification_burst_complete_body">You averaged %1$.0f blinks/min over 5 minutes (%2$d total blinks). Tap to view full assessment.</string>
 
     <!-- Info / Education Dialog -->
@@ -187,7 +175,7 @@
 
     <!-- Background Usage & Battery Optimization Permission -->
     <string name="bg_permission_dialog_title">🛡️ Background Monitoring Permission</string>
-    <string name="bg_permission_dialog_subtitle">Essential for Continuous Monitoring Mode</string>
+    <string name="bg_permission_dialog_subtitle">Essential for Background Execution</string>
     <string name="bg_permission_dialog_desc">To deliver real-time blink rate monitoring and wellness alerts while you use other apps, BlinkWell needs permission to run in the background without battery saver interruptions.</string>
     <string name="bg_permission_privacy_header">Built-in Battery &amp; Privacy Guarantees:</string>
     <string name="bg_permission_rule_screen_off">🔒 Screen Off Safety: Camera is NEVER used whenever your screen is off or locked.</string>
@@ -204,9 +192,9 @@
     <string name="settings_battery_guard_title">Low Battery &amp; Battery Saver Guard</string>
     <string name="settings_battery_guard_subtitle">Prevent battery drain during low power</string>
     <string name="settings_battery_guard_threshold_label">Pause Threshold: %d%%</string>
-    <string name="settings_battery_guard_desc">Monitoring Mode will not turn on and will pause automatically when battery is below %d%% (while not charging) or Battery Saver mode is on.</string>
+    <string name="settings_battery_guard_desc">Eye assessment will not turn on and will pause automatically when battery is below %d%% (while not charging) or Battery Saver mode is on.</string>
     <string name="home_battery_guard_alert_title">⚡ Battery Saver Guard Active</string>
-    <string name="home_battery_guard_alert_body">Monitoring Mode cannot turn on because your battery is below %1$d%% (%2$d%%) or Battery Saver is active. Plug in your charger or configure this in Settings.</string>
+    <string name="home_battery_guard_alert_body">Eye assessment cannot turn on because your battery is below %1$d%% (%2$d%%) or Battery Saver is active. Plug in your charger or configure this in Settings.</string>
     <string name="home_battery_guard_dismiss">Got It</string>
 
     <!-- Common -->

@@ -344,7 +344,7 @@ fun StreakScreen(
                                                 text = when (day.status) {
                                                     StreakStatus.HEALTHY -> "🟢 Healthy Blink Activity (≥ ${uiState.thresholdBpm} BPM)"
                                                     StreakStatus.NOT_HEALTHY -> "🔴 Low Blink Frequency (< ${uiState.thresholdBpm} BPM)"
-                                                    StreakStatus.NO_DATA -> "⚪ No Monitoring Data Recorded"
+                                                    StreakStatus.NO_DATA -> "⚪ No Data Recorded"
                                                 },
                                                 style = MaterialTheme.typography.labelSmall,
                                                 color = MaterialTheme.colorScheme.onSurfaceVariant

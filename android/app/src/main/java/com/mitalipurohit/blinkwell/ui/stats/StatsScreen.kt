@@ -308,7 +308,7 @@ fun StatsScreen(
             // Recent Sessions Section
             item {
                 Text(
-                    text = "Recent Monitoring Sessions",
+                    text = "Recent Sessions",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
@@ -435,7 +435,7 @@ fun AnnotatedBpmGraph(
                     color = onSurfaceVariant
                 )
                 Text(
-                    text = "Start monitoring to populate graph",
+                    text = "Start a session to populate graph",
                     style = MaterialTheme.typography.labelSmall,
                     color = onSurfaceVariant.copy(alpha = 0.7f)
                 )

@@ -35,7 +35,6 @@ import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.PhoneAndroid
-import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -70,7 +69,6 @@ import com.mitalipurohit.blinkwell.R
 import com.mitalipurohit.blinkwell.ui.theme.AccentEmerald
 import com.mitalipurohit.blinkwell.ui.theme.AccentRose
 import com.mitalipurohit.blinkwell.ui.theme.TealPrimary
-import com.mitalipurohit.blinkwell.util.BatteryOptimizationHelper
 
 @Composable
 fun OnboardingScreen(
@@ -92,7 +90,7 @@ fun OnboardingScreen(
             verticalArrangement = Arrangement.SpaceBetween
         ) {
             // Header Progress Indicator
-            StepIndicator(currentStep = uiState.currentStep, totalSteps = 7)
+            StepIndicator(currentStep = uiState.currentStep, totalSteps = 6)
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -120,15 +118,10 @@ fun OnboardingScreen(
                         selectedCohort = uiState.cohortArm,
                         onCohortSelected = { viewModel.setCohortArm(it) }
                     )
-                    4 -> ModeChoiceStep(
-                        selectedMode = uiState.selectedMode,
-                        onModeSelected = { viewModel.setSelectedMode(it) }
-                    )
-                    5 -> PermissionsStep(
-                        selectedMode = uiState.selectedMode,
+                    4 -> PermissionsStep(
                         onGranted = { viewModel.nextStep() }
                     )
-                    6 -> AccountStep(
+                    5 -> AccountStep(
                         onContinue = {
                             viewModel.completeOnboarding(onFinished)
                         }
@@ -139,7 +132,7 @@ fun OnboardingScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             // Bottom Navigation Buttons
-            if (uiState.currentStep != 5 && uiState.currentStep != 6) {
+            if (uiState.currentStep != 4 && uiState.currentStep != 5) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -158,7 +151,6 @@ fun OnboardingScreen(
 
                     val canProceed = when (uiState.currentStep) {
                         2 -> uiState.monitorConsent
-                        4 -> uiState.selectedMode != null
                         else -> true
                     }
 
@@ -633,102 +625,7 @@ fun CohortScreeningStep(
 }
 
 @Composable
-fun ModeChoiceStep(
-    selectedMode: String?,
-    onModeSelected: (String) -> Unit
-) {
-    onModeSelected("burst")
-    Column(
-        horizontalAlignment = Alignment.Start,
-        modifier = Modifier.verticalScroll(rememberScrollState())
-    ) {
-        Text(
-            text = "5-Minute Eye Assessment",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Text(
-            text = "BlinkWell uses focused 5-minute burst sessions to measure your natural blink rate while you use your phone, with zero continuous battery drain.",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(
-                containerColor = TealPrimary.copy(alpha = 0.12f)
-            ),
-            border = BorderStroke(2.dp, TealPrimary),
-            shape = RoundedCornerShape(16.dp)
-        ) {
-            Row(
-                modifier = Modifier.padding(20.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(48.dp)
-                        .clip(CircleShape)
-                        .background(TealPrimary),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Visibility,
-                        contentDescription = null,
-                        tint = Color.White
-                    )
-                }
-
-                Spacer(modifier = Modifier.width(16.dp))
-
-                Column(modifier = Modifier.weight(1f)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = stringResource(R.string.mode_burst_title),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Surface(
-                            shape = RoundedCornerShape(8.dp),
-                            color = TealPrimary.copy(alpha = 0.15f)
-                        ) {
-                            Text(
-                                text = "Standard",
-                                style = MaterialTheme.typography.labelSmall,
-                                fontWeight = FontWeight.Bold,
-                                color = TealPrimary,
-                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                            )
-                        }
-                    }
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = stringResource(R.string.mode_burst_desc),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-
-                Icon(
-                    imageVector = Icons.Default.Check,
-                    contentDescription = "Selected",
-                    tint = TealPrimary,
-                    modifier = Modifier.size(24.dp)
-                )
-            }
-        }
-    }
-}
-
-@Composable
 fun PermissionsStep(
-    selectedMode: String?,
     onGranted: () -> Unit
 ) {
     val context = LocalContext.current
@@ -873,57 +770,6 @@ fun PermissionsStep(
             }
         }
 
-        // Background Monitoring Battery Exemption (Optional/Recommended for Monitoring Mode)
-        var bgPermissionChecked by remember { mutableStateOf(BatteryOptimizationHelper.isIgnoringBatteryOptimizations(context)) }
-        if (selectedMode == "monitoring") {
-            Spacer(modifier = Modifier.height(16.dp))
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Row(
-                    modifier = Modifier.padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Security,
-                        contentDescription = null,
-                        tint = TealPrimary,
-                        modifier = Modifier.size(32.dp)
-                    )
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = stringResource(R.string.permission_battery_opt_title),
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            text = stringResource(R.string.permission_battery_opt_reason),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                    if (!bgPermissionChecked) {
-                        Button(
-                            onClick = {
-                                BatteryOptimizationHelper.requestIgnoreBatteryOptimizations(context)
-                                bgPermissionChecked = true
-                            },
-                            colors = ButtonDefaults.buttonColors(containerColor = TealPrimary)
-                        ) {
-                            Text("Allow")
-                        }
-                    } else {
-                        Icon(
-                            imageVector = Icons.Default.Check,
-                            contentDescription = "Allowed",
-                            tint = AccentEmerald
-                        )
-                    }
-                }
-            }
-        }
 
         Spacer(modifier = Modifier.height(32.dp))
 

@@ -41,8 +41,6 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FiberManualRecord
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Shield
-import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.filled.Visibility
@@ -91,11 +89,9 @@ import com.mitalipurohit.blinkwell.ui.theme.AccentAmber
 import com.mitalipurohit.blinkwell.ui.theme.AccentEmerald
 import com.mitalipurohit.blinkwell.ui.theme.AccentRose
 import com.mitalipurohit.blinkwell.ui.theme.CardTintAmber
-import com.mitalipurohit.blinkwell.ui.theme.CardTintCyan
 import com.mitalipurohit.blinkwell.ui.theme.CardTintEmerald
 import com.mitalipurohit.blinkwell.ui.theme.CardTintIndigo
 import com.mitalipurohit.blinkwell.ui.theme.TealPrimary
-import com.mitalipurohit.blinkwell.ui.theme.UpiCyan
 import com.mitalipurohit.blinkwell.ui.theme.UpiIndigo
 
 private val BorderColor = Color(0xFFE2E8F0)
@@ -264,7 +260,7 @@ fun HomeScreen(
                             color = CardTintIndigo
                         ) {
                             Text(
-                                text = "⚡ 5-MINUTE BURST TEST",
+                                text = "⚡ 5-MINUTE EYE ASSESSMENT",
                                 style = MaterialTheme.typography.labelSmall,
                                 fontWeight = FontWeight.ExtraBold,
                                 color = UpiIndigo,
@@ -374,76 +370,7 @@ fun HomeScreen(
                 }
             }
 
-            // 3. Curie / UPI Multi-Color Quick Feature Tiles (2x2 Grid)
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                Text(
-                    text = "Quick Insights & Wellness",
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    // Tile 1 (Electric Violet): Streak details (Clickable -> Opens Streak)
-                    UpiFeatureTile(
-                        icon = Icons.Default.PlayArrow,
-                        emoji = "🔥",
-                        title = "Healthy Streak",
-                        value = if (currentStreak > 0) "$currentStreak Days" else "0 Days",
-                        subtitle = "Tap to open streaks",
-                        containerColor = CardTintIndigo,
-                        accentColor = UpiIndigo,
-                        onClick = onOpenStreak,
-                        modifier = Modifier.weight(1f)
-                    )
-
-                    // Tile 2 (Mint / Emerald): Target BPM
-                    UpiFeatureTile(
-                        icon = Icons.Default.Speed,
-                        title = "Target Rate",
-                        value = "15–20 BPM",
-                        subtitle = "Healthy eye hydration",
-                        containerColor = CardTintEmerald,
-                        accentColor = AccentEmerald,
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    // Tile 3 (Sunrise Amber): 20-20-20 Rule
-                    UpiFeatureTile(
-                        icon = Icons.Default.Timer,
-                        title = "20-20-20 Rule",
-                        value = "Every 20m",
-                        subtitle = "Look 20ft away for 20s",
-                        containerColor = CardTintAmber,
-                        accentColor = AccentAmber,
-                        modifier = Modifier.weight(1f)
-                    )
-
-                    // Tile 4 (Sky Cyan): 100% On-Device Privacy
-                    UpiFeatureTile(
-                        icon = Icons.Default.Shield,
-                        title = "Privacy First",
-                        value = "On-Device",
-                        subtitle = "Zero video stored",
-                        containerColor = CardTintCyan,
-                        accentColor = UpiCyan,
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-            }
-
-            // 4. How 5-Minute Burst Test Works (Stitch Guidance Card with Illustrations)
+            // 3. How BlinkWell Works (Stitch Guidance Card with Illustrations)
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(20.dp),
@@ -523,80 +450,6 @@ fun HomeScreen(
         // 6. Educational Info Modal Dialog
         if (showInfoDialog) {
             BlinkInfoDialog(onDismiss = { showInfoDialog = false })
-        }
-    }
-}
-
-/**
- * Multi-colored UPI-inspired Feature Tile.
- */
-@Composable
-fun UpiFeatureTile(
-    icon: ImageVector? = null,
-    emoji: String? = null,
-    title: String,
-    value: String,
-    subtitle: String,
-    containerColor: Color,
-    accentColor: Color,
-    onClick: (() -> Unit)? = null,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        modifier = modifier
-            .then(
-                if (onClick != null) Modifier.clickable { onClick() } else Modifier
-            ),
-        shape = RoundedCornerShape(18.dp),
-        colors = CardDefaults.cardColors(containerColor = containerColor),
-        border = BorderStroke(1.dp, accentColor.copy(alpha = 0.3f))
-    ) {
-        Column(
-            modifier = Modifier.padding(14.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp)
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(34.dp)
-                    .clip(CircleShape)
-                    .background(accentColor.copy(alpha = 0.2f)),
-                contentAlignment = Alignment.Center
-            ) {
-                if (emoji != null) {
-                    Text(text = emoji, fontSize = 16.sp)
-                } else if (icon != null) {
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = null,
-                        tint = accentColor,
-                        modifier = Modifier.size(18.dp)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(2.dp))
-
-            Text(
-                text = value,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.ExtraBold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-
-            Text(
-                text = title,
-                style = MaterialTheme.typography.labelSmall,
-                fontWeight = FontWeight.Bold,
-                color = accentColor
-            )
-
-            Text(
-                text = subtitle,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                fontSize = 10.sp,
-                lineHeight = 13.sp
-            )
         }
     }
 }
@@ -717,7 +570,7 @@ fun StandbyBurstGauge() {
             )
 
             Text(
-                text = "BURST WINDOW",
+                text = "5-MIN SESSION",
                 style = MaterialTheme.typography.labelSmall,
                 color = TealPrimary,
                 fontWeight = FontWeight.Bold,
