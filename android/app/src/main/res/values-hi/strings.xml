@@ -33,8 +33,8 @@
     <string name="privacy_policy_link">हमारी गोपनीयता नीति पढ़ें</string>
 
     <!-- Operational Mode -->
-    <string name="mode_burst_title">5-मिनट नेत्र परीक्षण</string>
-    <string name="mode_burst_desc">फोन का उपयोग करते समय 5 मिनट का केंद्रित परीक्षण। बिना किसी रुकावट के 5 मिनट पूरे होने पर अंतिम दर दिखाता है।</string>
+    <string name="mode_burst_title">पलक स्वास्थ्य सत्र</string>
+    <string name="mode_burst_desc">फोन का उपयोग करते समय केंद्रित स्वास्थ्य सत्र। बिना किसी रुकावट के सत्र पूरा होने पर अंतिम दर दिखाता है।</string>
 
     <!-- Onboarding: Permissions -->
     <string name="permissions_title">आवश्यक अनुमतियाँ</string>
@@ -62,16 +62,16 @@
     <string name="home_target_rate">उत्तम: 15–20 BPM</string>
     <string name="home_btn_start">निगरानी शुरू करें</string>
     <string name="home_btn_stop">निगरानी बंद करें</string>
-    <string name="home_mode_badge_burst">5-मिनट मूल्यांकन</string>
-    <string name="home_burst_standby_title">5-मिनट पलक झपकाने का परीक्षण</string>
-    <string name="home_burst_standby_desc">सामान्य रूप से फोन का उपयोग करते रहें। BlinkWell 5 मिनट में आपकी वास्तविक पलक दर मापेगा और परिणाम दिखाएगा।</string>
-    <string name="home_burst_active_label">5-मिनट परीक्षण सक्रिय</string>
+    <string name="home_mode_badge_burst">नेत्र स्वास्थ्य जांच</string>
+    <string name="home_burst_standby_title">पलक स्वास्थ्य सत्र</string>
+    <string name="home_burst_standby_desc">सामान्य रूप से फोन का उपयोग करते रहें। BlinkWell आपकी वास्तविक पलक दर मापेगा और परिणाम दिखाएगा।</string>
+    <string name="home_burst_active_label">सत्र सक्रिय</string>
     <string name="home_burst_time_remaining">%1$d:%2$02d शेष</string>
     <string name="home_burst_paused_label">रुका हुआ (स्क्रीन बंद/लॉक)</string>
-    <string name="home_burst_btn_start">5-मिनट परीक्षण शुरू करें</string>
-    <string name="home_burst_btn_stop">परीक्षण रोकें</string>
-    <string name="home_burst_result_title">🎉 परीक्षण पूरा हुआ!</string>
-    <string name="home_burst_result_subtitle">5-मिनट नेत्र स्वास्थ्य मूल्यांकन</string>
+    <string name="home_burst_btn_start">सत्र शुरू करें</string>
+    <string name="home_burst_btn_stop">सत्र रोकें</string>
+    <string name="home_burst_result_title">🎉 सत्र पूरा हुआ!</string>
+    <string name="home_burst_result_subtitle">नेत्र स्वास्थ्य सारांश</string>
     <string name="home_burst_result_status_healthy">🟢 स्वस्थ पलक दर</string>
     <string name="home_burst_result_status_low">🔴 कम पलक दर — आँखों को आराम दें</string>
     <string name="home_burst_result_advice_healthy">बहुत बढ़िया! आपकी पलक दर स्क्रीन उपयोग के दौरान आँखों की नमी के लिए उत्तम स्तर पर है।</string>
@@ -147,7 +147,7 @@
     <string name="notification_action_stop">निगरानी रोकें</string>
     <string name="notification_green_to_red_title">🔴 कम पलक दर चेतावनी</string>
     <string name="notification_green_to_red_body">आपकी दर घटकर %1$d BPM (लक्ष्य: %2$d BPM) हो गई है। कृपया थोड़ा ब्रेक लें और पलकें झपकाएं।</string>
-    <string name="notification_burst_status_title">BlinkWell • 5-मिनट नेत्र परीक्षण</string>
+    <string name="notification_burst_status_title">BlinkWell • पलक स्वास्थ्य सत्र</string>
     <string name="notification_burst_status_body">%1$d:%2$02d शेष • स्वाभाविक रूप से फोन का उपयोग करें</string>
     <string name="notification_burst_complete_title">🎉 परीक्षण पूरा हुआ: %1$.0f BPM</string>
     <string name="notification_burst_complete_body">5 मिनट में आपका औसत %1$.0f पलकें/मिनट रहा (%2$d कुल पलकें)। रिपोर्ट देखने के लिए टैप करें।</string>
@@ -181,9 +181,9 @@
     <string name="settings_battery_guard_title">कम बैटरी और पावर सेवर सुरक्षा</string>
     <string name="settings_battery_guard_subtitle">कम पावर में बैटरी की बचत करें</string>
     <string name="settings_battery_guard_threshold_label">रोकने की सीमा: %d%%</string>
-    <string name="settings_battery_guard_desc">बैटरी %d%% से कम होने पर (चार्ज न होने पर) या बैटरी सेवर चालू होने पर पलक मूल्यांकन अपने आप रुक जाएगा और शुरू नहीं होगा।</string>
+    <string name="settings_battery_guard_desc">बैटरी %d%% से कम होने पर (चार्ज न होने पर) या बैटरी सेवर चालू होने पर पलक स्वास्थ्य सत्र अपने आप रुक जाएगा और शुरू नहीं होगा।</string>
     <string name="home_battery_guard_alert_title">⚡ बैटरी सेवर सुरक्षा सक्रिय</string>
-    <string name="home_battery_guard_alert_body">पलक मूल्यांकन शुरू नहीं हो सकता क्योंकि आपकी बैटरी %1$d%% (%2$d%%) से कम है या बैटरी सेवर चालू है। चार्जर कनेक्ट करें या सेटिंग्स में इसे बदलें।</string>
+    <string name="home_battery_guard_alert_body">पलक स्वास्थ्य सत्र शुरू नहीं हो सकता क्योंकि आपकी बैटरी %1$d%% (%2$d%%) से कम है या बैटरी सेवर चालू है। चार्जर कनेक्ट करें या सेटिंग्स में इसे बदलें।</string>
     <string name="home_battery_guard_dismiss">समझ गया (OK)</string>
 
     <!-- Common -->

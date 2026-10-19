@@ -72,6 +72,7 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -179,7 +180,7 @@ fun HomeScreen(
                             color = MaterialTheme.colorScheme.onBackground
                         )
                         Text(
-                            text = "Mindful Eye Care",
+                            text = "Mindful Vision",
                             style = MaterialTheme.typography.labelSmall,
                             color = TealPrimary,
                             fontWeight = FontWeight.SemiBold
@@ -187,12 +188,12 @@ fun HomeScreen(
                     }
                 }
 
-                // Top Right Action Group: Single Streak Emoji Pill + Info Emoji Button
+                // Top Right Action Group: Streak Pill + Help Button
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    // STREAK SINGLE EMOJI BUTTON (Tapping opens Streaks)
+                    // STREAK PILL (Tapping opens Streaks)
                     Surface(
                         shape = RoundedCornerShape(20.dp),
                         color = CardTintAmber,
@@ -240,7 +241,69 @@ fun HomeScreen(
                 }
             }
 
-            // 2. UPI-inspired Hero Card: 5-Minute Burst Test Station
+            // Daily Ocular Status Greeting Banner (Stitch Calm Optometric Tech)
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
+                border = BorderStroke(1.dp, BorderColor)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 14.dp, vertical = 10.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        val greeting = remember {
+                            val hour = java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY)
+                            when (hour) {
+                                in 5..11 -> "Good Morning"
+                                in 12..16 -> "Good Afternoon"
+                                else -> "Good Evening"
+                            }
+                        }
+                        Text(
+                            text = greeting,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = "Eyes Rested • Target: 15–20 BPM",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+
+                    Surface(
+                        shape = RoundedCornerShape(20.dp),
+                        color = if (uiState.isMonitoring) AccentEmerald.copy(alpha = 0.15f) else TealPrimary.copy(alpha = 0.12f),
+                        border = BorderStroke(1.dp, if (uiState.isMonitoring) AccentEmerald.copy(alpha = 0.35f) else TealPrimary.copy(alpha = 0.25f))
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(5.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(6.dp)
+                                    .clip(CircleShape)
+                                    .background(if (uiState.isMonitoring) AccentEmerald else TealPrimary)
+                            )
+                            Text(
+                                text = if (uiState.isMonitoring) "Live Session" else "Sensor Ready",
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = if (uiState.isMonitoring) AccentEmerald else TealPrimary
+                            )
+                        }
+                    }
+                }
+            }
+
+            // 2. Modern Central Hero Session Station
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(24.dp),
@@ -259,14 +322,15 @@ fun HomeScreen(
                     ) {
                         Surface(
                             shape = RoundedCornerShape(8.dp),
-                            color = CardTintIndigo
+                            color = TealPrimary.copy(alpha = 0.10f),
+                            border = BorderStroke(1.dp, TealPrimary.copy(alpha = 0.2f))
                         ) {
                             Text(
-                                text = "⚡ 5-MINUTE EYE ASSESSMENT",
+                                text = "• OCULAR WELLNESS CHECK",
                                 style = MaterialTheme.typography.labelSmall,
                                 fontWeight = FontWeight.ExtraBold,
-                                color = UpiIndigo,
-                                letterSpacing = 1.sp,
+                                color = TealPrimary,
+                                letterSpacing = 0.8.sp,
                                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                             )
                         }
@@ -289,9 +353,9 @@ fun HomeScreen(
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(20.dp))
+                    Spacer(modifier = Modifier.height(18.dp))
 
-                    // Central Circular Burst Gauge (Animated between Standby and Active)
+                    // Central Biometric Circular Gauge (Animated between Standby and Active)
                     AnimatedContent(
                         targetState = uiState.isMonitoring,
                         transitionSpec = {
@@ -310,14 +374,14 @@ fun HomeScreen(
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(18.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
                     // Explanatory Hint
                     Text(
                         text = if (uiState.isMonitoring) {
-                            "Keep using your phone normally. Your final blink rate (BPM) will be calculated at 5:00."
+                            "Keep using your phone normally. Live blinks are detected completely on-device."
                         } else {
-                            "Assesses your real-world blink rate over 5 minutes without interruptions."
+                            "Accurately measures your spontaneous blink rate without interruptions."
                         },
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -325,9 +389,62 @@ fun HomeScreen(
                         modifier = Modifier.padding(horizontal = 8.dp)
                     )
 
-                    Spacer(modifier = Modifier.height(20.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
-                    // Hero Action CTA Button (Tactile Curie-style Start/Stop Button)
+                    // Telemetry Target Bento Row
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Surface(
+                            shape = RoundedCornerShape(10.dp),
+                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(vertical = 8.dp, horizontal = 4.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text("🎯 TARGET", style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text("15–20", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, color = TealPrimary)
+                                Text("BPM", style = MaterialTheme.typography.labelSmall.copy(fontSize = 8.sp), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                        }
+
+                        Surface(
+                            shape = RoundedCornerShape(10.dp),
+                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(vertical = 8.dp, horizontal = 4.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text("⏱️ DURATION", style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text("5 Min", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                                Text("Standard", style = MaterialTheme.typography.labelSmall.copy(fontSize = 8.sp), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                        }
+
+                        Surface(
+                            shape = RoundedCornerShape(10.dp),
+                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(vertical = 8.dp, horizontal = 4.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text("🔒 PRIVACY", style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text("RAM Only", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, color = AccentEmerald)
+                                Text("No Storage", style = MaterialTheme.typography.labelSmall.copy(fontSize = 8.sp), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(18.dp))
+
+                    // Hero Action CTA Button
                     Button(
                         onClick = {
                             if (uiState.isMonitoring) {
@@ -372,6 +489,155 @@ fun HomeScreen(
                 }
             }
 
+            // 3. Bento-Style Optometric Insights & Habit Cards
+            // Daily Habit Streak Card
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(20.dp))
+                    .clickable { onOpenStreak() },
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = BorderStroke(1.dp, BorderColor)
+            ) {
+                Row(
+                    modifier = Modifier.padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(46.dp)
+                            .clip(CircleShape)
+                            .background(CardTintAmber),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(text = "🔥", fontSize = 22.sp)
+                    }
+
+                    Spacer(modifier = Modifier.width(14.dp))
+
+                    Column(modifier = Modifier.weight(1f)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Daily Ocular Habit",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = if (currentStreak > 0) "$currentStreak Days" else "0 Days",
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = AccentAmber
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = if (currentStreak > 0) "Streak active! Complete today's session to keep your eye health momentum." else "Start a session today to build your healthy blinking streak.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            lineHeight = 15.sp,
+                            fontSize = 11.sp
+                        )
+                    }
+                }
+            }
+
+            // 20-20-20 Rule & On-Device Security 2-Card Row
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                // 20-20-20 Rule Card
+                Card(
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(18.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    border = BorderStroke(1.dp, BorderColor)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(14.dp)
+                    ) {
+                        Surface(
+                            shape = CircleShape,
+                            color = TealPrimary.copy(alpha = 0.12f),
+                            modifier = Modifier.size(32.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Text("👁️", fontSize = 15.sp)
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "20-20-20 Rule",
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.height(3.dp))
+                        Text(
+                            text = "Every 20 mins, look 20 feet away for 20 seconds to relieve strain.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontSize = 10.sp,
+                            lineHeight = 14.sp
+                        )
+                    }
+                }
+
+                // Privacy Security Card
+                Card(
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(18.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    border = BorderStroke(1.dp, BorderColor)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(14.dp)
+                    ) {
+                        Surface(
+                            shape = CircleShape,
+                            color = AccentEmerald.copy(alpha = 0.12f),
+                            modifier = Modifier.size(32.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Text("🛡️", fontSize = 15.sp)
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "100% On-Device",
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.height(3.dp))
+                        Text(
+                            text = "Neural vision runs in local RAM. No photos or video ever leave device.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontSize = 10.sp,
+                            lineHeight = 14.sp
+                        )
+                    }
+                }
+            }
+
+            // Visual Guide Action Button
+            OutlinedButton(
+                onClick = { showInfoDialog = true },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(14.dp),
+                border = BorderStroke(1.dp, BorderColor)
+            ) {
+                Text(
+                    text = "📖 View Illustrated Visual Guide",
+                    fontWeight = FontWeight.SemiBold,
+                    color = TealPrimary
+                )
+            }
+
             Spacer(modifier = Modifier.height(8.dp))
         }
 
@@ -391,22 +657,71 @@ fun HomeScreen(
 }
 
 /**
- * Standby Gauge for 5-Minute Burst Mode.
+ * Standby Biometric Telemetry Gauge showcasing optimal blink rate and readiness.
  */
 @Composable
 fun StandbyBurstGauge() {
+    val infiniteTransition = rememberInfiniteTransition(label = "standby_gauge_radar")
+    val radarAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.25f,
+        targetValue = 0.65f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 2400, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "radar_alpha"
+    )
+
     Box(
         modifier = Modifier.size(250.dp),
         contentAlignment = Alignment.Center
     ) {
         Canvas(modifier = Modifier.size(230.dp)) {
-            val strokeWidth = 14.dp.toPx()
+            val strokeWidth = 10.dp.toPx()
+            val radius = size.minDimension / 2 - strokeWidth
+
+            // Outer dashed subtle telemetry ring
+            drawCircle(
+                color = BorderColor.copy(alpha = 0.6f),
+                radius = radius + 8.dp.toPx(),
+                style = Stroke(
+                    width = 1.5.dp.toPx(),
+                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
+                )
+            )
+
+            // Outer soft radar pulse ring
+            drawCircle(
+                color = TealPrimary.copy(alpha = radarAlpha * 0.22f),
+                radius = radius + 15.dp.toPx(),
+                style = Stroke(width = 1.5.dp.toPx())
+            )
+
+            // Background Inactive Track
             drawArc(
-                color = Color.LightGray.copy(alpha = 0.25f),
-                startAngle = 0f,
+                color = Color.LightGray.copy(alpha = 0.22f),
+                startAngle = -90f,
                 sweepAngle = 360f,
                 useCenter = false,
                 style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
+            )
+
+            // Glowing Active Telemetry Arc (Optimal target window)
+            drawArc(
+                color = TealPrimary,
+                startAngle = -90f,
+                sweepAngle = 302f,
+                useCenter = false,
+                style = Stroke(width = strokeWidth + 2.dp.toPx(), cap = StrokeCap.Round)
+            )
+
+            // Emerald target window arc highlight
+            drawArc(
+                color = AccentEmerald,
+                startAngle = -90f + 250f,
+                sweepAngle = 55f,
+                useCenter = false,
+                style = Stroke(width = strokeWidth + 3.dp.toPx(), cap = StrokeCap.Round)
             )
         }
 
@@ -414,37 +729,62 @@ fun StandbyBurstGauge() {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Box(
-                modifier = Modifier
-                    .size(46.dp)
-                    .clip(CircleShape)
-                    .background(TealPrimary.copy(alpha = 0.12f)),
-                contentAlignment = Alignment.Center
+            Text(
+                text = "BASELINE",
+                style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 1.8.sp
+            )
+
+            Spacer(modifier = Modifier.height(2.dp))
+
+            Row(
+                verticalAlignment = Alignment.Bottom,
+                horizontalArrangement = Arrangement.Center
             ) {
-                Icon(
-                    imageVector = Icons.Default.Timer,
-                    contentDescription = null,
-                    tint = TealPrimary,
-                    modifier = Modifier.size(26.dp)
+                Text(
+                    text = "16.8",
+                    style = MaterialTheme.typography.displayMedium.copy(fontSize = 42.sp),
+                    fontWeight = FontWeight.ExtraBold,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = "BPM",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = TealPrimary,
+                    modifier = Modifier.padding(bottom = 6.dp)
                 )
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(6.dp))
 
-            Text(
-                text = "05:00",
-                style = MaterialTheme.typography.displayMedium.copy(fontSize = 44.sp),
-                fontWeight = FontWeight.ExtraBold,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-
-            Text(
-                text = "5-MIN SESSION",
-                style = MaterialTheme.typography.labelSmall,
-                color = TealPrimary,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 1.2.sp
-            )
+            Surface(
+                shape = RoundedCornerShape(16.dp),
+                color = CardTintEmerald,
+                border = BorderStroke(1.dp, AccentEmerald.copy(alpha = 0.35f))
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 3.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.CheckCircle,
+                        contentDescription = null,
+                        tint = AccentEmerald,
+                        modifier = Modifier.size(13.dp)
+                    )
+                    Text(
+                        text = "Optimal Target",
+                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp),
+                        fontWeight = FontWeight.SemiBold,
+                        color = AccentEmerald
+                    )
+                }
+            }
         }
     }
 }

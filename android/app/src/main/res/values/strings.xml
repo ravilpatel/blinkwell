@@ -44,8 +44,8 @@
     <string name="cohort_general_desc">Everyday browsing, messaging, media &amp; varied device habits.</string>
 
     <!-- Operational Mode -->
-    <string name="mode_burst_title">5-Minute Eye Assessment</string>
-    <string name="mode_burst_desc">5-minute focused assessment while using your phone. Calculates final BPM at 5 minutes with zero interruptions.</string>
+    <string name="mode_burst_title">Blink Wellness Session</string>
+    <string name="mode_burst_desc">Focused eye health session while using your phone. Calculates final BPM with zero interruptions.</string>
 
     <!-- Onboarding: Permissions -->
     <string name="permissions_title">Required Permissions</string>
@@ -73,16 +73,16 @@
     <string name="home_target_rate">Optimal: 15–20 BPM</string>
     <string name="home_btn_start">Start Monitoring</string>
     <string name="home_btn_stop">Stop Monitoring</string>
-    <string name="home_mode_badge_burst">5-Minute Assessment</string>
-    <string name="home_burst_standby_title">5-Minute Blink Assessment</string>
-    <string name="home_burst_standby_desc">Keep using your phone normally. BlinkWell measures your real-world blink rate over 5 minutes and shows your final BPM at the end.</string>
-    <string name="home_burst_active_label">5-Min Assessment Active</string>
+    <string name="home_mode_badge_burst">Blink Wellness Check</string>
+    <string name="home_burst_standby_title">Blink Health Session</string>
+    <string name="home_burst_standby_desc">Keep using your phone normally. BlinkWell measures your real-world blink rate and shows your final BPM at the end.</string>
+    <string name="home_burst_active_label">Session Active</string>
     <string name="home_burst_time_remaining">%1$d:%2$02d remaining</string>
     <string name="home_burst_paused_label">Paused (Screen Off/Locked)</string>
-    <string name="home_burst_btn_start">Start 5-Min Assessment</string>
-    <string name="home_burst_btn_stop">Stop Assessment</string>
-    <string name="home_burst_result_title">🎉 Assessment Complete!</string>
-    <string name="home_burst_result_subtitle">5-Minute Eye Wellness Assessment</string>
+    <string name="home_burst_btn_start">Start Eye Check</string>
+    <string name="home_burst_btn_stop">Stop Session</string>
+    <string name="home_burst_result_title">🎉 Session Complete!</string>
+    <string name="home_burst_result_subtitle">Ocular Wellness Summary</string>
     <string name="home_burst_result_status_healthy">🟢 Healthy Blink Rate</string>
     <string name="home_burst_result_status_low">🔴 Low Blink Rate — Take a rest</string>
     <string name="home_burst_result_advice_healthy">Great job! Your blink frequency meets the optimal target for healthy eye moisture during screen use.</string>
@@ -158,10 +158,10 @@
     <string name="notification_action_stop">Stop Monitoring</string>
     <string name="notification_green_to_red_title">🔴 Low Blink Rate Warning</string>
     <string name="notification_green_to_red_body">Your blink rate dropped to %1$d BPM (Target: %2$d BPM). Remember to take a break and blink consciously.</string>
-    <string name="notification_burst_status_title">BlinkWell • 5-Min Eye Assessment</string>
+    <string name="notification_burst_status_title">BlinkWell • Eye Wellness Session</string>
     <string name="notification_burst_status_body">%1$d:%2$02d remaining • Keep using your phone naturally</string>
-    <string name="notification_burst_complete_title">🎉 Assessment Complete: %1$.0f BPM</string>
-    <string name="notification_burst_complete_body">You averaged %1$.0f blinks/min over 5 minutes (%2$d total blinks). Tap to view full assessment.</string>
+    <string name="notification_burst_complete_title">🎉 Session Complete: %1$.0f BPM</string>
+    <string name="notification_burst_complete_body">You averaged %1$.0f blinks/min (%2$d total blinks). Tap to view full session results.</string>
 
     <!-- Info / Education Dialog -->
     <string name="info_dialog_title">👁️ Why Blinking Matters</string>
@@ -192,9 +192,9 @@
     <string name="settings_battery_guard_title">Low Battery &amp; Battery Saver Guard</string>
     <string name="settings_battery_guard_subtitle">Prevent battery drain during low power</string>
     <string name="settings_battery_guard_threshold_label">Pause Threshold: %d%%</string>
-    <string name="settings_battery_guard_desc">Eye assessment will not turn on and will pause automatically when battery is below %d%% (while not charging) or Battery Saver mode is on.</string>
+    <string name="settings_battery_guard_desc">Eye health checks will not turn on and will pause automatically when battery is below %d%% (while not charging) or Battery Saver mode is on.</string>
     <string name="home_battery_guard_alert_title">⚡ Battery Saver Guard Active</string>
-    <string name="home_battery_guard_alert_body">Eye assessment cannot turn on because your battery is below %1$d%% (%2$d%%) or Battery Saver is active. Plug in your charger or configure this in Settings.</string>
+    <string name="home_battery_guard_alert_body">Eye health checks cannot turn on because your battery is below %1$d%% (%2$d%%) or Battery Saver is active. Plug in your charger or configure this in Settings.</string>
     <string name="home_battery_guard_dismiss">Got It</string>
 
     <!-- Common -->
