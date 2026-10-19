@@ -65,9 +65,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import androidx.compose.foundation.isSystemInDarkTheme
 import com.mitalipurohit.blinkwell.R
+import com.mitalipurohit.blinkwell.ui.theme.AccentAmber
 import com.mitalipurohit.blinkwell.ui.theme.AccentEmerald
 import com.mitalipurohit.blinkwell.ui.theme.AccentRose
+import com.mitalipurohit.blinkwell.ui.theme.BorderDark
+import com.mitalipurohit.blinkwell.ui.theme.BorderLight
 import com.mitalipurohit.blinkwell.ui.theme.TealPrimary
 
 @Composable
@@ -90,7 +94,7 @@ fun OnboardingScreen(
             verticalArrangement = Arrangement.SpaceBetween
         ) {
             // Header Progress Indicator
-            StepIndicator(currentStep = uiState.currentStep, totalSteps = 6)
+            StepIndicator(currentStep = uiState.currentStep, totalSteps = 5)
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -102,9 +106,8 @@ fun OnboardingScreen(
                 contentAlignment = Alignment.Center
             ) {
                 when (uiState.currentStep) {
-                    0 -> WelcomeStep()
-                    1 -> HowItWorksStep()
-                    2 -> ConsentStep(
+                    0 -> HowBlinkWellWorksStep()
+                    1 -> ConsentStep(
                         monitorConsent = uiState.monitorConsent,
                         researchConsent = uiState.researchConsent,
                         onMonitorToggle = { viewModel.setMonitorConsent(it) },
@@ -114,14 +117,14 @@ fun OnboardingScreen(
                             context.startActivity(browserIntent)
                         }
                     )
-                    3 -> CohortScreeningStep(
+                    2 -> CohortScreeningStep(
                         selectedCohort = uiState.cohortArm,
                         onCohortSelected = { viewModel.setCohortArm(it) }
                     )
-                    4 -> PermissionsStep(
+                    3 -> PermissionsStep(
                         onGranted = { viewModel.nextStep() }
                     )
-                    5 -> AccountStep(
+                    4 -> AccountStep(
                         onContinue = {
                             viewModel.completeOnboarding(onFinished)
                         }
@@ -132,7 +135,7 @@ fun OnboardingScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             // Bottom Navigation Buttons
-            if (uiState.currentStep != 4 && uiState.currentStep != 5) {
+            if (uiState.currentStep != 3 && uiState.currentStep != 4) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -150,7 +153,7 @@ fun OnboardingScreen(
                     }
 
                     val canProceed = when (uiState.currentStep) {
-                        2 -> uiState.monitorConsent
+                        1 -> uiState.monitorConsent
                         else -> true
                     }
 
@@ -196,112 +199,511 @@ fun StepIndicator(currentStep: Int, totalSteps: Int) {
 }
 
 @Composable
-fun WelcomeStep() {
+fun HowBlinkWellWorksStep() {
+    val borderColor = if (isSystemInDarkTheme()) BorderDark else BorderLight
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-        modifier = Modifier.verticalScroll(rememberScrollState())
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
     ) {
-        Image(
-            painter = painterResource(id = R.drawable.illus_art_welcome),
-            contentDescription = "Welcome to BlinkWell",
-            modifier = Modifier
-                .fillMaxWidth(0.9f)
-                .height(180.dp)
-                .clip(RoundedCornerShape(20.dp)),
-            contentScale = ContentScale.Crop
-        )
+        // Category Pill
+        Surface(
+            shape = RoundedCornerShape(9999.dp),
+            color = TealPrimary.copy(alpha = 0.10f),
+            border = BorderStroke(1.dp, TealPrimary.copy(alpha = 0.25f))
+        ) {
+            Row(
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(6.dp)
+                        .clip(CircleShape)
+                        .background(TealPrimary)
+                )
+                Text(
+                    text = "OPTOMETRIC TELEMETRY ONBOARDING",
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = TealPrimary,
+                    letterSpacing = 0.5.sp
+                )
+            }
+        }
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
         Text(
-            text = stringResource(R.string.onboarding_welcome_title),
+            text = "How BlinkWell Works",
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center
+        )
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        Text(
+            text = stringResource(R.string.ideator_credit),
+            style = MaterialTheme.typography.labelMedium,
+            color = TealPrimary,
+            fontWeight = FontWeight.SemiBold,
             textAlign = TextAlign.Center
         )
 
         Spacer(modifier = Modifier.height(6.dp))
 
         Text(
-            text = stringResource(R.string.ideator_credit),
-            style = MaterialTheme.typography.labelLarge,
-            color = TealPrimary,
-            fontWeight = FontWeight.SemiBold
+            text = "Continuous tear-film protection & blink rate monitoring working quietly in the background.",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(horizontal = 8.dp)
         )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // STEP 1 CARD
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(18.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            border = BorderStroke(1.dp, borderColor)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Surface(
+                        shape = RoundedCornerShape(6.dp),
+                        color = TealPrimary.copy(alpha = 0.12f),
+                        border = BorderStroke(1.dp, TealPrimary.copy(alpha = 0.2f))
+                    ) {
+                        Text(
+                            text = "STEP 1",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = TealPrimary,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                        )
+                    }
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = null,
+                            tint = AccentEmerald,
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Text(
+                            text = "Natural Habit",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.illus_art_use_phone),
+                        contentDescription = "Use Phone As Usual",
+                        modifier = Modifier
+                            .size(86.dp)
+                            .clip(RoundedCornerShape(14.dp)),
+                        contentScale = ContentScale.Crop
+                    )
+
+                    Spacer(modifier = Modifier.width(14.dp))
+
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Use Phone As Usual",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Hold comfortably while browsing, reading, gaming, or watching video. No special posture or unnatural head position required.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            lineHeight = 16.sp
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Surface(
+                    shape = RoundedCornerShape(10.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 12.dp, vertical = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.PhoneAndroid,
+                                contentDescription = null,
+                                tint = TealPrimary,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "Recommended Distance",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        Text(
+                            text = "30 – 40 cm",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = TealPrimary
+                        )
+                    }
+                }
+            }
+        }
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        Text(
-            text = stringResource(R.string.onboarding_welcome_desc),
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center
-        )
-    }
-}
+        // STEP 2 CARD
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(18.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            border = BorderStroke(1.5.dp, TealPrimary.copy(alpha = 0.4f))
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Surface(
+                            shape = RoundedCornerShape(6.dp),
+                            color = TealPrimary
+                        ) {
+                            Text(
+                                text = "STEP 2",
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                            )
+                        }
+                        Surface(
+                            shape = RoundedCornerShape(6.dp),
+                            color = AccentEmerald.copy(alpha = 0.12f)
+                        ) {
+                            Text(
+                                text = "🔒 Privacy Safe",
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = AccentEmerald,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                            )
+                        }
+                    }
 
-@Composable
-fun HowItWorksStep() {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-        modifier = Modifier.verticalScroll(rememberScrollState())
-    ) {
-        Image(
-            painter = painterResource(id = R.drawable.illus_art_face_detect),
-            contentDescription = "BlinkWell On-Device Face Analysis",
-            modifier = Modifier
-                .fillMaxWidth(0.9f)
-                .height(180.dp)
-                .clip(RoundedCornerShape(20.dp)),
-            contentScale = ContentScale.Crop
-        )
+                    Surface(
+                        shape = RoundedCornerShape(4.dp),
+                        color = TealPrimary.copy(alpha = 0.15f)
+                    ) {
+                        Text(
+                            text = "ACTIVE ENGINE",
+                            style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
+                            fontWeight = FontWeight.ExtraBold,
+                            color = TealPrimary,
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                        )
+                    }
+                }
 
-        Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
-        Text(
-            text = stringResource(R.string.onboarding_how_it_works_title),
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center
-        )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.illus_art_face_detect),
+                        contentDescription = "Detects Blinks Quietly",
+                        modifier = Modifier
+                            .size(86.dp)
+                            .clip(RoundedCornerShape(14.dp)),
+                        contentScale = ContentScale.Crop
+                    )
+
+                    Spacer(modifier = Modifier.width(14.dp))
+
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Detects Blinks Quietly",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Front camera AI accurately counts blinks on-device without recording or storing any photos or videos.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            lineHeight = 16.sp
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Column(modifier = Modifier.padding(8.dp)) {
+                            Text(
+                                text = "100% On-Device",
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Text(
+                                text = "Neural Engine / NPU",
+                                style = MaterialTheme.typography.bodySmall.copy(fontSize = 10.sp),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Column(modifier = Modifier.padding(8.dp)) {
+                            Text(
+                                text = "Zero Stored Frames",
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = AccentEmerald
+                            )
+                            Text(
+                                text = "Volatile RAM Only",
+                                style = MaterialTheme.typography.bodySmall.copy(fontSize = 10.sp),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // STEP 3 CARD
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(18.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            border = BorderStroke(1.dp, borderColor)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Surface(
+                        shape = RoundedCornerShape(6.dp),
+                        color = TealPrimary.copy(alpha = 0.12f),
+                        border = BorderStroke(1.dp, TealPrimary.copy(alpha = 0.2f))
+                    ) {
+                        Text(
+                            text = "STEP 3",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = TealPrimary,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                        )
+                    }
+                    Text(
+                        text = "Clinical Telemetry",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = AccentEmerald,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.illus_art_notification),
+                        contentDescription = "5-Minute Insights & Health Score",
+                        modifier = Modifier
+                            .size(86.dp)
+                            .clip(RoundedCornerShape(14.dp)),
+                        contentScale = ContentScale.Crop
+                    )
+
+                    Spacer(modifier = Modifier.width(14.dp))
+
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "5-Minute Insights & Score",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Receive your clinical blink frequency, ocular health rating, and daily streak credit.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            lineHeight = 16.sp
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(8.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text("RATE", style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text("16.8", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = TealPrimary)
+                            Text("Optimal BPM", style = MaterialTheme.typography.bodySmall.copy(fontSize = 9.sp), color = AccentEmerald, fontWeight = FontWeight.SemiBold)
+                        }
+                    }
+
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(8.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text("SCORE", style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text("94/100", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                            Text("Tear Film", style = MaterialTheme.typography.bodySmall.copy(fontSize = 9.sp), color = TealPrimary, fontWeight = FontWeight.SemiBold)
+                        }
+                    }
+
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(8.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text("STREAK", style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text("+1 Day", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = AccentAmber)
+                            Text("Credited", style = MaterialTheme.typography.bodySmall.copy(fontSize = 9.sp), color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.SemiBold)
+                        }
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(14.dp))
+
+        // Trust & Privacy Guarantee Banner
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(14.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f)),
+            border = BorderStroke(1.dp, borderColor)
+        ) {
+            Row(
+                modifier = Modifier.padding(12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Surface(
+                    shape = CircleShape,
+                    color = TealPrimary.copy(alpha = 0.12f),
+                    modifier = Modifier.size(36.dp)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = null,
+                            tint = TealPrimary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.width(12.dp))
+                Column {
+                    Text(
+                        text = "Zero Video Recording • RAM-Only Analysis",
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = "Compliant with optometric research standards. Blink telemetry never leaves your device sandbox.",
+                        style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        lineHeight = 14.sp
+                    )
+                }
+            }
+        }
 
         Spacer(modifier = Modifier.height(10.dp))
 
+        // Medical disclaimer footnote
         Text(
-            text = stringResource(R.string.onboarding_how_it_works_desc),
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center
+            text = "BlinkWell is an optometric ergonomics and mindfulness companion, not a certified diagnostic medical device.",
+            style = MaterialTheme.typography.bodySmall.copy(fontSize = 10.sp),
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.75f),
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(horizontal = 16.dp)
         )
 
-        Spacer(modifier = Modifier.height(20.dp))
-
-        Card(
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
-            ),
-            shape = RoundedCornerShape(14.dp)
-        ) {
-            Row(
-                modifier = Modifier.padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Check,
-                    contentDescription = null,
-                    tint = AccentEmerald,
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(modifier = Modifier.width(12.dp))
-                Text(
-                    text = stringResource(R.string.onboarding_privacy_promise),
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Medium
-                )
-            }
-        }
+        Spacer(modifier = Modifier.height(12.dp))
     }
 }
 

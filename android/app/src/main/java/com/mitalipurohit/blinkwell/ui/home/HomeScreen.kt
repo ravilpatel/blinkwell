@@ -219,7 +219,7 @@ fun HomeScreen(
                         }
                     }
 
-                    // INFO BUTTON
+                    // HELP BUTTON
                     Surface(
                         shape = CircleShape,
                         color = TealPrimary.copy(alpha = 0.12f),
@@ -230,8 +230,10 @@ fun HomeScreen(
                     ) {
                         Box(contentAlignment = Alignment.Center) {
                             Text(
-                                text = "ℹ️",
-                                fontSize = 14.sp
+                                text = "?",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = TealPrimary
                             )
                         }
                     }
@@ -370,72 +372,6 @@ fun HomeScreen(
                 }
             }
 
-            // 3. How BlinkWell Works (Stitch Guidance Card with Illustrations)
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                border = BorderStroke(1.dp, BorderColor)
-            ) {
-                Column(
-                    modifier = Modifier.padding(18.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "How BlinkWell Works",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Surface(
-                            shape = RoundedCornerShape(8.dp),
-                            color = TealPrimary.copy(alpha = 0.12f)
-                        ) {
-                            Text(
-                                text = "3 Steps",
-                                style = MaterialTheme.typography.labelSmall,
-                                fontWeight = FontWeight.Bold,
-                                color = TealPrimary,
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
-                            )
-                        }
-                    }
-
-                    BurstStepRow(
-                        imageRes = R.drawable.illus_art_use_phone,
-                        stepNumber = "1",
-                        title = "Use Phone As Usual",
-                        description = "You can use your phone normally for whatever you do. Hold at normal distance."
-                    )
-
-                    BurstStepRow(
-                        imageRes = R.drawable.illus_art_face_detect,
-                        stepNumber = "2",
-                        title = "Counts Blinks Quietly",
-                        description = "Uses front camera to detect and count your blinks on-device without interruptions."
-                    )
-
-                    BurstStepRow(
-                        imageRes = R.drawable.illus_art_notification,
-                        stepNumber = "3",
-                        title = "5-Minute Results & Score",
-                        description = "Receive your clinical blink frequency, health rating, and healthy streak credit."
-                    )
-
-                    OutlinedButton(
-                        onClick = { showInfoDialog = true },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Text("View Illustrated Visual Guide 🎨", fontWeight = FontWeight.SemiBold)
-                    }
-                }
-            }
-
             Spacer(modifier = Modifier.height(8.dp))
         }
 
@@ -450,73 +386,6 @@ fun HomeScreen(
         // 6. Educational Info Modal Dialog
         if (showInfoDialog) {
             BlinkInfoDialog(onDismiss = { showInfoDialog = false })
-        }
-    }
-}
-
-/**
- * Burst step explanation row with illustration artwork.
- */
-@Composable
-fun BurstStepRow(
-    imageRes: Int,
-    stepNumber: String,
-    title: String,
-    description: String
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f)),
-        border = BorderStroke(1.dp, BorderColor.copy(alpha = 0.7f))
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Image(
-                painter = painterResource(id = imageRes),
-                contentDescription = title,
-                modifier = Modifier
-                    .size(68.dp)
-                    .clip(RoundedCornerShape(12.dp)),
-                contentScale = ContentScale.Crop
-            )
-
-            Spacer(modifier = Modifier.width(12.dp))
-
-            Column(modifier = Modifier.weight(1f)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Surface(
-                        shape = RoundedCornerShape(6.dp),
-                        color = TealPrimary.copy(alpha = 0.15f)
-                    ) {
-                        Text(
-                            text = "Step $stepNumber",
-                            style = MaterialTheme.typography.labelSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = TealPrimary,
-                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = description,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    lineHeight = 15.sp,
-                    fontSize = 11.sp
-                )
-            }
         }
     }
 }
