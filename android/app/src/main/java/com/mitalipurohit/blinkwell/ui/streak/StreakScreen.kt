@@ -121,7 +121,7 @@ fun StreakScreen(
                     }
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = "30-Day Eye Health Consistency & Habit Tracker",
+                        text = "Your Daily Eye Care Streak",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -166,7 +166,7 @@ fun StreakScreen(
                         )
 
                         Text(
-                            text = "Current Healthy Streak (≥ ${uiState.thresholdBpm} Days BPM)",
+                            text = "Current Healthy Streak (≥ ${uiState.thresholdBpm} Blinks/Min)",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -194,8 +194,8 @@ fun StreakScreen(
                             )
                             StreakStatItem(
                                 icon = Icons.Default.Shield,
-                                label = "Target BPM",
-                                value = "≥ ${uiState.thresholdBpm}",
+                                label = "Target Blinks",
+                                value = "≥ ${uiState.thresholdBpm}/min",
                                 tint = AccentRose,
                                 modifier = Modifier.weight(1f)
                             )
@@ -214,7 +214,7 @@ fun StreakScreen(
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
                                 Text(
-                                    text = "30-Day Healthy Ratio",
+                                    text = "Healthy Days Score",
                                     style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -256,12 +256,12 @@ fun StreakScreen(
                         ) {
                             Column {
                                 Text(
-                                    text = "30-Day Activity Matrix",
+                                    text = "Past 30 Days",
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold
                                 )
                                 Text(
-                                    text = "Tap any circle to inspect day's details",
+                                    text = "Tap any circle to see that day",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -342,9 +342,9 @@ fun StreakScreen(
                                             Spacer(modifier = Modifier.height(2.dp))
                                             Text(
                                                 text = when (day.status) {
-                                                    StreakStatus.HEALTHY -> "🟢 Healthy Blink Activity (≥ ${uiState.thresholdBpm} BPM)"
-                                                    StreakStatus.NOT_HEALTHY -> "🔴 Low Blink Frequency (< ${uiState.thresholdBpm} BPM)"
-                                                    StreakStatus.NO_DATA -> "⚪ No Data Recorded"
+                                                    StreakStatus.HEALTHY -> "🟢 Good Blinking (≥ ${uiState.thresholdBpm} Blinks/Min)"
+                                                    StreakStatus.NOT_HEALTHY -> "🔴 Low Blinking (< ${uiState.thresholdBpm} Blinks/Min)"
+                                                    StreakStatus.NO_DATA -> "⚪ No Eye Check Recorded"
                                                 },
                                                 style = MaterialTheme.typography.labelSmall,
                                                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -352,7 +352,7 @@ fun StreakScreen(
                                         }
                                         Column(horizontalAlignment = Alignment.End) {
                                             Text(
-                                                text = if (day.daysBpm > 0) "%.1f BPM".format(day.daysBpm) else "No Data",
+                                                text = if (day.daysBpm > 0) "%.1f Blinks/Min".format(day.daysBpm) else "No Data",
                                                 style = MaterialTheme.typography.titleMedium,
                                                 fontWeight = FontWeight.ExtraBold,
                                                 color = when (day.status) {
@@ -362,7 +362,7 @@ fun StreakScreen(
                                                 }
                                             )
                                             Text(
-                                                text = "Days BPM",
+                                                text = "Daily Average",
                                                 style = MaterialTheme.typography.labelSmall,
                                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                                 fontSize = 9.sp
@@ -406,7 +406,7 @@ fun StreakScreen(
                             verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
                             Text(
-                                text = "Color Coding Legend:",
+                                text = "What the colors mean:",
                                 style = MaterialTheme.typography.labelSmall,
                                 fontWeight = FontWeight.Bold
                             )
@@ -414,15 +414,15 @@ fun StreakScreen(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                LegendItem(color = AccentEmerald, label = "Green: Healthy (≥ ${uiState.thresholdBpm} BPM)")
-                                LegendItem(color = AccentRose, label = "Red: Low (< ${uiState.thresholdBpm} BPM)")
+                                LegendItem(color = AccentEmerald, label = "Green: Good (≥ ${uiState.thresholdBpm}/min)")
+                                LegendItem(color = AccentRose, label = "Red: Low (< ${uiState.thresholdBpm}/min)")
                             }
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                LegendItem(color = Color(0xFF64748B), label = "Grey: No Data")
-                                LegendItem(color = TealPrimary, label = "Border: Active Today")
+                                LegendItem(color = Color(0xFF64748B), label = "Grey: No Check")
+                                LegendItem(color = TealPrimary, label = "Border: Today")
                             }
                         }
 
@@ -479,8 +479,8 @@ fun StreakScreen(
                         Spacer(modifier = Modifier.height(12.dp))
 
                         MilestoneBadgeItem(
-                            title = "7-Day Consistency",
-                            description = "Maintain healthy blink rate for 7 consecutive days",
+                            title = "7-Day Star",
+                            description = "Keep healthy blinking for 7 days in a row",
                             isUnlocked = uiState.streakSummary.bestHealthyStreak >= 7,
                             icon = Icons.Default.LocalFireDepartment,
                             tint = AccentAmber
@@ -488,8 +488,8 @@ fun StreakScreen(
                         Spacer(modifier = Modifier.height(8.dp))
 
                         MilestoneBadgeItem(
-                            title = "14-Day Habit Builder",
-                            description = "Achieve a 14-day healthy eye care streak",
+                            title = "14-Day Champion",
+                            description = "Keep healthy blinking for 14 days in a row",
                             isUnlocked = uiState.streakSummary.bestHealthyStreak >= 14,
                             icon = Icons.Default.Star,
                             tint = TealPrimary
@@ -497,8 +497,8 @@ fun StreakScreen(
                         Spacer(modifier = Modifier.height(8.dp))
 
                         MilestoneBadgeItem(
-                            title = "30-Day Eye Champion",
-                            description = "Accumulate 25 or more healthy days in a month",
+                            title = "30-Day Super Hero",
+                            description = "Have 25 or more healthy days in a month",
                             isUnlocked = uiState.streakSummary.totalHealthyDays >= 25,
                             icon = Icons.Default.EmojiEvents,
                             tint = AccentEmerald

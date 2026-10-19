@@ -4,7 +4,7 @@
     <string name="ideator_credit">मिताली पुरोहित द्वारा परिकल्पित</string>
     <string name="developer_credit">राविल पटेल द्वारा विकसित</string>
     <string name="developer_linkedin_url">https://linkedin.com/in/ravilpatel</string>
-    <string name="tagline">सजग नेत्र देखभाल और पलक झपकाने का स्वास्थ्य</string>
+    <string name="tagline">खुश आँखें और सेहतमंद पलकें</string>
 
     <!-- Navigation -->
     <string name="nav_home">होम</string>
@@ -15,109 +15,109 @@
 
     <!-- Onboarding: Welcome -->
     <string name="onboarding_welcome_title">BlinkWell में आपका स्वागत है</string>
-    <string name="onboarding_welcome_desc">स्क्रीन समय में आपकी आँखों की सेहत के लिए आपका निजी साथी। BlinkWell पलक झपकाने की दर की निगरानी करके डिजिटल आँखों के तनाव को कम करने में मदद करता है।</string>
+    <string name="onboarding_welcome_desc">आपकी आँखों का प्यारा साथी। फोन चलाते समय BlinkWell आपको पलकें झपकाने की याद दिलाता है ताकि आपकी आँखें थके नहीं और हमेशा तरोताज़ा रहें।</string>
     <string name="onboarding_get_started">शुरू करें</string>
 
     <!-- Onboarding: How It Works -->
     <string name="onboarding_how_it_works_title">BlinkWell कैसे काम करता है</string>
-    <string name="onboarding_how_it_works_desc">सामने के कैमरे का उपयोग करके, BlinkWell पूरी तरह से आपके डिवाइस पर ही पलक झपकाने के पैटर्न का पता लगाता है। कोई भी वीडियो या फोटो कभी रिकॉर्ड या सहेजा नहीं जाता है।</string>
-    <string name="onboarding_privacy_promise">100% ऑन-डिवाइस विश्लेषण • कोई वीडियो सहेजा नहीं गया</string>
+    <string name="onboarding_how_it_works_desc">सामने के कैमरे से BlinkWell सिर्फ यह देखता है कि आप कितनी बार पलकें झपकाते हैं। कोई भी फोटो या वीडियो कभी सहेजा या भेजा नहीं जाता।</string>
+    <string name="onboarding_privacy_promise">100% सुरक्षित और निजी • कोई फोटो सहेजी नहीं जाती</string>
 
     <!-- Onboarding: Consent -->
-    <string name="onboarding_consent_title">आपकी गोपनीयता और सहमति</string>
-    <string name="onboarding_consent_desc">कृपया अपनी गोपनीयता प्राथमिकताएँ चुनें। आप इन्हें कभी भी सेटिंग्स में बदल सकते हैं।</string>
-    <string name="consent_monitor_title">पलक झपकाने की निगरानी की अनुमति दें</string>
-    <string name="consent_monitor_desc">पलक झपकाने की दर मापने और स्वास्थ्य अलर्ट देने के लिए आवश्यक है।</string>
-    <string name="consent_research_title">गुमनाम अनुसंधान डेटा साझा करें</string>
-    <string name="consent_research_desc">गुमनाम एकत्रित मेट्रिक्स अपलोड करके शोधकर्ताओं की सहायता करें (वैकल्पिक)।</string>
-    <string name="privacy_policy_link">हमारी गोपनीयता नीति पढ़ें</string>
+    <string name="onboarding_consent_title">सरल विकल्प</string>
+    <string name="onboarding_consent_desc">चुनें कि आप BlinkWell से क्या करवाना चाहते हैं। आप इसे कभी भी बदल सकते हैं।</string>
+    <string name="consent_monitor_title">मेरी पलकें गिनें</string>
+    <string name="consent_monitor_desc">पलकें गिनने और आँखें थकने पर याद दिलाने के लिए जरूरी है।</string>
+    <string name="consent_research_title">आँखों की देखभाल बेहतर बनाने में मदद करें</string>
+    <string name="consent_research_desc">स्वस्थ स्क्रीन आदतों को समझने में मदद के लिए बिना नाम के सिर्फ संख्याएँ साझा करें (वैकल्पिक)।</string>
+
+    <!-- Onboarding: Screening & Cohort -->
+    <string name="screening_title">आप फोन किसलिए इस्तेमाल करते हैं?</string>
+    <string name="screening_subtitle">चुनें कि आप सबसे ज्यादा क्या करते हैं</string>
+    <string name="screening_desc">इससे आपकी आँखों के लिए सही सुझाव देने में मदद मिलती है।</string>
+    <string name="cohort_software_title">काम और कंप्यूटर</string>
+    <string name="cohort_software_desc">घंटों तक काम करना, लिखना और स्क्रीन देखना।</string>
+    <string name="cohort_student_title">पढ़ाई और किताबें</string>
+    <string name="cohort_student_desc">होमवर्क करना, किताबें पढ़ना और ऑनलाइन पढ़ाई।</string>
+    <string name="cohort_general_title">मस्ती, वीडियो और गेम्स</string>
+    <string name="cohort_general_desc">वीडियो देखना, दोस्तों से बातें करना और गेम्स खेलना।</string>
 
     <!-- Operational Mode -->
-    <string name="mode_burst_title">पलक स्वास्थ्य सत्र</string>
-    <string name="mode_burst_desc">फोन का उपयोग करते समय केंद्रित स्वास्थ्य सत्र। बिना किसी रुकावट के सत्र पूरा होने पर अंतिम दर दिखाता है।</string>
+    <string name="mode_burst_title">आई चेक</string>
+    <string name="mode_burst_desc">फोन चलाते समय 5 मिनट की एक छोटी जांच, यह देखने के लिए कि आप ठीक से पलकें झपका रहे हैं या नहीं।</string>
 
     <!-- Onboarding: Permissions -->
-    <string name="permissions_title">आवश्यक अनुमतियाँ</string>
-    <string name="permissions_desc">BlinkWell को पलकें पहचानने के लिए कैमरा एक्सेस और स्वास्थ्य अलर्ट के लिए सूचना (Notification) एक्सेस की आवश्यकता है।</string>
-    <string name="permission_camera_reason">कैमरे का उपयोग केवल ऑन-डिवाइस पलक झपकाने की पहचान के लिए किया जाता है।</string>
-    <string name="permission_notification_reason">कम पलक झपकाने पर नोटिफिकेशन द्वारा याद दिलाया जाता है।</string>
-    <string name="permission_camera_required_warning">डिवाइस पर पलकों के झपकने का विश्लेषण करने के लिए कैमरा अनुमति आवश्यक है।</string>
-    <string name="btn_camera_permission_required">जारी रखने के लिए कैमरा अनुमति दें</string>
-    <string name="grant_permissions">अनुमतियाँ दें</string>
-
-    <!-- Onboarding: Account -->
-    <string name="account_title">खाता सेटअप</string>
-    <string name="account_desc">BlinkWell बिना किसी खाते के पूरी तरह से ऑफ़लाइन काम करता है।</string>
-    <string name="continue_anonymous">बिना खाते के जारी रखें</string>
-    <string name="sign_in_with_email">साइन इन / रजिस्टर करें</string>
+    <string name="permissions_title">बस एक कदम और!</string>
+    <string name="permissions_desc">पलकें गिनने के लिए कैमरे की और आँखों को आराम देने की याद दिलाने के लिए सूचनाओं की जरूरत है।</string>
+    <string name="permission_camera_reason">सिर्फ पलकें झपकाने को देखने के लिए। कोई फोटो कभी नहीं ली जाती।</string>
+    <string name="permission_notification_reason">आँखें थकने पर प्यार से पलकें झपकाने की याद दिलाता है।</string>
+    <string name="permission_camera_required_warning">पलकें गिनने के लिए कैमरा चालू करना जरूरी है।</string>
+    <string name="btn_camera_permission_required">आगे बढ़ने के लिए कैमरा चालू करें</string>
+    <string name="grant_permissions">अनुमतियाँ चालू करें</string>
 
     <!-- Home Screen -->
-    <string name="home_status_ready">निगरानी के लिए तैयार</string>
-    <string name="home_status_monitoring">निगरानी सक्रिय है</string>
-    <string name="home_status_paused">निगरानी रुकी हुई है</string>
-    <string name="home_no_face_detected">चेहरा नहीं मिला — फोन को सामने रखें</string>
-    <string name="home_face_detected">चेहरा पहचाना गया और सक्रिय है</string>
+    <string name="home_status_ready">तैयार</string>
+    <string name="home_status_monitoring">आँखों की जांच जारी</string>
+    <string name="home_status_paused">रुका हुआ</string>
+    <string name="home_no_face_detected">चेहरा नहीं दिख रहा — फोन को सामने रखें</string>
+    <string name="home_face_detected">चेहरा दिख रहा है</string>
     <string name="home_blinks_per_minute">पलकें / मिनट</string>
-    <string name="home_current_rate">वर्तमान दर</string>
-    <string name="home_target_rate">उत्तम: 15–20 BPM</string>
-    <string name="home_btn_start">निगरानी शुरू करें</string>
-    <string name="home_btn_stop">निगरानी बंद करें</string>
-    <string name="home_mode_badge_burst">नेत्र स्वास्थ्य जांच</string>
-    <string name="home_burst_standby_title">पलक स्वास्थ्य सत्र</string>
-    <string name="home_burst_standby_desc">सामान्य रूप से फोन का उपयोग करते रहें। BlinkWell आपकी वास्तविक पलक दर मापेगा और परिणाम दिखाएगा।</string>
-    <string name="home_burst_active_label">सत्र सक्रिय</string>
-    <string name="home_burst_time_remaining">%1$d:%2$02d शेष</string>
-    <string name="home_burst_paused_label">रुका हुआ (स्क्रीन बंद/लॉक)</string>
-    <string name="home_burst_btn_start">सत्र शुरू करें</string>
-    <string name="home_burst_btn_stop">सत्र रोकें</string>
-    <string name="home_burst_result_title">🎉 सत्र पूरा हुआ!</string>
-    <string name="home_burst_result_subtitle">नेत्र स्वास्थ्य सारांश</string>
-    <string name="home_burst_result_status_healthy">🟢 स्वस्थ पलक दर</string>
-    <string name="home_burst_result_status_low">🔴 कम पलक दर — आँखों को आराम दें</string>
-    <string name="home_burst_result_advice_healthy">बहुत बढ़िया! आपकी पलक दर स्क्रीन उपयोग के दौरान आँखों की नमी के लिए उत्तम स्तर पर है।</string>
-    <string name="home_burst_result_advice_low">आपकी पलक दर अनुशंसित लक्ष्य (15–20 BPM) से कम थी। आँखों के तनाव से बचने के लिए 20-20-20 नियम अपनाएं।</string>
-    <string name="home_burst_result_blinks_count">%1$d कुल पलकें दर्ज की गईं</string>
-    <string name="home_burst_result_dismiss">हो गया (Done)</string>
+    <string name="home_current_rate">अभी की गति</string>
+    <string name="home_target_rate">उत्तम: 15–20 पलकें/मिनट</string>
+    <string name="home_btn_start">आई चेक शुरू करें</string>
+    <string name="home_btn_stop">आई चेक रोकें</string>
+    <string name="home_mode_badge_burst">आई चेक</string>
+    <string name="home_burst_standby_title">आई चेक</string>
+    <string name="home_burst_standby_desc">सामान्य रूप से फोन का उपयोग करें। BlinkWell आपकी पलकें गिनकर अंत में आपका स्कोर दिखाएगा।</string>
+    <string name="home_burst_active_label">आई चेक चालू है</string>
+    <string name="home_burst_time_remaining">%1$d:%2$02d बाकी</string>
+    <string name="home_burst_paused_label">रुका हुआ</string>
+    <string name="home_burst_btn_start">Start Eye Check</string>
+    <string name="home_burst_btn_stop">Stop Eye Check</string>
+    <string name="home_optimum_rate_line">15 Blinks/Min is optimum</string>
+    <string name="home_burst_result_title">🎉 आई चेक पूरा हुआ!</string>
+    <string name="home_burst_result_subtitle">आई चेक परिणाम</string>
+    <string name="home_burst_result_status_healthy">🟢 बहुत बढ़िया पलकें झपकाईं!</string>
+    <string name="home_burst_result_status_low">🔴 धीमी पलकें — आँखों को आराम दें</string>
+    <string name="home_burst_result_advice_healthy">शाबाश! आपने आँखों को गीला और खुश रखने के लिए खूब पलकें झपकाईं।</string>
+    <string name="home_burst_result_advice_low">आप बिना पलक झपकाए लगातार देख रहे थे! स्क्रीन से दूर देखें, आँखें बंद करें और थोड़ा आराम करें।</string>
+    <string name="home_burst_result_blinks_count">%1$d कुल पलकें गिनी गईं</string>
+    <string name="home_burst_result_dismiss">हो गया</string>
 
     <!-- Stats Screen -->
-    <string name="stats_title">इतिहास और रुझान</string>
-    <string name="stats_today_avg">आज का औसत (Days BPM)</string>
-    <string name="stats_days_bpm">Days BPM</string>
-    <string name="stats_alerts_today">आज के अलर्ट</string>
-    <string name="stats_total_sessions">कुल सत्र</string>
-    <string name="stats_recent_trend">पलक दर रुझान</string>
-    <string name="stats_recent_alerts">हाल के अलर्ट</string>
-    <string name="stats_no_data">अभी कोई डेटा दर्ज नहीं हुआ है।</string>
+    <string name="stats_title">आपकी पलकों का इतिहास</string>
+    <string name="stats_today_avg">आज का औसत</string>
+    <string name="stats_days_bpm">पलकें/मिनट</string>
+    <string name="stats_alerts_today">आराम के रिमाइंडर</string>
+    <string name="stats_total_sessions">कुल जांच</string>
+    <string name="stats_recent_trend">समय के साथ पलकें</string>
+    <string name="stats_recent_alerts">हाल के रिमाइंडर</string>
+    <string name="stats_no_data">अभी कोई आई चेक नहीं हुआ है! परिणाम देखने के लिए होम स्क्रीन पर आई चेक शुरू करें।</string>
     <string name="stats_filter_15m">15 मिनट</string>
     <string name="stats_filter_1h">1 घंटा</string>
     <string name="stats_filter_1d">1 दिन</string>
     <string name="stats_filter_7d">7 दिन</string>
     <string name="stats_filter_30d">30 दिन</string>
-    <string name="stats_streak_title">30-दिवसीय स्ट्रीक दृश्य</string>
-    <string name="stats_current_streak">वर्तमान स्ट्रीक</string>
+    <string name="stats_streak_title">दैनिक स्ट्रीक</string>
+    <string name="stats_current_streak">अभी की स्ट्रीक</string>
     <string name="stats_best_streak">सर्वश्रेष्ठ स्ट्रीक</string>
     <string name="stats_healthy_days">स्वस्थ दिन</string>
-    <string name="stats_healthy_legend">🟢 स्वस्थ (Days BPM ≥ %d)</string>
-    <string name="stats_not_healthy_legend">🔴 अस्वस्थ (Days BPM &lt; %d)</string>
-    <string name="stats_no_data_legend">⚪ कोई डेटा नहीं</string>
-    <string name="stats_retention_note">डेटा अधिकतम 30 दिनों के लिए स्थानीय रूप से सहेजा जाता है। दिन के औसत BPM को Days BPM कहा जाता है।</string>
-    <string name="stats_y_axis_label">BPM (पलकें / मिनट)</string>
-    <string name="stats_x_axis_label">समय (Time)</string>
+    <string name="stats_healthy_legend">🟢 अच्छा (≥ %d पलकें/मिनट)</string>
+    <string name="stats_not_healthy_legend">🔴 कम (&lt; %d पलकें/मिनट)</string>
+    <string name="stats_no_data_legend">⚪ कोई जांच नहीं</string>
+    <string name="stats_retention_note">पिछले 30 दिनों का आपका औसत दिखाता है।</string>
+    <string name="stats_y_axis_label">पलकें / मिनट</string>
+    <string name="stats_x_axis_label">समय</string>
 
     <!-- Settings Screen -->
     <string name="settings_title">सेटिंग्स</string>
-    <string name="settings_section_monitoring">निगरानी और संवेदनशीलता</string>
-    <string name="settings_threshold_label">अलर्ट सीमा (BPM)</string>
-    <string name="settings_threshold_summary">यदि दर 2 मिनट तक %d BPM से कम रहे तो अलर्ट करें</string>
-    <string name="settings_sampling_mode_label">बैकग्राउंड सैंपलिंग रणनीति</string>
-    <string name="settings_sampling_duty_cycle">आवधिक सैंपलिंग (अनुशंसित - बैटरी बचाता है)</string>
-    <string name="settings_sampling_continuous">निरंतर कम-एफपीएस (3–5 fps)</string>
-    <string name="settings_section_notifications">सूचनाएँ (Notifications)</string>
-    <string name="settings_alerts_enabled">कम पलक अलर्ट</string>
-    <string name="settings_section_privacy">गोपनीयता और डेटा</string>
-    <string name="settings_research_sharing">गुमनाम अनुसंधान डेटा साझा करें</string>
-    <string name="settings_delete_data">मेरा स्थानीय डेटा हटाएं</string>
-    <string name="settings_delete_data_confirm">क्या आप वाकई सारा स्थानीय डेटा हटाना चाहते हैं?</string>
+    <string name="settings_section_monitoring">पलक लक्ष्य</string>
+    <string name="settings_threshold_label">लक्ष्य (हर मिनट पलकें)</string>
+    <string name="settings_threshold_summary">अगर मैं एक मिनट में %d से कम बार पलकें झपकाऊं तो याद दिलाएं</string>
+    <string name="settings_section_notifications">रिमाइंडर</string>
+    <string name="settings_alerts_enabled">पलक झपकाने की याद दिलाएं</string>
+    <string name="settings_section_privacy">गोपनीयता</string>
+    <string name="settings_research_sharing">आँखों की देखभाल बेहतर बनाने में मदद करें</string>
     <string name="settings_section_language">भाषा (Language)</string>
     <string name="btn_cancel">रद्द करें</string>
     <string name="btn_delete">हटाएं</string>
@@ -127,67 +127,67 @@
     <string name="about_title">BlinkWell के बारे में</string>
     <string name="about_version">संस्करण 1.0.0</string>
     <string name="about_dev_credit">राविल पटेल द्वारा विकसित</string>
-    <string name="about_disclaimer_title">स्वास्थ्य अस्वीकरण (Disclaimer)</string>
-    <string name="disclaimer_text">BlinkWell एक सामान्य स्वास्थ्य उपकरण है जो आपके डिवाइस के कैमरे का उपयोग करके आपकी पलक झपकाने की दर का अनुमान लगाता है। यह कोई चिकित्सा उपकरण नहीं है और किसी भी स्थिति का निदान, उपचार या रोकथाम नहीं करता है। प्रकाश, चश्मा और कैमरे का कोण सटीकता को प्रभावित कर सकता है। यदि आपको सूखी आँखों या दृष्टि संबंधी कोई चिंता है, तो कृपया किसी नेत्र रोग विशेषज्ञ से परामर्श लें।</string>
+    <string name="about_disclaimer_title">प्यारा सा सुझाव</string>
+    <string name="disclaimer_text">BlinkWell आपको आँखों को आराम देने की याद दिलाता है। यह कोई डॉक्टर नहीं है। अगर आपकी आँखें कभी थकी, दर्द भरी या सूखी लगें, तो स्क्रीन से ब्रेक लें और आँखों के डॉक्टर से सलाह लें।</string>
 
     <!-- Notifications & Service -->
-    <string name="notification_channel_alerts">पलक अलर्ट</string>
-    <string name="notification_channel_service">BlinkWell बैकग्राउंड सेवा</string>
-    <string name="notification_service_running">BlinkWell सक्रिय रूप से आपकी पलकों की निगरानी कर रहा है</string>
-    <string name="notification_alert_title">आँखों को थोड़ा आराम दें</string>
-    <string name="notification_alert_body">आपकी पलक झपकाने की दर कम लग रही है — 20 सेकंड का ब्रेक लें और कुछ बार पलकें झपकाएं।</string>
+    <string name="notification_channel_alerts">पलक रिमाइंडर</string>
+    <string name="notification_channel_service">BlinkWell बैकग्राउंड</string>
+    <string name="notification_service_running">BlinkWell आपकी आँखों की मदद कर रहा है</string>
+    <string name="notification_alert_title">पलकें झपकाने का समय!</string>
+    <string name="notification_alert_body">आपकी आँखें सूख सकती हैं! स्क्रीन से दूर देखें और कुछ बार पलकें झपकाएं।</string>
 
     <!-- Sticky Status Notifications -->
-    <string name="notification_status_normal_title">🟢 सामान्य दर: %1$d BPM</string>
-    <string name="notification_status_normal_body">पलक झपकाने की दर सामान्य है • ऐसे ही बनाए रखें!</string>
-    <string name="notification_status_low_title">🔴 कम दर: %1$d BPM</string>
-    <string name="notification_status_low_body">दर लक्ष्य (%1$d BPM) से कम है • कृपया पलकें झपकाएं</string>
-    <string name="notification_status_not_detected_title">🟡 चेहरा / आँखें नहीं दिख रही हैं</string>
-    <string name="notification_status_not_detected_body">पर्याप्त रोशनी रखें और कैमरे के सामने चेहरा रखें</string>
-    <string name="notification_action_stop">निगरानी रोकें</string>
-    <string name="notification_green_to_red_title">🔴 कम पलक दर चेतावनी</string>
-    <string name="notification_green_to_red_body">आपकी दर घटकर %1$d BPM (लक्ष्य: %2$d BPM) हो गई है। कृपया थोड़ा ब्रेक लें और पलकें झपकाएं।</string>
-    <string name="notification_burst_status_title">BlinkWell • पलक स्वास्थ्य सत्र</string>
-    <string name="notification_burst_status_body">%1$d:%2$02d शेष • स्वाभाविक रूप से फोन का उपयोग करें</string>
-    <string name="notification_burst_complete_title">🎉 परीक्षण पूरा हुआ: %1$.0f BPM</string>
-    <string name="notification_burst_complete_body">5 मिनट में आपका औसत %1$.0f पलकें/मिनट रहा (%2$d कुल पलकें)। रिपोर्ट देखने के लिए टैप करें।</string>
+    <string name="notification_status_normal_title">🟢 अच्छी पलकें: %1$d पलकें/मिनट</string>
+    <string name="notification_status_normal_body">बहुत बढ़िया! आपकी आँखें खुश और आराम में हैं।</string>
+    <string name="notification_status_low_title">🔴 धीमी पलकें: %1$d पलकें/मिनट</string>
+    <string name="notification_status_low_body">आँखों को तरोताज़ा रखने के लिए ज्यादा पलकें झपकाएं!</string>
+    <string name="notification_status_not_detected_title">🟡 आँखें नहीं दिख रही हैं</string>
+    <string name="notification_status_not_detected_body">फोन को सामने रखें ताकि कैमरा आपका चेहरा देख सके।</string>
+    <string name="notification_action_stop">आई चेक रोकें</string>
+    <string name="notification_green_to_red_title">🔴 आँखों को आराम दें</string>
+    <string name="notification_green_to_red_body">आप सामान्य से कम पलकें झपका रहे हैं। थोड़ा ब्रेक लें और पलकें झपकाएं!</string>
+    <string name="notification_burst_status_title">BlinkWell • आई चेक</string>
+    <string name="notification_burst_status_body">%1$d:%2$02d बाकी • सामान्य रूप से फोन चलाएं</string>
+    <string name="notification_burst_complete_title">🎉 आई चेक पूरा हुआ!</string>
+    <string name="notification_burst_complete_body">आपने हर मिनट %1$.0f बार पलकें झपकाईं (कुल %2$d पलकें)। अपना स्कोर देखने के लिए टैप करें!</string>
 
     <!-- Info / Education Dialog -->
-    <string name="info_dialog_title">👁️ पलक झपकाना क्यों जरूरी है?</string>
-    <string name="info_dialog_subtitle">स्क्रीन के समय आँखों की सुरक्षा</string>
-    <string name="info_dialog_what_title">BlinkWell क्या करता है</string>
-    <string name="info_dialog_what_desc">BlinkWell बिना कोई वीडियो या फोटो सहेजे, सीधे आपके डिवाइस पर ही पलक झपकाने की दर को मापता है।</string>
-    <string name="info_dialog_why_title">आँखों के सूखेपन और तनाव से बचाव</string>
-    <string name="info_dialog_why_desc">स्क्रीन देखते समय हमारी पलक झपकाने की दर 60%% तक घट जाती है। हर बार पलक झपकाने से कॉर्निया पर नमी की परत बनती है। कम पलक झपकाने से आँखें सूखने लगती हैं, तनाव बढ़ता है और दृष्टि धुंधली हो सकती है।</string>
-    <string name="info_dialog_tip">💡 उत्तम दर: 15–20 पलकें प्रति मिनट। 20-20-20 का नियम याद रखें!</string>
-    <string name="info_dialog_btn">समझ गया (Got It)</string>
+    <string name="info_dialog_title">👁️ हमें पलकें क्यों झपकानी चाहिए?</string>
+    <string name="info_dialog_subtitle">स्क्रीन चलाते समय आँखों को खुश रखें</string>
+    <string name="info_dialog_what_title">BlinkWell कैसे मदद करता है</string>
+    <string name="info_dialog_what_desc">BlinkWell कैमरे से सिर्फ पलकें गिनता है ताकि आँखें स्वस्थ रहें। यह कोई भी फोटो कभी नहीं सहेजता या भेजता।</string>
+    <string name="info_dialog_why_title">पलकें झपकाना क्यों अच्छा है</string>
+    <string name="info_dialog_why_desc">स्क्रीन देखते समय हम पलकें झपकाना भूल जाते हैं! जब भी आप पलक झपकाते हैं, तो आपकी पलकें आँखों को आंसुओं से धोकर गीला और साफ रखती हैं। अगर आप पलकें नहीं झपकाते, तो आँखें सूखी, थकी और खुजली वाली हो जाती हैं।</string>
+    <string name="info_dialog_tip">💡 सुझाव: हर मिनट कम से कम 15 बार पलकें झपकाएं और आँखों को आराम देने के लिए बीच-बीच में दूर देखें!</string>
+    <string name="info_dialog_btn">समझ गया</string>
 
     <!-- Background Usage & Battery Optimization Permission -->
-    <string name="bg_permission_dialog_title">🛡️ बैकग्राउंड निगरानी अनुमति</string>
-    <string name="bg_permission_dialog_subtitle">बैकग्राउंड निष्पादन के लिए आवश्यक</string>
-    <string name="bg_permission_dialog_desc">अन्य ऐप्स का उपयोग करते समय भी रीयल-टाइम पलक दर मापने और स्वास्थ्य अलर्ट देने के लिए, BlinkWell को बिना बैटरी सेवर प्रतिबंधों के बैकग्राउंड में चलने की अनुमति की आवश्यकता है।</string>
-    <string name="bg_permission_privacy_header">सुरक्षा और बैटरी सुरक्षा गारंटी:</string>
-    <string name="bg_permission_rule_screen_off">🔒 स्क्रीन बंद सुरक्षा: स्क्रीन बंद या लॉक होने पर कैमरे का उपयोग कभी नहीं किया जाता है।</string>
-    <string name="bg_permission_rule_5s_noface">⚡ 5-सेकंड पावर सेवर: यदि स्क्रीन चालू है लेकिन पहले 5 सेकंड में कोई चेहरा नहीं दिखता है, तो बैटरी बचाने के लिए कैमरा तुरंत बंद हो जाता है।</string>
-    <string name="bg_permission_btn_allow">बैकग्राउंड में अनुमति दें</string>
-    <string name="bg_permission_btn_skip">अभी नहीं (ऐसे ही शुरू करें)</string>
-    <string name="permission_battery_opt_title">बैकग्राउंड बैटरी ऑप्टिमाइज़ेशन</string>
-    <string name="permission_battery_opt_reason">अन्य ऐप्स का उपयोग करते समय भी निर्बाध रीयल-टाइम निगरानी सुनिश्चित करता है।</string>
-    <string name="settings_battery_opt_title">बैकग्राउंड निष्पादन</string>
-    <string name="settings_battery_opt_summary_exempt">अप्रतिबंधित • बैकग्राउंड निगरानी सक्रिय</string>
-    <string name="settings_battery_opt_summary_restricted">प्रतिबंधित • बैकग्राउंड अनुमति देने के लिए टैप करें</string>
-    <string name="settings_battery_opt_btn">बैकग्राउंड अनुमति कॉन्फ़िगर करें</string>
-    <string name="settings_section_power">बैटरी और पावर प्रबंधन</string>
-    <string name="settings_battery_guard_title">कम बैटरी और पावर सेवर सुरक्षा</string>
-    <string name="settings_battery_guard_subtitle">कम पावर में बैटरी की बचत करें</string>
-    <string name="settings_battery_guard_threshold_label">रोकने की सीमा: %d%%</string>
-    <string name="settings_battery_guard_desc">बैटरी %d%% से कम होने पर (चार्ज न होने पर) या बैटरी सेवर चालू होने पर पलक स्वास्थ्य सत्र अपने आप रुक जाएगा और शुरू नहीं होगा।</string>
-    <string name="home_battery_guard_alert_title">⚡ बैटरी सेवर सुरक्षा सक्रिय</string>
-    <string name="home_battery_guard_alert_body">पलक स्वास्थ्य सत्र शुरू नहीं हो सकता क्योंकि आपकी बैटरी %1$d%% (%2$d%%) से कम है या बैटरी सेवर चालू है। चार्जर कनेक्ट करें या सेटिंग्स में इसे बदलें।</string>
-    <string name="home_battery_guard_dismiss">समझ गया (OK)</string>
+    <string name="bg_permission_dialog_title">🛡️ बैकग्राउंड रिमाइंडर</string>
+    <string name="bg_permission_dialog_subtitle">गेम खेलते या वीडियो देखते समय रिमाइंडर पाने के लिए</string>
+    <string name="bg_permission_dialog_desc">दूसरे ऐप चलाते समय भी पलकें झपकाने की याद दिलाने के लिए BlinkWell को बैकग्राउंड में चलने की अनुमति चाहिए।</string>
+    <string name="bg_permission_privacy_header">सुरक्षित और बैटरी-फ्रेंडली:</string>
+    <string name="bg_permission_rule_screen_off">🔒 स्क्रीन बंद: स्क्रीन लॉक या बंद होने पर कैमरा कभी नहीं चलता।</string>
+    <string name="bg_permission_rule_5s_noface">⚡ बैटरी बचत: फोन के सामने चेहरा न होने पर कैमरा बंद हो जाता है।</string>
+    <string name="bg_permission_btn_allow">रिमाइंडर की अनुमति दें</string>
+    <string name="bg_permission_btn_skip">अभी नहीं</string>
+    <string name="permission_battery_opt_title">बैकग्राउंड में बैटरी बचाएं</string>
+    <string name="permission_battery_opt_reason">बैटरी खर्च किए बिना रिमाइंडर देने में मदद करता है।</string>
+    <string name="settings_battery_opt_title">बैकग्राउंड रिमाइंडर</string>
+    <string name="settings_battery_opt_summary_exempt">चालू • रिमाइंडर काम कर रहे हैं</string>
+    <string name="settings_battery_opt_summary_restricted">रुका हुआ • रिमाइंडर चालू करने के लिए टैप करें</string>
+    <string name="settings_battery_opt_btn">बैकग्राउंड रिमाइंडर चालू करें</string>
+    <string name="settings_section_power">बैटरी सेवर</string>
+    <string name="settings_battery_guard_title">बैटरी बचाएं</string>
+    <string name="settings_battery_guard_subtitle">बैटरी कम होने पर आई चेक रोक देता है</string>
+    <string name="settings_battery_guard_threshold_label">जब बैटरी इससे कम हो तो रोकें: %d%%</string>
+    <string name="settings_battery_guard_desc">बैटरी %d%% से कम होने पर या बैटरी सेवर चालू होने पर आई चेक अपने आप रुक जाएगा।</string>
+    <string name="home_battery_guard_alert_title">⚡ बैटरी कम है</string>
+    <string name="home_battery_guard_alert_body">आपकी बैटरी कम है (%2$d%%)। आई चेक शुरू करने के लिए चार्जर लगाएं!</string>
+    <string name="home_battery_guard_dismiss">समझ गया</string>
 
     <!-- Common -->
     <string name="next">आगे</string>
     <string name="skip">छोड़ें</string>
-    <string name="done">Done</string>
+    <string name="done">हो गया</string>
 </resources>

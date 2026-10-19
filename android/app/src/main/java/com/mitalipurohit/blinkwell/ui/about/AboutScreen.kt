@@ -130,31 +130,8 @@ fun AboutScreen() {
                 }
             }
 
-            // Privacy Policy Link
-            OutlinedButton(
-                onClick = {
-                    val browserIntent = Intent(
-                        Intent.ACTION_VIEW,
-                        Uri.parse("https://github.com/mitalipurohit/BlinkWell#privacy-policy")
-                    )
-                    context.startActivity(browserIntent)
-                },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Text(stringResource(R.string.privacy_policy_link))
-                Spacer(modifier = Modifier.width(8.dp))
-                Icon(
-                    imageVector = Icons.Default.OpenInNew,
-                    contentDescription = null,
-                    modifier = Modifier.size(16.dp)
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
             Text(
-                text = "BlinkWell — Mindful Eye Care & Blink Wellness\nBuilt with Privacy First On-Device monitoring",
+                text = "BlinkWell — Happy Eyes & Healthy Blinking\nSafe, simple, and private",
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                 textAlign = TextAlign.Center

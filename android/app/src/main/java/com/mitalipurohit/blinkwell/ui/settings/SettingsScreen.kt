@@ -24,12 +24,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.OpenInNew
-import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -41,13 +37,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -62,8 +54,6 @@ import androidx.core.os.LocaleListCompat
 import com.mitalipurohit.blinkwell.R
 import com.mitalipurohit.blinkwell.ui.theme.AccentAmber
 import com.mitalipurohit.blinkwell.ui.theme.AccentEmerald
-import com.mitalipurohit.blinkwell.ui.theme.AccentRose
-import com.mitalipurohit.blinkwell.ui.theme.CardTintEmerald
 import com.mitalipurohit.blinkwell.ui.theme.CardTintIndigo
 import com.mitalipurohit.blinkwell.ui.theme.TealPrimary
 import com.mitalipurohit.blinkwell.ui.theme.UpiIndigo
@@ -77,7 +67,6 @@ fun SettingsScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
-    var showDeleteDialog by remember { mutableStateOf(false) }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -119,12 +108,12 @@ fun SettingsScreen(
                     ) {
                         Column {
                             Text(
-                                text = "Healthy Target: ${uiState.bpmThreshold} BPM",
+                                text = "Healthy Target: ${uiState.bpmThreshold} Blinks/Min",
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.Bold
                             )
                             Text(
-                                text = "Optimal clinical threshold (15–20 BPM)",
+                                text = "Good target for healthy eyes (15–20 Blinks/Min)",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -135,7 +124,7 @@ fun SettingsScreen(
                             color = AccentEmerald.copy(alpha = 0.12f)
                         ) {
                             Text(
-                                text = "${uiState.bpmThreshold} BPM",
+                                text = "${uiState.bpmThreshold} Blinks/Min",
                                 style = MaterialTheme.typography.labelMedium,
                                 fontWeight = FontWeight.Bold,
                                 color = AccentEmerald,
@@ -158,7 +147,7 @@ fun SettingsScreen(
                     )
 
                     Text(
-                        text = "Sessions averaging ≥ ${uiState.bpmThreshold} BPM count towards your healthy streak.",
+                        text = "Eye checks with ${uiState.bpmThreshold} or more blinks a minute help grow your healthy streak.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 11.sp
@@ -278,24 +267,6 @@ fun SettingsScreen(
                             onCheckedChange = { viewModel.setResearchConsent(it) },
                             colors = SwitchDefaults.colors(checkedThumbColor = TealPrimary)
                         )
-                    }
-
-                    if (uiState.researchConsent) {
-                        Spacer(modifier = Modifier.height(12.dp))
-                        OutlinedButton(
-                            onClick = {
-                                viewModel.triggerManualSync()
-                                android.widget.Toast.makeText(context, "Data sync initiated...", android.widget.Toast.LENGTH_SHORT).show()
-                            },
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(8.dp)
-                        ) {
-                            Text(
-                                text = "Sync Research Data Now",
-                                color = TealPrimary,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                        }
                     }
                 }
             }
@@ -476,99 +447,10 @@ fun SettingsScreen(
                             )
                         }
                     }
-
-                    Spacer(modifier = Modifier.height(14.dp))
-
-                    // Privacy Policy Button
-                    OutlinedButton(
-                        onClick = {
-                            val browserIntent = Intent(
-                                Intent.ACTION_VIEW,
-                                Uri.parse("https://github.com/mitalipurohit/BlinkWell#privacy-policy")
-                            )
-                            context.startActivity(browserIntent)
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Text(stringResource(R.string.privacy_policy_link))
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Icon(
-                            imageVector = Icons.Default.OpenInNew,
-                            contentDescription = null,
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    // 100% On-Device Privacy Badge
-                    Surface(
-                        shape = RoundedCornerShape(8.dp),
-                        color = CardTintEmerald,
-                        border = BorderStroke(1.dp, AccentEmerald.copy(alpha = 0.3f))
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Security,
-                                contentDescription = null,
-                                tint = AccentEmerald,
-                                modifier = Modifier.size(16.dp)
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                text = "100% On-Device Analysis • Zero Video Saved",
-                                style = MaterialTheme.typography.labelSmall,
-                                fontWeight = FontWeight.SemiBold,
-                                color = AccentEmerald
-                            )
-                        }
-                    }
                 }
-            }
-
-            // Section 6: Delete Data Button
-            Button(
-                onClick = { showDeleteDialog = true },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(14.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = AccentRose.copy(alpha = 0.15f))
-            ) {
-                Text(
-                    text = stringResource(R.string.settings_delete_data),
-                    color = AccentRose,
-                    fontWeight = FontWeight.Bold
-                )
             }
 
             Spacer(modifier = Modifier.height(16.dp))
-        }
-
-        // Delete Confirmation Dialog
-        if (showDeleteDialog) {
-            AlertDialog(
-                onDismissRequest = { showDeleteDialog = false },
-                title = { Text(stringResource(R.string.settings_delete_data)) },
-                text = { Text(stringResource(R.string.settings_delete_data_confirm)) },
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            showDeleteDialog = false
-                            viewModel.deleteAllLocalData {}
-                        }
-                    ) {
-                        Text(stringResource(R.string.btn_delete), color = AccentRose)
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showDeleteDialog = false }) {
-                        Text(stringResource(R.string.btn_cancel))
-                    }
-                }
-            )
         }
     }
 }

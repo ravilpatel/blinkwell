@@ -4,7 +4,7 @@
     <string name="ideator_credit">Ideated by Mitali Purohit</string>
     <string name="developer_credit">Developed by Ravil Patel</string>
     <string name="developer_linkedin_url">https://linkedin.com/in/ravilpatel</string>
-    <string name="tagline">Mindful Eye Care &amp; Blink Wellness</string>
+    <string name="tagline">Happy Eyes &amp; Healthy Blinking</string>
 
     <!-- Navigation -->
     <string name="nav_home">Home</string>
@@ -15,120 +15,109 @@
 
     <!-- Onboarding: Welcome -->
     <string name="onboarding_welcome_title">Welcome to BlinkWell</string>
-    <string name="onboarding_welcome_desc">Your personal companion for eye health and screen-time wellness. BlinkWell helps reduce digital eye strain by monitoring your blink rate.</string>
+    <string name="onboarding_welcome_desc">Your friendly helper for happy, rested eyes. BlinkWell reminds you to blink while you use your phone so your eyes don\'t get tired or dry.</string>
     <string name="onboarding_get_started">Get Started</string>
 
     <!-- Onboarding: How It Works -->
     <string name="onboarding_how_it_works_title">How BlinkWell Works</string>
-    <string name="onboarding_how_it_works_desc">Using your front camera, BlinkWell detects your blink patterns completely on-device. No raw video or photos are ever recorded, stored, or transmitted.</string>
-    <string name="onboarding_privacy_promise">100% On-Device Face Analysis • Zero Video Saved</string>
+    <string name="onboarding_how_it_works_desc">Using your front camera, BlinkWell counts your blinks to help you rest your eyes. No photos or videos are ever saved or shared.</string>
+    <string name="onboarding_privacy_promise">100% Safe &amp; Private • Zero Photos Saved</string>
 
     <!-- Onboarding: Consent -->
-    <string name="onboarding_consent_title">Your Privacy &amp; Consent</string>
-    <string name="onboarding_consent_desc">Please review and select your privacy preferences. You can modify these anytime in Settings.</string>
-    <string name="consent_monitor_title">Allow blink rate monitoring</string>
-    <string name="consent_monitor_desc">Required to measure blink rates and deliver low-blink wellness alerts.</string>
-    <string name="consent_research_title">Share anonymized research data</string>
-    <string name="consent_research_desc">Help eye-health researchers by uploading anonymous aggregate blink metrics (optional).</string>
-    <string name="privacy_policy_link">Read our Privacy Policy</string>
+    <string name="onboarding_consent_title">Simple Choices</string>
+    <string name="onboarding_consent_desc">Choose what you want BlinkWell to do. You can change this anytime.</string>
+    <string name="consent_monitor_title">Count my eye blinks</string>
+    <string name="consent_monitor_desc">Needed to count your blinks and remind you when your eyes are tired.</string>
+    <string name="consent_research_title">Help improve eye care</string>
+    <string name="consent_research_desc">Share anonymous numbers to help study healthy screen habits (optional).</string>
 
     <!-- Onboarding: Screening & Cohort -->
-    <string name="screening_title">Personalize Your Vision Care</string>
-    <string name="screening_subtitle">What best describes your daily screen activity?</string>
-    <string name="screening_desc">This helps calibrate ergonomic fatigue thresholds and study models.</string>
-    <string name="cohort_software_title">Software Engineer / Tech</string>
-    <string name="cohort_software_desc">Continuous code editor, IDE &amp; terminal focus with intense staring blocks.</string>
-    <string name="cohort_student_title">Student / Academic</string>
-    <string name="cohort_student_desc">Prolonged reading, coursework, research &amp; video lectures.</string>
-    <string name="cohort_general_title">General Screen Use</string>
-    <string name="cohort_general_desc">Everyday browsing, messaging, media &amp; varied device habits.</string>
+    <string name="screening_title">What Do You Use Your Phone For?</string>
+    <string name="screening_subtitle">Pick what you do most</string>
+    <string name="screening_desc">This helps us give you the best reminders for your eyes.</string>
+    <string name="cohort_software_title">Work &amp; Computer</string>
+    <string name="cohort_software_desc">Working, typing, and staring at screens for hours.</string>
+    <string name="cohort_student_title">School &amp; Reading</string>
+    <string name="cohort_student_desc">Homework, reading books, and watching lessons.</string>
+    <string name="cohort_general_title">Fun, Videos &amp; Games</string>
+    <string name="cohort_general_desc">Watching videos, texting friends, and everyday games.</string>
 
     <!-- Operational Mode -->
-    <string name="mode_burst_title">Blink Wellness Session</string>
-    <string name="mode_burst_desc">Focused eye health session while using your phone. Calculates final BPM with zero interruptions.</string>
+    <string name="mode_burst_title">Eye Check</string>
+    <string name="mode_burst_desc">A quick 5-minute check to see how well you blink while using your phone.</string>
 
     <!-- Onboarding: Permissions -->
-    <string name="permissions_title">Required Permissions</string>
-    <string name="permissions_desc">BlinkWell requires camera access to detect blinks, and notification access for gentle wellness reminders.</string>
-    <string name="permission_camera_reason">Camera is used strictly for real-time, on-device eye blink detection.</string>
-    <string name="permission_notification_reason">Notifications deliver friendly alerts when your blink rate is low.</string>
-    <string name="permission_camera_required_warning">Camera permission is required to analyze eye blinks on-device.</string>
-    <string name="btn_camera_permission_required">Grant Camera Permission to Continue</string>
-    <string name="grant_permissions">Grant Permissions</string>
-
-    <!-- Onboarding: Account -->
-    <string name="account_title">Account Setup</string>
-    <string name="account_desc">BlinkWell works completely offline without an account. You can optionally sign in to sync across devices.</string>
-    <string name="continue_anonymous">Continue without an Account</string>
-    <string name="sign_in_with_email">Sign In / Register</string>
+    <string name="permissions_title">Almost Done!</string>
+    <string name="permissions_desc">BlinkWell needs the camera to count blinks, and alerts to remind you when to rest your eyes.</string>
+    <string name="permission_camera_reason">Used only to see when you blink. No photos are ever taken or saved.</string>
+    <string name="permission_notification_reason">Sends a friendly reminder to blink when your eyes are tired.</string>
+    <string name="permission_camera_required_warning">Camera access is needed to count your blinks.</string>
+    <string name="btn_camera_permission_required">Turn On Camera to Continue</string>
+    <string name="grant_permissions">Turn On Permissions</string>
 
     <!-- Home Screen -->
-    <string name="home_status_ready">Ready to Monitor</string>
-    <string name="home_status_monitoring">Monitoring Active</string>
-    <string name="home_status_paused">Monitoring Paused</string>
-    <string name="home_no_face_detected">No face detected — keep phone in view</string>
-    <string name="home_face_detected">Face detected &amp; active</string>
+    <string name="home_status_ready">Ready</string>
+    <string name="home_status_monitoring">Checking Eyes</string>
+    <string name="home_status_paused">Paused</string>
+    <string name="home_no_face_detected">Can\'t see face — hold phone in front of you</string>
+    <string name="home_face_detected">Face detected</string>
     <string name="home_blinks_per_minute">Blinks / Min</string>
     <string name="home_current_rate">Current Rate</string>
-    <string name="home_target_rate">Optimal: 15–20 BPM</string>
-    <string name="home_btn_start">Start Monitoring</string>
-    <string name="home_btn_stop">Stop Monitoring</string>
-    <string name="home_mode_badge_burst">Blink Wellness Check</string>
-    <string name="home_burst_standby_title">Blink Health Session</string>
-    <string name="home_burst_standby_desc">Keep using your phone normally. BlinkWell measures your real-world blink rate and shows your final BPM at the end.</string>
-    <string name="home_burst_active_label">Session Active</string>
+    <string name="home_target_rate">Optimal: 15–20 Blinks/Min</string>
+    <string name="home_btn_start">Start Eye Check</string>
+    <string name="home_btn_stop">Stop Eye Check</string>
+    <string name="home_mode_badge_burst">Eye Check</string>
+    <string name="home_burst_standby_title">Eye Check</string>
+    <string name="home_burst_standby_desc">Use your phone normally. BlinkWell counts your blinks and shows your score when finished.</string>
+    <string name="home_burst_active_label">Eye Check Running</string>
     <string name="home_burst_time_remaining">%1$d:%2$02d remaining</string>
-    <string name="home_burst_paused_label">Paused (Screen Off/Locked)</string>
+    <string name="home_burst_paused_label">Paused</string>
     <string name="home_burst_btn_start">Start Eye Check</string>
-    <string name="home_burst_btn_stop">Stop Session</string>
-    <string name="home_burst_result_title">🎉 Session Complete!</string>
-    <string name="home_burst_result_subtitle">Ocular Wellness Summary</string>
-    <string name="home_burst_result_status_healthy">🟢 Healthy Blink Rate</string>
-    <string name="home_burst_result_status_low">🔴 Low Blink Rate — Take a rest</string>
-    <string name="home_burst_result_advice_healthy">Great job! Your blink frequency meets the optimal target for healthy eye moisture during screen use.</string>
-    <string name="home_burst_result_advice_low">Your blink rate was below the optimal target (15–20 BPM). Prolonged screen staring causes dry eye fatigue — remember the 20-20-20 rule.</string>
+    <string name="home_burst_btn_stop">Stop Eye Check</string>
+    <string name="home_optimum_rate_line">15 Blinks/Min is optimum</string>
+    <string name="home_burst_result_title">🎉 Eye Check Complete!</string>
+    <string name="home_burst_result_subtitle">Eye Check Summary</string>
+    <string name="home_burst_result_status_healthy">🟢 Great Blinking!</string>
+    <string name="home_burst_result_status_low">🔴 Slow Blinking — Rest your eyes</string>
+    <string name="home_burst_result_advice_healthy">Great job! You blinked plenty of times to keep your eyes wet and happy.</string>
+    <string name="home_burst_result_advice_low">You were staring without blinking enough! Look away, close your eyes, and take a quick rest.</string>
     <string name="home_burst_result_blinks_count">%1$d total blinks recorded</string>
     <string name="home_burst_result_dismiss">Done</string>
 
     <!-- Stats Screen -->
-    <string name="stats_title">Blink History &amp; Trends</string>
-    <string name="stats_today_avg">Today\'s Average (Days BPM)</string>
-    <string name="stats_days_bpm">Days BPM</string>
-    <string name="stats_alerts_today">Alerts Today</string>
-    <string name="stats_total_sessions">Total Sessions</string>
-    <string name="stats_recent_trend">Blink Rate Trend</string>
-    <string name="stats_recent_alerts">Recent Alerts</string>
-    <string name="stats_no_data">No session data recorded yet. Start monitoring to see stats.</string>
+    <string name="stats_title">Your Blink History</string>
+    <string name="stats_today_avg">Today\'s Average</string>
+    <string name="stats_days_bpm">Blinks/Min</string>
+    <string name="stats_alerts_today">Rest Reminders</string>
+    <string name="stats_total_sessions">Total Checks</string>
+    <string name="stats_recent_trend">Blinks Over Time</string>
+    <string name="stats_recent_alerts">Recent Reminders</string>
+    <string name="stats_no_data">No eye checks done yet! Start an Eye Check on the Home screen to see your results here.</string>
     <string name="stats_filter_15m">15 min</string>
     <string name="stats_filter_1h">1 hour</string>
     <string name="stats_filter_1d">1 day</string>
-    <string name="stats_filter_7d">7 day</string>
-    <string name="stats_filter_30d">30 day</string>
-    <string name="stats_streak_title">30-Day Streak Viewer</string>
+    <string name="stats_filter_7d">7 days</string>
+    <string name="stats_filter_30d">30 days</string>
+    <string name="stats_streak_title">Daily Streak</string>
     <string name="stats_current_streak">Current Streak</string>
     <string name="stats_best_streak">Best Streak</string>
     <string name="stats_healthy_days">Healthy Days</string>
-    <string name="stats_healthy_legend">🟢 Healthy (Days BPM ≥ %d)</string>
-    <string name="stats_not_healthy_legend">🔴 Not-Healthy (Days BPM &lt; %d)</string>
+    <string name="stats_healthy_legend">🟢 Good (≥ %d blinks/min)</string>
+    <string name="stats_not_healthy_legend">🔴 Low (&lt; %d blinks/min)</string>
     <string name="stats_no_data_legend">⚪ No Data</string>
-    <string name="stats_retention_note">Data stored for 30 days max. Days average of BPM is recorded as Days BPM.</string>
-    <string name="stats_y_axis_label">BPM (Blinks / Min)</string>
+    <string name="stats_retention_note">Shows your daily blink averages for the past 30 days.</string>
+    <string name="stats_y_axis_label">Blinks / Min</string>
     <string name="stats_x_axis_label">Time</string>
 
     <!-- Settings Screen -->
     <string name="settings_title">Settings</string>
-    <string name="settings_section_monitoring">Monitoring &amp; Sensitivity</string>
-    <string name="settings_threshold_label">Alert Threshold (BPM)</string>
-    <string name="settings_threshold_summary">Alert when blink rate drops below %d BPM for 2 minutes</string>
-    <string name="settings_sampling_mode_label">Background Sampling Strategy</string>
-    <string name="settings_sampling_duty_cycle">Duty-Cycled Sampling (Recommended - Saves Battery)</string>
-    <string name="settings_sampling_continuous">Continuous Low-FPS (3–5 fps)</string>
-    <string name="settings_section_notifications">Notifications</string>
-    <string name="settings_alerts_enabled">Low-Blink Alerts</string>
-    <string name="settings_section_privacy">Privacy &amp; Data</string>
-    <string name="settings_research_sharing">Share Anonymized Research Data</string>
-    <string name="settings_delete_data">Delete All My Local Data</string>
-    <string name="settings_delete_data_confirm">Are you sure? This will delete all your local session logs and history.</string>
+    <string name="settings_section_monitoring">Blink Target</string>
+    <string name="settings_threshold_label">Target (Blinks each minute)</string>
+    <string name="settings_threshold_summary">Remind me if I blink fewer than %d times each minute</string>
+    <string name="settings_section_notifications">Reminders</string>
+    <string name="settings_alerts_enabled">Remind Me to Blink</string>
+    <string name="settings_section_privacy">Privacy</string>
+    <string name="settings_research_sharing">Help Improve Eye Care</string>
     <string name="settings_section_language">Language</string>
     <string name="btn_cancel">Cancel</string>
     <string name="btn_delete">Delete</string>
@@ -138,63 +127,63 @@
     <string name="about_title">About BlinkWell</string>
     <string name="about_version">Version 1.0.0</string>
     <string name="about_dev_credit">Developed by Ravil Patel</string>
-    <string name="about_disclaimer_title">Wellness Disclaimer</string>
-    <string name="disclaimer_text">BlinkWell is a general wellness tool that estimates your blink rate using your device\'s camera. It is not a medical device and does not diagnose, treat, or prevent any condition. Lighting, glasses, and camera angle can affect accuracy. If you have concerns about dry eyes, eye strain, or vision changes, please consult an eye care professional.</string>
+    <string name="about_disclaimer_title">Friendly Note</string>
+    <string name="disclaimer_text">BlinkWell helps remind you to rest your eyes. It is not a doctor. If your eyes ever feel tired, hurt, or dry, take a break from the screen and talk to an eye doctor.</string>
 
     <!-- Notifications & Service -->
-    <string name="notification_channel_alerts">Blink Alerts</string>
-    <string name="notification_channel_service">BlinkWell Background Service</string>
-    <string name="notification_service_running">BlinkWell is actively monitoring your blink rate</string>
-    <string name="notification_alert_title">Gentle Eye Break</string>
-    <string name="notification_alert_body">Your blink rate looks low right now — take a 20-second break and blink a few times.</string>
+    <string name="notification_channel_alerts">Blink Reminders</string>
+    <string name="notification_channel_service">BlinkWell Background</string>
+    <string name="notification_service_running">BlinkWell is helping your eyes</string>
+    <string name="notification_alert_title">Time to Blink!</string>
+    <string name="notification_alert_body">Your eyes might be dry! Look away from the screen and blink a few times.</string>
 
     <!-- Sticky Status Notifications -->
-    <string name="notification_status_normal_title">🟢 Normal Blink Rate: %1$d BPM</string>
-    <string name="notification_status_normal_body">Eye blink frequency is healthy • Keep it up!</string>
-    <string name="notification_status_low_title">🔴 Low Blink Rate: %1$d BPM</string>
-    <string name="notification_status_low_body">Blink rate is below target (%1$d BPM) • Remember to blink</string>
-    <string name="notification_status_not_detected_title">🟡 Face / Eyes Not Detected</string>
-    <string name="notification_status_not_detected_body">Ensure good lighting and face the camera directly</string>
-    <string name="notification_action_stop">Stop Monitoring</string>
-    <string name="notification_green_to_red_title">🔴 Low Blink Rate Warning</string>
-    <string name="notification_green_to_red_body">Your blink rate dropped to %1$d BPM (Target: %2$d BPM). Remember to take a break and blink consciously.</string>
-    <string name="notification_burst_status_title">BlinkWell • Eye Wellness Session</string>
-    <string name="notification_burst_status_body">%1$d:%2$02d remaining • Keep using your phone naturally</string>
-    <string name="notification_burst_complete_title">🎉 Session Complete: %1$.0f BPM</string>
-    <string name="notification_burst_complete_body">You averaged %1$.0f blinks/min (%2$d total blinks). Tap to view full session results.</string>
+    <string name="notification_status_normal_title">🟢 Healthy Blinking: %1$d Blinks/Min</string>
+    <string name="notification_status_normal_body">Great job! Your eyes are happy and rested.</string>
+    <string name="notification_status_low_title">🔴 Blinking Slowly: %1$d Blinks/Min</string>
+    <string name="notification_status_low_body">Remember to blink more to keep your eyes fresh!</string>
+    <string name="notification_status_not_detected_title">🟡 Can\'t See Your Eyes</string>
+    <string name="notification_status_not_detected_body">Hold your phone up so the camera can see your face.</string>
+    <string name="notification_action_stop">Stop Eye Check</string>
+    <string name="notification_green_to_red_title">🔴 Rest Your Eyes</string>
+    <string name="notification_green_to_red_body">You are blinking less than usual. Take a quick break and blink your eyes!</string>
+    <string name="notification_burst_status_title">BlinkWell • Eye Check</string>
+    <string name="notification_burst_status_body">%1$d:%2$02d left • Use your phone normally</string>
+    <string name="notification_burst_complete_title">🎉 Eye Check Complete!</string>
+    <string name="notification_burst_complete_body">You blinked %1$.0f times each minute (%2$d total blinks). Tap to see your results!</string>
 
     <!-- Info / Education Dialog -->
-    <string name="info_dialog_title">👁️ Why Blinking Matters</string>
-    <string name="info_dialog_subtitle">Protecting your eye health during screen time</string>
-    <string name="info_dialog_what_title">What BlinkWell Does</string>
-    <string name="info_dialog_what_desc">BlinkWell uses on-device camera analysis to measure your real-time blink rate without recording or saving any videos or images.</string>
-    <string name="info_dialog_why_title">Preventing Dry Eyes &amp; Vision Issues</string>
-    <string name="info_dialog_why_desc">When looking at digital screens, our natural blink frequency drops by up to 60%%. Each blink spreads a vital lubricating tear film over the cornea. Reduced blinking causes tear evaporation, dry eye syndrome, digital eye strain (DES), blurred vision, and chronic eye irritation.</string>
-    <string name="info_dialog_tip">💡 Recommended Rate: 15–20 blinks/min. Remember the 20-20-20 rule!</string>
+    <string name="info_dialog_title">👁️ Why We Need to Blink</string>
+    <string name="info_dialog_subtitle">Keeping your eyes happy when using screens</string>
+    <string name="info_dialog_what_title">How BlinkWell Helps</string>
+    <string name="info_dialog_what_desc">BlinkWell counts your blinks using the camera to make sure your eyes stay healthy. It never saves or shares any pictures.</string>
+    <string name="info_dialog_why_title">Why Blinking is Good</string>
+    <string name="info_dialog_why_desc">When we stare at screens, we forget to blink! Every time you blink, your eyelids wash your eyes with tears to keep them wet and clean. If you don\'t blink, your eyes get dry, tired, and itchy.</string>
+    <string name="info_dialog_tip">💡 Tip: Try to blink 15 times every minute, and look away to rest your eyes!</string>
     <string name="info_dialog_btn">Got It</string>
 
     <!-- Background Usage & Battery Optimization Permission -->
-    <string name="bg_permission_dialog_title">🛡️ Background Monitoring Permission</string>
-    <string name="bg_permission_dialog_subtitle">Essential for Background Execution</string>
-    <string name="bg_permission_dialog_desc">To deliver real-time blink rate monitoring and wellness alerts while you use other apps, BlinkWell needs permission to run in the background without battery saver interruptions.</string>
-    <string name="bg_permission_privacy_header">Built-in Battery &amp; Privacy Guarantees:</string>
-    <string name="bg_permission_rule_screen_off">🔒 Screen Off Safety: Camera is NEVER used whenever your screen is off or locked.</string>
-    <string name="bg_permission_rule_5s_noface">⚡ 5-Second Power Saver: If screen is on but no face is visible within the first 5 seconds, the camera immediately unbinds to save battery.</string>
-    <string name="bg_permission_btn_allow">Allow Background Usage</string>
-    <string name="bg_permission_btn_skip">Not Now (Start Anyway)</string>
-    <string name="permission_battery_opt_title">Background Battery Optimization</string>
-    <string name="permission_battery_opt_reason">Allows uninterrupted real-time eye health monitoring while using other apps.</string>
-    <string name="settings_battery_opt_title">Background Execution</string>
-    <string name="settings_battery_opt_summary_exempt">Unrestricted • Background monitoring active</string>
-    <string name="settings_battery_opt_summary_restricted">Restricted • Tap to allow background monitoring</string>
-    <string name="settings_battery_opt_btn">Configure Background Permission</string>
-    <string name="settings_section_power">Battery &amp; Power Management</string>
-    <string name="settings_battery_guard_title">Low Battery &amp; Battery Saver Guard</string>
-    <string name="settings_battery_guard_subtitle">Prevent battery drain during low power</string>
-    <string name="settings_battery_guard_threshold_label">Pause Threshold: %d%%</string>
-    <string name="settings_battery_guard_desc">Eye health checks will not turn on and will pause automatically when battery is below %d%% (while not charging) or Battery Saver mode is on.</string>
-    <string name="home_battery_guard_alert_title">⚡ Battery Saver Guard Active</string>
-    <string name="home_battery_guard_alert_body">Eye health checks cannot turn on because your battery is below %1$d%% (%2$d%%) or Battery Saver is active. Plug in your charger or configure this in Settings.</string>
+    <string name="bg_permission_dialog_title">🛡️ Background Reminders</string>
+    <string name="bg_permission_dialog_subtitle">Needed for Reminders While Playing or Browsing</string>
+    <string name="bg_permission_dialog_desc">To remind you to blink while you use other apps or watch videos, BlinkWell needs permission to run in the background.</string>
+    <string name="bg_permission_privacy_header">Safe &amp; Battery-Friendly:</string>
+    <string name="bg_permission_rule_screen_off">🔒 Screen Off: The camera is never used when your screen is locked or turned off.</string>
+    <string name="bg_permission_rule_5s_noface">⚡ Saves Battery: Turns off camera if no face is in front of the phone.</string>
+    <string name="bg_permission_btn_allow">Allow Reminders</string>
+    <string name="bg_permission_btn_skip">Not Now</string>
+    <string name="permission_battery_opt_title">Save Battery in Background</string>
+    <string name="permission_battery_opt_reason">Helps the app remind you without using up your battery.</string>
+    <string name="settings_battery_opt_title">Background Reminders</string>
+    <string name="settings_battery_opt_summary_exempt">Active • Reminders working</string>
+    <string name="settings_battery_opt_summary_restricted">Paused • Tap to turn on reminders</string>
+    <string name="settings_battery_opt_btn">Turn On Background Reminders</string>
+    <string name="settings_section_power">Battery Saver</string>
+    <string name="settings_battery_guard_title">Save Battery</string>
+    <string name="settings_battery_guard_subtitle">Pauses eye checks when battery is low</string>
+    <string name="settings_battery_guard_threshold_label">Pause when battery is below: %d%%</string>
+    <string name="settings_battery_guard_desc">Eye checks will pause automatically when your battery is below %d%% or when Battery Saver is turned on.</string>
+    <string name="home_battery_guard_alert_title">⚡ Battery Is Low</string>
+    <string name="home_battery_guard_alert_body">Your battery is low (%2$d%%). Plug in your charger to start an eye check!</string>
     <string name="home_battery_guard_dismiss">Got It</string>
 
     <!-- Common -->

@@ -107,7 +107,7 @@ fun StatsScreen(
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = "Eye Health & Blink Wellness Analytics",
+                        text = "Your Eye Health & History",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -122,16 +122,16 @@ fun StatsScreen(
                 ) {
                     StatMetricCard(
                         title = "Today's Average",
-                        subTitle = "Days BPM",
+                        subTitle = "Daily Average",
                         value = "%.1f".format(uiState.todayDaysBpm),
-                        unit = "BPM",
+                        unit = "Blinks/Min",
                         icon = Icons.Default.Speed,
                         tint = TealPrimary,
                         modifier = Modifier.weight(1f)
                     )
                     StatMetricCard(
                         title = "Healthy Streak",
-                        subTitle = "Target ≥ ${uiState.thresholdBpm} BPM",
+                        subTitle = "Target ≥ ${uiState.thresholdBpm} Blinks/Min",
                         value = "${uiState.streakSummary.currentHealthyStreak}",
                         unit = "Days",
                         icon = Icons.Default.LocalFireDepartment,
@@ -148,18 +148,18 @@ fun StatsScreen(
                 ) {
                     StatMetricCard(
                         title = stringResource(R.string.stats_alerts_today),
-                        subTitle = "Low-blink alerts",
+                        subTitle = "Gentle reminders",
                         value = "${uiState.todayAlerts}",
-                        unit = "Alerts",
+                        unit = "Reminders",
                         icon = Icons.Default.NotificationsActive,
                         tint = AccentRose,
                         modifier = Modifier.weight(1f)
                     )
                     StatMetricCard(
                         title = stringResource(R.string.stats_total_sessions),
-                        subTitle = "30-day window",
+                        subTitle = "Past 30 days",
                         value = "${uiState.totalSessions}",
-                        unit = "Sessions",
+                        unit = "Checks",
                         icon = Icons.Default.History,
                         tint = TealDark,
                         modifier = Modifier.weight(1f)
@@ -171,7 +171,7 @@ fun StatsScreen(
             item {
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Text(
-                        text = "Time Range Filter",
+                        text = "Time Range",
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -232,12 +232,12 @@ fun StatsScreen(
                         ) {
                             Column {
                                 Text(
-                                    text = if (uiState.graphData.isDaysBpm) "Days BPM Trend" else "Blink Rate (BPM)",
+                                    text = if (uiState.graphData.isDaysBpm) "Daily Blinks Trend" else "Blink Rate (Blinks/Min)",
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold
                                 )
                                 Text(
-                                    text = if (uiState.graphData.isDaysBpm) "Day's average blink rate" else "Real-time blinks per minute",
+                                    text = if (uiState.graphData.isDaysBpm) "Average blinks per day" else "Blinks per minute",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -249,7 +249,7 @@ fun StatsScreen(
                                 border = androidx.compose.foundation.BorderStroke(1.dp, TealPrimary.copy(alpha = 0.25f))
                             ) {
                                 Text(
-                                    text = "Avg: %.1f BPM".format(uiState.graphData.averageBpm),
+                                    text = "Avg: %.1f Blinks/Min".format(uiState.graphData.averageBpm),
                                     style = MaterialTheme.typography.labelMedium,
                                     fontWeight = FontWeight.Bold,
                                     color = TealPrimary,
@@ -281,7 +281,7 @@ fun StatsScreen(
                                             fontWeight = FontWeight.SemiBold
                                         )
                                         Text(
-                                            text = "${if (point.isDaysBpm) "Days BPM" else "BPM"}: %.1f".format(point.bpm) +
+                                            text = "${if (point.isDaysBpm) "Daily Avg" else "Blinks/Min"}: %.1f".format(point.bpm) +
                                                     if (point.bpm >= uiState.thresholdBpm) " • 🟢 Healthy" else " • 🔴 Low Rate",
                                             style = MaterialTheme.typography.bodySmall,
                                             fontWeight = FontWeight.Bold,
@@ -308,7 +308,7 @@ fun StatsScreen(
             // Recent Sessions Section
             item {
                 Text(
-                    text = "Recent Sessions",
+                    text = "Recent Eye Checks",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
@@ -430,12 +430,12 @@ fun AnnotatedBpmGraph(
                 )
                 Spacer(modifier = Modifier.height(6.dp))
                 Text(
-                    text = "No data recorded in this time range",
+                    text = "No eye checks recorded for this time",
                     style = MaterialTheme.typography.bodySmall,
                     color = onSurfaceVariant
                 )
                 Text(
-                    text = "Start a session to populate graph",
+                    text = "Start an eye check to see your progress",
                     style = MaterialTheme.typography.labelSmall,
                     color = onSurfaceVariant.copy(alpha = 0.7f)
                 )
@@ -452,13 +452,13 @@ fun AnnotatedBpmGraph(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = if (graphData.isDaysBpm) "Days BPM" else "BPM (Blinks/min)",
+                text = if (graphData.isDaysBpm) "Daily Blinks" else "Blinks / Minute",
                 style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.Bold,
                 color = TealPrimary
             )
             Text(
-                text = "Target: ${graphData.thresholdBpm} BPM",
+                text = "Target: ≥ ${graphData.thresholdBpm} / min",
                 style = MaterialTheme.typography.labelSmall,
                 color = AccentEmerald,
                 fontWeight = FontWeight.SemiBold
@@ -700,14 +700,14 @@ fun SessionItemCard(
             Column(horizontalAlignment = Alignment.End) {
                 val isHealthy = session.avgBpm >= threshold
                 Text(
-                    text = "Avg: %.1f BPM".format(session.avgBpm),
+                    text = "Avg: %.1f Blinks/Min".format(session.avgBpm),
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Bold,
                     color = if (isHealthy) AccentEmerald else AccentRose
                 )
                 if (session.alertCount > 0) {
                     Text(
-                        text = "${session.alertCount} Alerts",
+                        text = "${session.alertCount} Reminders",
                         style = MaterialTheme.typography.labelSmall,
                         color = AccentRose
                     )

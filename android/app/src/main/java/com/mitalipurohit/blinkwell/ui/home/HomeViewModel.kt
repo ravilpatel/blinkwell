@@ -19,7 +19,7 @@ data class HomeUiState(
     val isMonitoring: Boolean = false,
     val appMode: String = "burst",
     val metrics: BlinkMetrics = BlinkMetrics(),
-    val targetBpmRange: String = "15–20 BPM",
+    val targetBpmRange: String = "15–20 Blinks/Min",
     val burstResult: BurstSessionResult? = null
 )
 

@@ -46,7 +46,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -94,7 +93,7 @@ fun OnboardingScreen(
             verticalArrangement = Arrangement.SpaceBetween
         ) {
             // Header Progress Indicator
-            StepIndicator(currentStep = uiState.currentStep, totalSteps = 5)
+            StepIndicator(currentStep = uiState.currentStep, totalSteps = 4)
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -111,21 +110,14 @@ fun OnboardingScreen(
                         monitorConsent = uiState.monitorConsent,
                         researchConsent = uiState.researchConsent,
                         onMonitorToggle = { viewModel.setMonitorConsent(it) },
-                        onResearchToggle = { viewModel.setResearchConsent(it) },
-                        onPrivacyClick = {
-                            val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/mitalipurohit/BlinkWell#privacy-policy"))
-                            context.startActivity(browserIntent)
-                        }
+                        onResearchToggle = { viewModel.setResearchConsent(it) }
                     )
                     2 -> CohortScreeningStep(
                         selectedCohort = uiState.cohortArm,
                         onCohortSelected = { viewModel.setCohortArm(it) }
                     )
                     3 -> PermissionsStep(
-                        onGranted = { viewModel.nextStep() }
-                    )
-                    4 -> AccountStep(
-                        onContinue = {
+                        onGranted = {
                             viewModel.completeOnboarding(onFinished)
                         }
                     )
@@ -135,7 +127,7 @@ fun OnboardingScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             // Bottom Navigation Buttons
-            if (uiState.currentStep != 3 && uiState.currentStep != 4) {
+            if (uiState.currentStep != 3) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -226,7 +218,7 @@ fun HowBlinkWellWorksStep() {
                         .background(TealPrimary)
                 )
                 Text(
-                    text = "OPTOMETRIC TELEMETRY ONBOARDING",
+                    text = "EASY EYE CARE GUIDE",
                     style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.Bold,
                     color = TealPrimary,
@@ -257,7 +249,7 @@ fun HowBlinkWellWorksStep() {
         Spacer(modifier = Modifier.height(6.dp))
 
         Text(
-            text = "Continuous tear-film protection & blink rate monitoring working quietly in the background.",
+            text = "BlinkWell helps you blink more so your eyes stay fresh, moist, and happy!",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
@@ -433,7 +425,7 @@ fun HowBlinkWellWorksStep() {
                         color = TealPrimary.copy(alpha = 0.15f)
                     ) {
                         Text(
-                            text = "ACTIVE ENGINE",
+                            text = "STAYS PRIVATE",
                             style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
                             fontWeight = FontWeight.ExtraBold,
                             color = TealPrimary,
@@ -467,7 +459,7 @@ fun HowBlinkWellWorksStep() {
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "Front camera AI accurately counts blinks on-device without recording or storing any photos or videos.",
+                            text = "Your front camera only counts how often you blink. No photos or videos are ever taken or saved.",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             lineHeight = 16.sp
@@ -488,13 +480,13 @@ fun HowBlinkWellWorksStep() {
                     ) {
                         Column(modifier = Modifier.padding(8.dp)) {
                             Text(
-                                text = "100% On-Device",
+                                text = "Stays On Phone",
                                 style = MaterialTheme.typography.labelSmall,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
-                                text = "Neural Engine / NPU",
+                                text = "Never sent anywhere",
                                 style = MaterialTheme.typography.bodySmall.copy(fontSize = 10.sp),
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -508,13 +500,13 @@ fun HowBlinkWellWorksStep() {
                     ) {
                         Column(modifier = Modifier.padding(8.dp)) {
                             Text(
-                                text = "Zero Stored Frames",
+                                text = "No Photos Saved",
                                 style = MaterialTheme.typography.labelSmall,
                                 fontWeight = FontWeight.Bold,
                                 color = AccentEmerald
                             )
                             Text(
-                                text = "Volatile RAM Only",
+                                text = "Disappears right away",
                                 style = MaterialTheme.typography.bodySmall.copy(fontSize = 10.sp),
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -553,7 +545,7 @@ fun HowBlinkWellWorksStep() {
                         )
                     }
                     Text(
-                        text = "Clinical Telemetry",
+                        text = "Daily Progress",
                         style = MaterialTheme.typography.labelSmall,
                         color = AccentEmerald,
                         fontWeight = FontWeight.Bold
@@ -568,7 +560,7 @@ fun HowBlinkWellWorksStep() {
                 ) {
                     Image(
                         painter = painterResource(id = R.drawable.illus_art_notification),
-                        contentDescription = "5-Minute Insights & Health Score",
+                        contentDescription = "See Your Results",
                         modifier = Modifier
                             .size(86.dp)
                             .clip(RoundedCornerShape(14.dp)),
@@ -579,13 +571,13 @@ fun HowBlinkWellWorksStep() {
 
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "5-Minute Insights & Score",
+                            text = "See Your Results",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "Receive your clinical blink frequency, ocular health rating, and daily streak credit.",
+                            text = "See how many times you blink every minute and build your daily healthy streak!",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             lineHeight = 16.sp
@@ -610,7 +602,7 @@ fun HowBlinkWellWorksStep() {
                         ) {
                             Text("RATE", style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp), color = MaterialTheme.colorScheme.onSurfaceVariant)
                             Text("16.8", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = TealPrimary)
-                            Text("Optimal BPM", style = MaterialTheme.typography.bodySmall.copy(fontSize = 9.sp), color = AccentEmerald, fontWeight = FontWeight.SemiBold)
+                            Text("Blinks/Min", style = MaterialTheme.typography.bodySmall.copy(fontSize = 9.sp), color = AccentEmerald, fontWeight = FontWeight.SemiBold)
                         }
                     }
 
@@ -625,7 +617,7 @@ fun HowBlinkWellWorksStep() {
                         ) {
                             Text("SCORE", style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp), color = MaterialTheme.colorScheme.onSurfaceVariant)
                             Text("94/100", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
-                            Text("Tear Film", style = MaterialTheme.typography.bodySmall.copy(fontSize = 9.sp), color = TealPrimary, fontWeight = FontWeight.SemiBold)
+                            Text("Eye Score", style = MaterialTheme.typography.bodySmall.copy(fontSize = 9.sp), color = TealPrimary, fontWeight = FontWeight.SemiBold)
                         }
                     }
 
@@ -640,7 +632,7 @@ fun HowBlinkWellWorksStep() {
                         ) {
                             Text("STREAK", style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp), color = MaterialTheme.colorScheme.onSurfaceVariant)
                             Text("+1 Day", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = AccentAmber)
-                            Text("Credited", style = MaterialTheme.typography.bodySmall.copy(fontSize = 9.sp), color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.SemiBold)
+                            Text("Earned", style = MaterialTheme.typography.bodySmall.copy(fontSize = 9.sp), color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.SemiBold)
                         }
                     }
                 }
@@ -677,13 +669,13 @@ fun HowBlinkWellWorksStep() {
                 Spacer(modifier = Modifier.width(12.dp))
                 Column {
                     Text(
-                        text = "Zero Video Recording • RAM-Only Analysis",
+                        text = "Safe & Private • Zero Video Saved",
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.Bold
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = "Compliant with optometric research standards. Blink telemetry never leaves your device sandbox.",
+                        text = "Your privacy is safe. The camera only counts blinks and nothing ever leaves your phone.",
                         style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         lineHeight = 14.sp
@@ -696,7 +688,7 @@ fun HowBlinkWellWorksStep() {
 
         // Medical disclaimer footnote
         Text(
-            text = "BlinkWell is an optometric ergonomics and mindfulness companion, not a certified diagnostic medical device.",
+            text = "BlinkWell is a friendly eye-care helper to encourage healthy blinking habits.",
             style = MaterialTheme.typography.bodySmall.copy(fontSize = 10.sp),
             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.75f),
             textAlign = TextAlign.Center,
@@ -712,8 +704,7 @@ fun ConsentStep(
     monitorConsent: Boolean,
     researchConsent: Boolean,
     onMonitorToggle: (Boolean) -> Unit,
-    onResearchToggle: (Boolean) -> Unit,
-    onPrivacyClick: () -> Unit
+    onResearchToggle: (Boolean) -> Unit
 ) {
     Column(
         horizontalAlignment = Alignment.Start,
@@ -815,15 +806,6 @@ fun ConsentStep(
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        TextButton(onClick = onPrivacyClick) {
-            Text(
-                text = stringResource(R.string.privacy_policy_link),
-                color = TealPrimary,
-                style = MaterialTheme.typography.bodySmall
-            )
-        }
     }
 }
 
@@ -1205,49 +1187,11 @@ fun PermissionsStep(
         ) {
             Text(
                 if (cameraGranted) {
-                    "Continue"
+                    stringResource(R.string.onboarding_get_started)
                 } else {
                     stringResource(R.string.btn_camera_permission_required)
                 }
             )
-        }
-    }
-}
-
-@Composable
-fun AccountStep(
-    onContinue: () -> Unit
-) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-        modifier = Modifier.verticalScroll(rememberScrollState())
-    ) {
-        Text(
-            text = stringResource(R.string.account_title),
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Text(
-            text = stringResource(R.string.account_desc),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center
-        )
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        Button(
-            onClick = onContinue,
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = TealPrimary)
-        ) {
-            Text(stringResource(R.string.continue_anonymous))
         }
     }
 }
