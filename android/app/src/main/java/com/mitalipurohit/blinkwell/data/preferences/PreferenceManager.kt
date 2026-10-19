@@ -68,7 +68,7 @@ class PreferenceManager(private val context: Context) {
     }
 
     val selectedLanguage: Flow<String> = context.dataStore.data.map { preferences ->
-        preferences[KEY_SELECTED_LANGUAGE] ?: "system"
+        preferences[KEY_SELECTED_LANGUAGE] ?: "en"
     }
 
     val activeSessionId: Flow<String?> = context.dataStore.data.map { preferences ->

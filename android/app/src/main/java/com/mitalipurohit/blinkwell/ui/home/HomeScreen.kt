@@ -41,7 +41,6 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Stop
-import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -142,11 +141,17 @@ fun HomeScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // BlinkWell Title and ? Symbol
+                // BlinkWell Logo, Title and ? Symbol
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.app_logo),
+                        contentDescription = stringResource(R.string.app_name),
+                        modifier = Modifier.size(36.dp)
+                    )
+
                     Text(
                         text = stringResource(R.string.app_name),
                         style = MaterialTheme.typography.headlineMedium,
@@ -236,7 +241,7 @@ fun HomeScreen(
 
             Spacer(modifier = Modifier.height(28.dp))
 
-            // 3. Start / Stop Eye Check Button
+            // 3. Start / Stop Blink Rate Check Button
             Button(
                 onClick = {
                     if (uiState.isMonitoring) {
@@ -336,20 +341,11 @@ fun StandbyBurstGauge() {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Box(
-                modifier = Modifier
-                    .size(56.dp)
-                    .clip(CircleShape)
-                    .background(TealPrimary.copy(alpha = 0.12f)),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Visibility,
-                    contentDescription = null,
-                    tint = TealPrimary,
-                    modifier = Modifier.size(30.dp)
-                )
-            }
+            Image(
+                painter = painterResource(id = R.drawable.app_logo),
+                contentDescription = null,
+                modifier = Modifier.size(52.dp)
+            )
 
             Spacer(modifier = Modifier.height(10.dp))
 
@@ -427,21 +423,13 @@ fun ActiveBurstGauge(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Box(
+            Image(
+                painter = painterResource(id = R.drawable.app_logo),
+                contentDescription = null,
                 modifier = Modifier
-                    .size(46.dp)
+                    .size(44.dp)
                     .scale(pulseScale)
-                    .clip(CircleShape)
-                    .background(TealPrimary.copy(alpha = 0.15f)),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Visibility,
-                    contentDescription = null,
-                    tint = TealPrimary,
-                    modifier = Modifier.size(24.dp)
-                )
-            }
+            )
 
             Spacer(modifier = Modifier.height(8.dp))
 

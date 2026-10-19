@@ -28,7 +28,7 @@
     <string name="onboarding_consent_desc">Choose what you want BlinkWell to do. You can change this anytime.</string>
     <string name="consent_monitor_title">Count my eye blinks</string>
     <string name="consent_monitor_desc">Needed to count your blinks and remind you when your eyes are tired.</string>
-    <string name="consent_research_title">Help improve eye care</string>
+    <string name="consent_research_title">Help Improve BlinkWell</string>
     <string name="consent_research_desc">Share anonymous numbers to help study healthy screen habits (optional).</string>
 
     <!-- Onboarding: Screening & Cohort -->
@@ -64,7 +64,7 @@
     <string name="home_blinks_per_minute">Blinks / Min</string>
     <string name="home_current_rate">Current Rate</string>
     <string name="home_target_rate">Optimal: 15–20 Blinks/Min</string>
-    <string name="home_btn_start">Start Eye Check</string>
+    <string name="home_btn_start">Start Blink Rate Check</string>
     <string name="home_btn_stop">Stop Eye Check</string>
     <string name="home_mode_badge_burst">Eye Check</string>
     <string name="home_burst_standby_title">Eye Check</string>
@@ -72,7 +72,7 @@
     <string name="home_burst_active_label">Eye Check Running</string>
     <string name="home_burst_time_remaining">%1$d:%2$02d remaining</string>
     <string name="home_burst_paused_label">Paused</string>
-    <string name="home_burst_btn_start">Start Eye Check</string>
+    <string name="home_burst_btn_start">Start Blink Rate Check</string>
     <string name="home_burst_btn_stop">Stop Eye Check</string>
     <string name="home_optimum_rate_line">15 Blinks/Min is optimum</string>
     <string name="home_burst_result_title">🎉 Eye Check Complete!</string>
@@ -117,7 +117,7 @@
     <string name="settings_section_notifications">Reminders</string>
     <string name="settings_alerts_enabled">Remind Me to Blink</string>
     <string name="settings_section_privacy">Privacy</string>
-    <string name="settings_research_sharing">Help Improve Eye Care</string>
+    <string name="settings_research_sharing">Help Improve BlinkWell</string>
     <string name="settings_section_language">Language</string>
     <string name="btn_cancel">Cancel</string>
     <string name="btn_delete">Delete</string>

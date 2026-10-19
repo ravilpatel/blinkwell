@@ -28,7 +28,7 @@
     <string name="onboarding_consent_desc">चुनें कि आप BlinkWell से क्या करवाना चाहते हैं। आप इसे कभी भी बदल सकते हैं।</string>
     <string name="consent_monitor_title">मेरी पलकें गिनें</string>
     <string name="consent_monitor_desc">पलकें गिनने और आँखें थकने पर याद दिलाने के लिए जरूरी है।</string>
-    <string name="consent_research_title">आँखों की देखभाल बेहतर बनाने में मदद करें</string>
+    <string name="consent_research_title">Help Improve BlinkWell</string>
     <string name="consent_research_desc">स्वस्थ स्क्रीन आदतों को समझने में मदद के लिए बिना नाम के सिर्फ संख्याएँ साझा करें (वैकल्पिक)।</string>
 
     <!-- Onboarding: Screening & Cohort -->
@@ -64,7 +64,7 @@
     <string name="home_blinks_per_minute">पलकें / मिनट</string>
     <string name="home_current_rate">अभी की गति</string>
     <string name="home_target_rate">उत्तम: 15–20 पलकें/मिनट</string>
-    <string name="home_btn_start">आई चेक शुरू करें</string>
+    <string name="home_btn_start">Start Blink Rate Check</string>
     <string name="home_btn_stop">आई चेक रोकें</string>
     <string name="home_mode_badge_burst">आई चेक</string>
     <string name="home_burst_standby_title">आई चेक</string>
@@ -72,7 +72,7 @@
     <string name="home_burst_active_label">आई चेक चालू है</string>
     <string name="home_burst_time_remaining">%1$d:%2$02d बाकी</string>
     <string name="home_burst_paused_label">रुका हुआ</string>
-    <string name="home_burst_btn_start">Start Eye Check</string>
+    <string name="home_burst_btn_start">Start Blink Rate Check</string>
     <string name="home_burst_btn_stop">Stop Eye Check</string>
     <string name="home_optimum_rate_line">15 Blinks/Min is optimum</string>
     <string name="home_burst_result_title">🎉 आई चेक पूरा हुआ!</string>
@@ -117,7 +117,7 @@
     <string name="settings_section_notifications">रिमाइंडर</string>
     <string name="settings_alerts_enabled">पलक झपकाने की याद दिलाएं</string>
     <string name="settings_section_privacy">गोपनीयता</string>
-    <string name="settings_research_sharing">आँखों की देखभाल बेहतर बनाने में मदद करें</string>
+    <string name="settings_research_sharing">Help Improve BlinkWell</string>
     <string name="settings_section_language">भाषा (Language)</string>
     <string name="btn_cancel">रद्द करें</string>
     <string name="btn_delete">हटाएं</string>

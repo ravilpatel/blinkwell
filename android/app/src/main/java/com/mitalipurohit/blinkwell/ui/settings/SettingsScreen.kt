@@ -2,7 +2,6 @@ package com.mitalipurohit.blinkwell.ui.settings
 
 import android.content.Intent
 import android.net.Uri
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -22,15 +21,15 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.foundation.Image
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.OpenInNew
 import androidx.compose.material.icons.filled.Speed
-import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.ui.res.painterResource
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
@@ -50,7 +49,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.os.LocaleListCompat
 import com.mitalipurohit.blinkwell.R
 import com.mitalipurohit.blinkwell.ui.theme.AccentAmber
 import com.mitalipurohit.blinkwell.ui.theme.AccentEmerald
@@ -306,55 +304,7 @@ fun SettingsScreen(
                 }
             }
 
-            // Section 4: Language Switcher (EN / HI)
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(
-                    text = stringResource(R.string.settings_section_language),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = TealPrimary
-                )
-
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    shape = RoundedCornerShape(16.dp),
-                    border = BorderStroke(1.dp, BorderColor)
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        OutlinedButton(
-                            onClick = {
-                                viewModel.setSelectedLanguage("en")
-                                val appLocale = LocaleListCompat.forLanguageTags("en")
-                                AppCompatDelegate.setApplicationLocales(appLocale)
-                            },
-                            modifier = Modifier.weight(1f),
-                            shape = RoundedCornerShape(8.dp)
-                        ) {
-                            Text("English")
-                        }
-
-                        OutlinedButton(
-                            onClick = {
-                                viewModel.setSelectedLanguage("hi")
-                                val appLocale = LocaleListCompat.forLanguageTags("hi")
-                                AppCompatDelegate.setApplicationLocales(appLocale)
-                            },
-                            modifier = Modifier.weight(1f),
-                            shape = RoundedCornerShape(8.dp)
-                        ) {
-                            Text("हिन्दी (Hindi)")
-                        }
-                    }
-                }
-            }
-
-            // Section 5: Merged About BlinkWell & Legal
+            // Section 4: Merged About BlinkWell & Legal
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
                     text = stringResource(R.string.about_title),
@@ -374,20 +324,13 @@ fun SettingsScreen(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         // App Logo Icon
-                        Box(
+                        Image(
+                            painter = painterResource(id = R.drawable.app_logo),
+                            contentDescription = stringResource(R.string.app_name),
                             modifier = Modifier
-                                .size(64.dp)
-                                .clip(CircleShape)
-                                .background(TealPrimary.copy(alpha = 0.12f)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Visibility,
-                                contentDescription = null,
-                                tint = TealPrimary,
-                                modifier = Modifier.size(36.dp)
-                            )
-                        }
+                                .size(68.dp)
+                                .clip(RoundedCornerShape(16.dp))
+                        )
 
                         Spacer(modifier = Modifier.height(10.dp))
 

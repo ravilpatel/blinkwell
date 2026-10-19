@@ -2,6 +2,7 @@ package com.mitalipurohit.blinkwell.ui.about
 
 import android.content.Intent
 import android.net.Uri
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -21,7 +22,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.OpenInNew
-import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.ui.res.painterResource
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -63,20 +64,13 @@ fun AboutScreen() {
             Spacer(modifier = Modifier.height(8.dp))
 
             // App Icon & Name
-            Box(
+            Image(
+                painter = painterResource(id = R.drawable.app_logo),
+                contentDescription = stringResource(R.string.app_name),
                 modifier = Modifier
                     .size(80.dp)
-                    .clip(CircleShape)
-                    .background(TealPrimary.copy(alpha = 0.15f)),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Visibility,
-                    contentDescription = null,
-                    tint = TealPrimary,
-                    modifier = Modifier.size(44.dp)
-                )
-            }
+                    .clip(RoundedCornerShape(18.dp))
+            )
 
             Text(
                 text = stringResource(R.string.app_name),

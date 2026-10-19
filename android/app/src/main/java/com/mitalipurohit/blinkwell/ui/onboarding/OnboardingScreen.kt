@@ -35,7 +35,6 @@ import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.PhoneAndroid
-import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -200,6 +199,16 @@ fun HowBlinkWellWorksStep() {
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
     ) {
+        Image(
+            painter = painterResource(id = R.drawable.app_logo),
+            contentDescription = stringResource(R.string.app_name),
+            modifier = Modifier
+                .size(72.dp)
+                .clip(RoundedCornerShape(16.dp))
+        )
+
+        Spacer(modifier = Modifier.height(14.dp))
+
         // Category Pill
         Surface(
             shape = RoundedCornerShape(9999.dp),
