@@ -186,6 +186,53 @@
     <string name="home_battery_guard_alert_body">आपकी बैटरी कम है (%2$d%%)। आई चेक शुरू करने के लिए चार्जर लगाएं!</string>
     <string name="home_battery_guard_dismiss">समझ गया</string>
 
+    <!-- Mode Selection in Settings & Help Dialogs -->
+    <string name="settings_section_mode">कार्य प्रणाली</string>
+    <string name="settings_mode_burst_title">आई चेक (5 मिनट टेस्ट)</string>
+    <string name="settings_mode_burst_desc">पलकें झपकाने की दर जांचने के लिए 5 मिनट का त्वरित टेस्ट।</string>
+    <string name="settings_mode_monitoring_title">मॉनिटरिंग मोड</string>
+    <string name="settings_mode_monitoring_desc">दिन भर आँखों की सुरक्षा के लिए स्वचालित जांच (1 मिनट की पहली जांच, 2 मिनट का विश्राम, 30 सेकंड की जांच)।</string>
+
+    <!-- Burst Mode Help Dialog -->
+    <string name="burst_help_dialog_title">आई चेक कैसे काम करता है</string>
+    <string name="burst_help_point1_title">5 मिनट की जांच</string>
+    <string name="burst_help_point1_desc">फोन सामान्य रूप से चलाते समय 5 मिनट तक आपकी स्वाभाविक पलकें गिनता है।</string>
+    <string name="burst_help_point2_title">विस्तृत आई स्कोर</string>
+    <string name="burst_help_point2_desc">कुल पलकें, प्रति मिनट औसत दर और स्वस्थ 15–20 BPM लक्ष्य की तुलना दिखाता है।</string>
+    <string name="burst_help_point3_title">बिना रुकावट और पूर्णतः निजी</string>
+    <string name="burst_help_point3_desc">स्क्रीन पर बिना रुकावट के चुपचाप चलता है। 100% सुरक्षित, कोई फोटो या वीडियो सहेजा नहीं जाता।</string>
+
+    <!-- Monitoring Mode Help Dialog -->
+    <string name="monitoring_help_dialog_title">मॉनिटरिंग मोड कैसे काम करता है</string>
+    <string name="monitoring_help_point1_title">1 मिनट की शुरुआती जांच</string>
+    <string name="monitoring_help_point1_desc">शुरू होने पर कैमरा पहली बार लगातार 1 मिनट तक आपकी पलकें गिनता है।</string>
+    <string name="monitoring_help_point2_title">रंग-बिरंगा फीडबैक</string>
+    <string name="monitoring_help_point2_desc">कैमरा बंद होकर नोटिफिकेशन भेजता है। स्वस्थ दर पर हरा रहता है, कम होने पर लाल हो जाता है।</string>
+    <string name="monitoring_help_point3_title">2 मिनट विश्राम और 30s जांच</string>
+    <string name="monitoring_help_point3_desc">बैटरी बचाने के लिए कैमरा 2 मिनट बंद रहता है, फिर केवल 30 सेकंड के लिए दोबारा जांच करता है।</string>
+    <string name="monitoring_help_point4_title">स्क्रीन और बैटरी सुरक्षा</string>
+    <string name="monitoring_help_point4_desc">स्क्रीन बंद होने पर रुक जाता है, अनलॉक होने पर फिर शुरू होता है। बैटरी कम होने पर रुक कर सूचना देता है।</string>
+
+    <!-- Suggest Monitoring Dialog (After first 5 min test) -->
+    <string name="suggest_monitoring_title">मॉनिटरिंग मोड चालू करें?</string>
+    <string name="suggest_monitoring_subtitle">स्क्रीन चलाते समय आँखों की लगातार सुरक्षा</string>
+    <string name="suggest_monitoring_body">पहला 5 मिनट का आई चेक पूरा करने पर बधाई! दिन भर आँखों की देखभाल के लिए सेटिंग्स से मॉनिटरिंग मोड चालू करें।\n\n• ⏱️ 1 मिनट की जांच, फिर हर 2 मिनट बाद 30s जांच\n• 🟢 हरा / 🔴 लाल लाइव नोटिफिकेशन स्टेटस\n• ⚡ स्क्रीन बंद होने पर रुकता है और बैटरी बचाता है</string>
+    <string name="suggest_monitoring_btn_enable">अभी चालू करें</string>
+    <string name="suggest_monitoring_btn_settings">सेटिंग्स में जाएं</string>
+    <string name="suggest_monitoring_btn_later">बाद में</string>
+
+    <!-- Battery Low Alert Notification -->
+    <string name="notification_battery_low_title">⚡ बैटरी कम होने पर मॉनिटरिंग रुकी</string>
+    <string name="notification_battery_low_body">बैटरी %1$d%% से कम (%2$d%%) हो गई। बैटरी बचाने के लिए मॉनिटरिंग रोक दी गई है।</string>
+
+    <!-- Home Mode Labels for Monitoring Mode -->
+    <string name="home_mode_badge_monitoring">मॉनिटरिंग मोड</string>
+    <string name="home_monitoring_btn_start">मॉनिटरिंग शुरू करें</string>
+    <string name="home_monitoring_btn_stop">मॉनिटरिंग रोकें</string>
+    <string name="home_monitoring_standby_title">मॉनिटरिंग मोड</string>
+    <string name="home_monitoring_standby_desc">2 मिनट के विश्राम के साथ समय-समय पर जांच ताकि बैटरी खर्च किए बिना आँखें स्वस्थ रहें।</string>
+    <string name="home_monitoring_active_desc">स्वचालित जांच सक्रिय: 1 मिनट शुरू में, 2 मिनट विश्राम, 30 सेकंड जांच।</string>
+
     <!-- Common -->
     <string name="next">आगे</string>
     <string name="skip">छोड़ें</string>

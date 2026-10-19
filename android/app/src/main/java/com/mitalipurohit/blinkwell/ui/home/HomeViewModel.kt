@@ -13,14 +13,16 @@ import com.mitalipurohit.blinkwell.service.BlinkMonitorService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 data class HomeUiState(
     val isMonitoring: Boolean = false,
-    val appMode: String = "burst",
+    val appMode: String = "burst", // "burst" or "monitoring"
     val metrics: BlinkMetrics = BlinkMetrics(),
     val targetBpmRange: String = "15–20 Blinks/Min",
-    val burstResult: BurstSessionResult? = null
+    val burstResult: BurstSessionResult? = null,
+    val showMonitoringSuggestionDialog: Boolean = false
 )
 
 class HomeViewModel(
@@ -33,6 +35,24 @@ class HomeViewModel(
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
     init {
+        // Collect current app mode from settings in real-time
+        viewModelScope.launch {
+            settingsRepository.appMode.collect { mode ->
+                _uiState.value = _uiState.value.copy(appMode = mode)
+            }
+        }
+
+        // Check if user completed their first 5-min test and prompt for Monitoring Mode on launch
+        viewModelScope.launch {
+            val completedFirstTest = settingsRepository.hasCompletedFirst5MinTest.first()
+            val currentMode = settingsRepository.appMode.first()
+            val dismissed = settingsRepository.isMonitoringPromptDismissed.first()
+
+            if (completedFirstTest && currentMode == "burst" && !dismissed) {
+                _uiState.value = _uiState.value.copy(showMonitoringSuggestionDialog = true)
+            }
+        }
+
         // Collect metrics and update UI state in real-time
         viewModelScope.launch {
             blinkDetector.metrics.collect { metrics ->
@@ -51,6 +71,8 @@ class HomeViewModel(
                     burstResult = result,
                     isMonitoring = false
                 )
+                // Milestone: first 5-min test has been completed
+                settingsRepository.setFirst5MinTestCompleted(true)
             }
         }
 
@@ -68,6 +90,26 @@ class HomeViewModel(
         _uiState.value = _uiState.value.copy(burstResult = null)
     }
 
+    fun dismissMonitoringSuggestion(neverAskAgain: Boolean = false) {
+        _uiState.value = _uiState.value.copy(showMonitoringSuggestionDialog = false)
+        if (neverAskAgain) {
+            viewModelScope.launch {
+                settingsRepository.setMonitoringPromptDismissed(true)
+            }
+        }
+    }
+
+    fun enableMonitoringMode() {
+        _uiState.value = _uiState.value.copy(
+            showMonitoringSuggestionDialog = false,
+            appMode = "monitoring"
+        )
+        viewModelScope.launch {
+            settingsRepository.setAppMode("monitoring")
+            settingsRepository.setMonitoringPromptDismissed(true)
+        }
+    }
+
     fun toggleMonitoring(context: Context) {
         if (_uiState.value.isMonitoring) {
             stopMonitoring(context)
@@ -77,13 +119,14 @@ class HomeViewModel(
     }
 
     fun startMonitoring(context: Context) {
+        val mode = _uiState.value.appMode
         _uiState.value = _uiState.value.copy(
             isMonitoring = true,
             burstResult = null
         )
         blinkDetector.resetSession()
         blinkDetector.setSamplingActive(true)
-        BlinkMonitorService.start(context, mode = "burst")
+        BlinkMonitorService.start(context, mode = mode)
     }
 
     fun stopMonitoring(context: Context) {

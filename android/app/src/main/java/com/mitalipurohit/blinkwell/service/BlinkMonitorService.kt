@@ -81,6 +81,7 @@ class BlinkMonitorService : Service(), LifecycleOwner {
     private var isScreenUnlockedAndActive = true
     private var isCameraBound = false
     private var alertCount = 0
+    private var isFirstMonitoringScan = true
 
     override fun onCreate() {
         super.onCreate()
@@ -225,6 +226,7 @@ class BlinkMonitorService : Service(), LifecycleOwner {
                     val burstResult = blinkDetector.finish5MinBurst(300.0)
                     repository.endSession(sid, 0)
                     settingsRepo.setActiveSessionId(null)
+                    settingsRepo.setFirst5MinTestCompleted(true)
                     notificationHelper.cancelStatusNotification()
                     notificationHelper.showBurstCompletionNotification(burstResult.finalBpm, burstResult.totalBlinks)
                     com.mitalipurohit.blinkwell.data.remote.sync.BlinkSyncWorker.triggerOneTimeSync(this@BlinkMonitorService)
@@ -236,6 +238,7 @@ class BlinkMonitorService : Service(), LifecycleOwner {
     }
 
     private fun startMonitoringModeSession() {
+        isFirstMonitoringScan = true
         serviceScope.launch {
             val repository = BlinkWellApp.repository
             val settingsRepo = BlinkWellApp.settingsRepository
@@ -249,13 +252,12 @@ class BlinkMonitorService : Service(), LifecycleOwner {
             )
 
             if (isGuardActive) {
-                // Battery Guard: low battery or battery saver mode -> do not bind camera
-                unbindCamera()
-                notificationHelper.updateStatusNotification(
-                    category = BlinkStatusCategory.FACE_NOT_DETECTED,
-                    bpm = 0.0,
-                    force = true
-                )
+                // Battery Guard: low battery or battery saver mode -> stop monitoring and send notification
+                val currentBattery = BatteryOptimizationHelper.getBatteryLevel(this@BlinkMonitorService)
+                notificationHelper.showBatteryLowNotification(currentBattery, guardThreshold)
+                stopMonitoring()
+                stopSelf()
+                return@launch
             }
 
             currentSessionId = repository.createSession(mode = "monitoring")
@@ -352,126 +354,113 @@ class BlinkMonitorService : Service(), LifecycleOwner {
         continuousWatchdogJob?.cancel()
 
         dutyCycleJob = serviceScope.launch {
-            var isLastReadingLow = false
-
             while (isActive && isRunning) {
-                if (isScreenUnlockedAndActive) {
-                    val settingsRepo = BlinkWellApp.settingsRepository
-                    val guardEnabled = settingsRepo.batteryGuardEnabled.first()
-                    val guardThreshold = settingsRepo.batteryGuardThreshold.first()
+                if (!isScreenUnlockedAndActive) {
+                    unbindCamera()
+                    delay(1000L)
+                    continue
+                }
+
+                val settingsRepo = BlinkWellApp.settingsRepository
+                val guardEnabled = settingsRepo.batteryGuardEnabled.first()
+                val guardThreshold = settingsRepo.batteryGuardThreshold.first()
+
+                if (BatteryOptimizationHelper.isBatteryGuardTriggered(this@BlinkMonitorService, guardEnabled, guardThreshold)) {
+                    val currentBattery = BatteryOptimizationHelper.getBatteryLevel(this@BlinkMonitorService)
+                    notificationHelper.showBatteryLowNotification(currentBattery, guardThreshold)
+                    unbindCamera()
+                    stopMonitoring()
+                    stopSelf()
+                    return@launch
+                }
+
+                // 1st scan is 60s (1 min continuous); subsequent scans are exactly 30s
+                val scanDurationSeconds = if (isFirstMonitoringScan) 60L else 30L
+
+                // 1. Bind Camera and Start scan
+                bindCamera()
+                blinkDetector.startBurstScan()
+
+                var scanInterrupted = false
+                var elapsedScanSeconds = 0L
+
+                while (isActive && isRunning && elapsedScanSeconds < scanDurationSeconds) {
+                    delay(1000L)
+                    if (!isScreenUnlockedAndActive) {
+                        scanInterrupted = true
+                        blinkDetector.cancelBurst()
+                        unbindCamera()
+                        break
+                    }
 
                     if (BatteryOptimizationHelper.isBatteryGuardTriggered(this@BlinkMonitorService, guardEnabled, guardThreshold)) {
-                        // Battery Guard: unbind camera and wait
+                        val currentBattery = BatteryOptimizationHelper.getBatteryLevel(this@BlinkMonitorService)
+                        notificationHelper.showBatteryLowNotification(currentBattery, guardThreshold)
                         unbindCamera()
-                        val threshold = settingsRepo.bpmThreshold.first()
-                        notificationHelper.updateStatusNotification(
-                            category = BlinkStatusCategory.FACE_NOT_DETECTED,
-                            bpm = 0.0,
-                            thresholdBpm = threshold,
-                            isWarmedUp = true,
-                            force = true
-                        )
-                        delay(30_000L) // Wait 30s before checking battery status again
-                        continue
+                        stopMonitoring()
+                        stopSelf()
+                        return@launch
                     }
 
-                    // 1. Bind Camera and Start burst scan
-                    bindCamera()
-                    blinkDetector.startBurstScan()
+                    elapsedScanSeconds++
+                }
 
-                    // 2. Initial 5-second evaluation window
-                    // Hard Rule: If screen is on but NO face is visible in the first 5 seconds, immediately unbind camera!
-                    delay(5000L)
+                if (scanInterrupted || !isActive || !isRunning) {
+                    continue
+                }
 
-                    if (!isScreenUnlockedAndActive || !isRunning) {
-                        blinkDetector.cancelBurst()
-                        unbindCamera()
-                        delay(2000L)
-                        continue
-                    }
+                // 2. Scan completed for full duration (60s or 30s): finish scan and unbind camera
+                val burstResult = blinkDetector.finishBurstScan(scanDurationSeconds = scanDurationSeconds.toDouble())
+                unbindCamera()
+                isFirstMonitoringScan = false
 
-                    val faceSeenInFirst5s = blinkDetector.hasSeenFaceInBurst()
-                    if (!faceSeenInFirst5s) {
-                        // Rule 2 Enforced: No face visible in the first 5 seconds -> shutdown camera immediately!
-                        unbindCamera()
-                        blinkDetector.markFaceLost()
+                val threshold = settingsRepo.bpmThreshold.first()
+                val bpm = burstResult.bpm
 
-                        val threshold = BlinkWellApp.settingsRepository.bpmThreshold.first()
-                        notificationHelper.updateStatusNotification(
-                            category = BlinkStatusCategory.FACE_NOT_DETECTED,
-                            bpm = 0.0,
-                            thresholdBpm = threshold,
-                            isWarmedUp = true,
-                            force = true
-                        )
+                currentSessionId?.let { sid ->
+                    BlinkWellApp.repository.logMinuteBpm(sid, bpm)
+                    com.mitalipurohit.blinkwell.data.remote.sync.BlinkSyncWorker.triggerOneTimeSync(this@BlinkMonitorService)
+                }
 
-                        // Back off and wait before next duty-cycle check (60s to save battery)
-                        val backoffMs = if (isLastReadingLow) 10_000L else 60_000L
-                        delay(backoffMs)
-                        continue
-                    }
-
-                    // 3. Face was detected in first 5s: continue remaining 15s to complete 20s scan
-                    delay(15_000L)
-
-                    if (isScreenUnlockedAndActive && isRunning) {
-                        // 4. Complete the 20-second scan and convert to BPM
-                        val burstResult = blinkDetector.finishBurstScan(scanDurationSeconds = 20.0)
-                        unbindCamera()
-
-                        val threshold = BlinkWellApp.settingsRepository.bpmThreshold.first()
-
-                        if (burstResult.faceDetected) {
-                            val bpm = burstResult.bpm
-
-                            // Log completed burst reading to database
-                            currentSessionId?.let { sid ->
-                                BlinkWellApp.repository.logMinuteBpm(sid, bpm)
-                                com.mitalipurohit.blinkwell.data.remote.sync.BlinkSyncWorker.triggerOneTimeSync(this@BlinkMonitorService)
-                            }
-
-                            // Update ongoing status notification with the new BPM
-                            val category = if (burstResult.isLowRate) BlinkStatusCategory.LOW_RATE else BlinkStatusCategory.NORMAL
-                            notificationHelper.updateStatusNotification(
-                                category = category,
-                                bpm = bpm,
-                                thresholdBpm = threshold,
-                                isWarmedUp = true,
-                                force = true
-                            )
-
-                            // If blink rate is lower: immediately send notification, then scan after 10s for 20s
-                            if (burstResult.isLowRate) {
-                                isLastReadingLow = true
-                                val alertsEnabled = BlinkWellApp.settingsRepository.alertsEnabled.first()
-                                if (alertsEnabled) {
-                                    alertCount++
-                                    notificationHelper.showGreenToRedAlertNotification(bpm, threshold)
-                                }
-
-                                // Immediately after notification is sent, pause 10s before next scan
-                                delay(10_000L)
-                            } else {
-                                isLastReadingLow = false
-                                delay(120_000L)
-                            }
-                        } else {
-                            notificationHelper.updateStatusNotification(
-                                category = BlinkStatusCategory.FACE_NOT_DETECTED,
-                                bpm = 0.0,
-                                thresholdBpm = threshold,
-                                isWarmedUp = true,
-                                force = true
-                            )
-                            val pauseMs = if (isLastReadingLow) 10_000L else 120_000L
-                            delay(pauseMs)
-                        }
-                    } else {
-                        blinkDetector.cancelBurst()
-                        unbindCamera()
-                    }
+                // Color-coded notification:
+                // Green if properly maintained (BPM >= threshold), Red if low (BPM < threshold)
+                val category = if (burstResult.faceDetected) {
+                    if (burstResult.isLowRate) BlinkStatusCategory.LOW_RATE else BlinkStatusCategory.NORMAL
                 } else {
-                    delay(2000L)
+                    BlinkStatusCategory.FACE_NOT_DETECTED
+                }
+
+                notificationHelper.updateStatusNotification(
+                    category = category,
+                    bpm = bpm,
+                    thresholdBpm = threshold,
+                    isWarmedUp = true,
+                    force = true
+                )
+
+                if (category == BlinkStatusCategory.LOW_RATE) {
+                    val alertsEnabled = settingsRepo.alertsEnabled.first()
+                    if (alertsEnabled) {
+                        alertCount++
+                        notificationHelper.showGreenToRedAlertNotification(bpm, threshold)
+                    }
+                }
+
+                // 3. Keep cooling of 2 minutes (120 seconds): camera remains closed
+                var coolingElapsedSeconds = 0L
+                while (isActive && isRunning && coolingElapsedSeconds < 120L) {
+                    delay(1000L)
+                    if (isScreenUnlockedAndActive) {
+                        if (BatteryOptimizationHelper.isBatteryGuardTriggered(this@BlinkMonitorService, guardEnabled, guardThreshold)) {
+                            val currentBattery = BatteryOptimizationHelper.getBatteryLevel(this@BlinkMonitorService)
+                            notificationHelper.showBatteryLowNotification(currentBattery, guardThreshold)
+                            unbindCamera()
+                            stopMonitoring()
+                            stopSelf()
+                            return@launch
+                        }
+                        coolingElapsedSeconds++
+                    }
                 }
             }
         }

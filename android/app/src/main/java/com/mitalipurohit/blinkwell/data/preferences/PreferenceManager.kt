@@ -29,6 +29,8 @@ class PreferenceManager(private val context: Context) {
         val KEY_DEVICE_REGISTERED = booleanPreferencesKey("device_registered")
         val KEY_BATTERY_GUARD_ENABLED = booleanPreferencesKey("battery_guard_enabled")
         val KEY_BATTERY_GUARD_THRESHOLD = intPreferencesKey("battery_guard_threshold")
+        val KEY_FIRST_5MIN_TEST_COMPLETED = booleanPreferencesKey("first_5min_test_completed")
+        val KEY_MONITORING_PROMPT_DISMISSED = booleanPreferencesKey("monitoring_prompt_dismissed")
     }
 
     val isDeviceRegistered: Flow<Boolean> = context.dataStore.data.map { preferences ->
@@ -81,6 +83,26 @@ class PreferenceManager(private val context: Context) {
 
     val batteryGuardThreshold: Flow<Int> = context.dataStore.data.map { preferences ->
         preferences[KEY_BATTERY_GUARD_THRESHOLD] ?: 25
+    }
+
+    val hasCompletedFirst5MinTest: Flow<Boolean> = context.dataStore.data.map { preferences ->
+        preferences[KEY_FIRST_5MIN_TEST_COMPLETED] ?: false
+    }
+
+    val isMonitoringPromptDismissed: Flow<Boolean> = context.dataStore.data.map { preferences ->
+        preferences[KEY_MONITORING_PROMPT_DISMISSED] ?: false
+    }
+
+    suspend fun setFirst5MinTestCompleted(completed: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[KEY_FIRST_5MIN_TEST_COMPLETED] = completed
+        }
+    }
+
+    suspend fun setMonitoringPromptDismissed(dismissed: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[KEY_MONITORING_PROMPT_DISMISSED] = dismissed
+        }
     }
 
     suspend fun setOnboardingCompleted(completed: Boolean) {

@@ -186,6 +186,53 @@
     <string name="home_battery_guard_alert_body">Your battery is low (%2$d%%). Plug in your charger to start an eye check!</string>
     <string name="home_battery_guard_dismiss">Got It</string>
 
+    <!-- Mode Selection in Settings & Help Dialogs -->
+    <string name="settings_section_mode">Operating Mode</string>
+    <string name="settings_mode_burst_title">Burst Mode (5-Min Test)</string>
+    <string name="settings_mode_burst_desc">A quick 5-minute focused check to benchmark your blink rate.</string>
+    <string name="settings_mode_monitoring_title">Monitoring Mode</string>
+    <string name="settings_mode_monitoring_desc">Automated duty-cycle checks (1 min initial, 2 min cooling, 30s scans) for all-day eye protection.</string>
+
+    <!-- Burst Mode Help Dialog -->
+    <string name="burst_help_dialog_title">How Burst Mode Works</string>
+    <string name="burst_help_point1_title">5-Minute Assessment</string>
+    <string name="burst_help_point1_desc">Measures your natural blink rate over a focused 5-minute window while you use your device normally.</string>
+    <string name="burst_help_point2_title">Comprehensive Blink Score</string>
+    <string name="burst_help_point2_desc">Calculates your total blinks, average Blinks/Min, and whether you met the healthy 15–20 BPM target.</string>
+    <string name="burst_help_point3_title">Zero Distraction &amp; Private</string>
+    <string name="burst_help_point3_desc">Runs silently with a minimal countdown. 100% on-device facial analysis with zero photos or videos saved.</string>
+
+    <!-- Monitoring Mode Help Dialog -->
+    <string name="monitoring_help_dialog_title">How Monitoring Mode Works</string>
+    <string name="monitoring_help_point1_title">1-Minute Initial Scan</string>
+    <string name="monitoring_help_point1_desc">When started, the camera checks your blink rate continuously for 1 minute for the first time.</string>
+    <string name="monitoring_help_point2_title">Color-Coded Feedback</string>
+    <string name="monitoring_help_point2_desc">The camera closes and sends a notification. If BPM is healthy, notification stays Green. If BPM is low, it turns Red.</string>
+    <string name="monitoring_help_point3_title">2-Minute Cooling &amp; 30s Checks</string>
+    <string name="monitoring_help_point3_desc">Camera cools off for 2 minutes to save battery, then turns ON again for exactly 30 seconds only to re-check your BPM.</string>
+    <string name="monitoring_help_point4_title">Screen &amp; Battery Guard</string>
+    <string name="monitoring_help_point4_desc">Pauses automatically when screen is off and resumes on screen unlock. Stops monitoring and alerts you if battery drops below threshold.</string>
+
+    <!-- Suggest Monitoring Dialog (After first 5 min test) -->
+    <string name="suggest_monitoring_title">Switch to Monitoring Mode?</string>
+    <string name="suggest_monitoring_subtitle">Automated eye protection for your everyday screen time</string>
+    <string name="suggest_monitoring_body">Great job on finishing your first 5-minute Eye Check! For all-day eye care, enable Monitoring Mode from Settings.\n\n• ⏱️ 1-min initial check, then 30s checks every 2 min\n• 🟢 Green / 🔴 Red live notification status\n• ⚡ Auto-pauses on screen off &amp; saves battery</string>
+    <string name="suggest_monitoring_btn_enable">Enable Now</string>
+    <string name="suggest_monitoring_btn_settings">Go to Settings</string>
+    <string name="suggest_monitoring_btn_later">Maybe Later</string>
+
+    <!-- Battery Low Alert Notification -->
+    <string name="notification_battery_low_title">⚡ Monitoring Stopped — Low Battery</string>
+    <string name="notification_battery_low_body">Battery dropped below %1$d%% (currently %2$d%%). Monitoring stopped to preserve your battery.</string>
+
+    <!-- Home Mode Labels for Monitoring Mode -->
+    <string name="home_mode_badge_monitoring">Monitoring Mode</string>
+    <string name="home_monitoring_btn_start">Start Monitoring</string>
+    <string name="home_monitoring_btn_stop">Stop Monitoring</string>
+    <string name="home_monitoring_standby_title">Monitoring Mode</string>
+    <string name="home_monitoring_standby_desc">Periodic checks with 2-minute cooling to keep your eyes healthy without draining battery.</string>
+    <string name="home_monitoring_active_desc">Automated duty-cycle active: 1 min initial, 2 min cooling, 30s scans.</string>
+
     <!-- Common -->
     <string name="next">Next</string>
     <string name="skip">Skip</string>

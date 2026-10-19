@@ -141,14 +141,30 @@ fun MainTabPagerScreen(
                 Screen.Home -> HomeScreen(
                     viewModel = homeViewModel,
                     currentStreak = currentStreak,
-                    onOpenStreak = { navController.navigate(Screen.Streak.route) }
+                    onOpenStreak = { navController.navigate(Screen.Streak.route) },
+                    onNavigateToSettings = {
+                        coroutineScope.launch {
+                            val settingsIndex = Screen.bottomNavItems.indexOf(Screen.Settings)
+                            if (settingsIndex >= 0) {
+                                pagerState.animateScrollToPage(settingsIndex)
+                            }
+                        }
+                    }
                 )
                 Screen.Stats -> StatsScreen(viewModel = statsViewModel)
                 Screen.Settings -> SettingsScreen(viewModel = settingsViewModel)
                 else -> HomeScreen(
                     viewModel = homeViewModel,
                     currentStreak = currentStreak,
-                    onOpenStreak = { navController.navigate(Screen.Streak.route) }
+                    onOpenStreak = { navController.navigate(Screen.Streak.route) },
+                    onNavigateToSettings = {
+                        coroutineScope.launch {
+                            val settingsIndex = Screen.bottomNavItems.indexOf(Screen.Settings)
+                            if (settingsIndex >= 0) {
+                                pagerState.animateScrollToPage(settingsIndex)
+                            }
+                        }
+                    }
                 )
             }
         }

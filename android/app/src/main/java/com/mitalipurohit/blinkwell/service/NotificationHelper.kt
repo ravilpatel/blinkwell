@@ -261,6 +261,41 @@ class NotificationHelper(private val context: Context) {
     }
 
     /**
+     * Sends an active notification alert when monitoring is stopped due to low battery.
+     */
+    fun showBatteryLowNotification(currentBattery: Int, threshold: Int) {
+        val intent = Intent(context, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        }
+        val pendingIntent = PendingIntent.getActivity(
+            context,
+            5,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0)
+        )
+
+        val title = context.getString(R.string.notification_battery_low_title)
+        val body = context.getString(R.string.notification_battery_low_body, threshold, currentBattery)
+
+        val builder = NotificationCompat.Builder(context, CHANNEL_ALERTS_ID)
+            .setContentTitle(title)
+            .setContentText(body)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(body))
+            .setSmallIcon(R.drawable.ic_notification)
+            .setColor(COLOR_RED)
+            .setColorized(true)
+            .setAutoCancel(true)
+            .setContentIntent(pendingIntent)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setCategory(NotificationCompat.CATEGORY_STATUS)
+
+        try {
+            NotificationManagerCompat.from(context).notify(ALERT_NOTIFICATION_ID, builder.build())
+        } catch (ignored: SecurityException) {
+        }
+    }
+
+    /**
      * Builds the quiet, neutral ongoing foreground notification during 5-minute Burst Mode.
      */
     fun buildBurstProgressNotification(remainingSeconds: Long): Notification {

@@ -240,7 +240,7 @@ class BlinkDetector(
         }
 
         val elapsedSeconds = if (burstStartTimestamp > 0L) {
-            ((System.currentTimeMillis() - burstStartTimestamp) / 1000.0).coerceIn(5.0, 60.0)
+            ((System.currentTimeMillis() - burstStartTimestamp) / 1000.0).coerceIn(5.0, 90.0)
         } else {
             scanDurationSeconds
         }

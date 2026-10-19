@@ -50,8 +50,10 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -92,7 +94,8 @@ private val TrackColor = Color(0xFFE2E8F0)
 fun HomeScreen(
     viewModel: HomeViewModel,
     currentStreak: Int = 0,
-    onOpenStreak: () -> Unit = {}
+    onOpenStreak: () -> Unit = {},
+    onNavigateToSettings: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
@@ -207,32 +210,72 @@ fun HomeScreen(
             }
 
             Spacer(modifier = Modifier.weight(1f, fill = false))
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
-            // 1. Meter (Standby Gauge or Active Countdown Gauge)
+            // Current Mode Badge (Burst vs Monitoring Mode)
+            Surface(
+                shape = RoundedCornerShape(20.dp),
+                color = TealPrimary.copy(alpha = 0.10f),
+                border = BorderStroke(1.dp, TealPrimary.copy(alpha = 0.25f))
+            ) {
+                Text(
+                    text = if (uiState.appMode == "monitoring") {
+                        stringResource(R.string.home_mode_badge_monitoring)
+                    } else {
+                        stringResource(R.string.mode_burst_title)
+                    },
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = TealPrimary,
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 5.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(18.dp))
+
+            // 1. Meter (Burst Mode Gauge or Monitoring Mode Gauge)
             AnimatedContent(
-                targetState = uiState.isMonitoring,
+                targetState = Pair(uiState.isMonitoring, uiState.appMode),
                 transitionSpec = {
                     fadeIn(animationSpec = tween(400)) togetherWith fadeOut(animationSpec = tween(400))
                 },
                 label = "meter_gauge_switch"
-            ) { isMonitoringActive ->
-                if (isMonitoringActive) {
-                    ActiveBurstGauge(
-                        elapsedSeconds = uiState.metrics.burstElapsedSeconds,
-                        totalSeconds = uiState.metrics.burstTotalSeconds,
-                        totalBlinks = uiState.metrics.totalBlinksInSession
-                    )
+            ) { (isMonitoringActive, mode) ->
+                if (mode == "monitoring") {
+                    if (isMonitoringActive) {
+                        ActiveMonitoringGauge(
+                            currentBpm = uiState.metrics.currentBpm,
+                            statusCategory = uiState.metrics.statusCategory
+                        )
+                    } else {
+                        StandbyMonitoringGauge()
+                    }
                 } else {
-                    StandbyBurstGauge()
+                    if (isMonitoringActive) {
+                        ActiveBurstGauge(
+                            elapsedSeconds = uiState.metrics.burstElapsedSeconds,
+                            totalSeconds = uiState.metrics.burstTotalSeconds,
+                            totalBlinks = uiState.metrics.totalBlinksInSession
+                        )
+                    } else {
+                        StandbyBurstGauge()
+                    }
                 }
             }
 
             Spacer(modifier = Modifier.height(28.dp))
 
-            // 2. Simple line explaining optimum blink rate
+            // 2. Simple line explaining current mode operation
             Text(
-                text = stringResource(R.string.home_optimum_rate_line),
+                text = if (uiState.appMode == "monitoring") {
+                    if (uiState.isMonitoring) {
+                        stringResource(R.string.home_monitoring_active_desc)
+                    } else {
+                        stringResource(R.string.home_monitoring_standby_desc)
+                    }
+                } else {
+                    stringResource(R.string.home_optimum_rate_line)
+                },
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -241,7 +284,7 @@ fun HomeScreen(
 
             Spacer(modifier = Modifier.height(28.dp))
 
-            // 3. Start / Stop Blink Rate Check Button
+            // 3. Start / Stop Button
             Button(
                 onClick = {
                     if (uiState.isMonitoring) {
@@ -279,9 +322,17 @@ fun HomeScreen(
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = if (uiState.isMonitoring) {
-                        stringResource(R.string.home_burst_btn_stop)
+                        if (uiState.appMode == "monitoring") {
+                            stringResource(R.string.home_monitoring_btn_stop)
+                        } else {
+                            stringResource(R.string.home_burst_btn_stop)
+                        }
                     } else {
-                        stringResource(R.string.home_burst_btn_start)
+                        if (uiState.appMode == "monitoring") {
+                            stringResource(R.string.home_monitoring_btn_start)
+                        } else {
+                            stringResource(R.string.home_burst_btn_start)
+                        }
                     },
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
@@ -302,6 +353,18 @@ fun HomeScreen(
             BurstResultDialog(
                 result = result,
                 onDismiss = { viewModel.dismissBurstResult() }
+            )
+        }
+
+        // Monitoring Mode Suggestion Dialog upon app open after first 5-min test
+        if (uiState.showMonitoringSuggestionDialog) {
+            MonitoringModeSuggestionDialog(
+                onEnableNow = { viewModel.enableMonitoringMode() },
+                onGoToSettings = {
+                    viewModel.dismissMonitoringSuggestion()
+                    onNavigateToSettings()
+                },
+                onDismiss = { viewModel.dismissMonitoringSuggestion() }
             )
         }
     }
@@ -748,6 +811,338 @@ fun BlinkInfoDialog(
                         fontWeight = FontWeight.Bold
                     )
                 }
+            }
+        }
+    }
+}
+
+/**
+ * Pop-up shown on app launch after completing first 5-min test,
+ * showcasing an illustration and suggesting the user enable Monitoring Mode from Settings.
+ */
+@Composable
+fun MonitoringModeSuggestionDialog(
+    onEnableNow: () -> Unit,
+    onGoToSettings: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        Surface(
+            shape = RoundedCornerShape(26.dp),
+            color = MaterialTheme.colorScheme.surface,
+            border = BorderStroke(1.dp, TrackColor),
+            modifier = Modifier
+                .fillMaxWidth(0.92f)
+                .padding(vertical = 16.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(20.dp)
+                    .verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // Header with badge & close button
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = TealPrimary.copy(alpha = 0.15f)
+                    ) {
+                        Text(
+                            text = "RECOMMENDED",
+                            color = TealPrimary,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        )
+                    }
+
+                    IconButton(
+                        onClick = onDismiss,
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Close",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                // Card Illustration Image
+                Image(
+                    painter = painterResource(id = R.drawable.illus_step4_notification),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(190.dp)
+                        .clip(RoundedCornerShape(16.dp)),
+                    contentScale = ContentScale.Fit
+                )
+
+                Spacer(modifier = Modifier.height(14.dp))
+
+                Text(
+                    text = stringResource(R.string.suggest_monitoring_title),
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.ExtraBold,
+                    textAlign = TextAlign.Center
+                )
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Text(
+                    text = stringResource(R.string.suggest_monitoring_subtitle),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center
+                )
+
+                Spacer(modifier = Modifier.height(14.dp))
+
+                Card(
+                    shape = RoundedCornerShape(14.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f)),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(
+                        modifier = Modifier.padding(14.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(text = "⏱️", fontSize = 16.sp)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "1-min initial check, then 30s checks every 2 min",
+                                style = MaterialTheme.typography.bodySmall,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(text = "🟢", fontSize = 16.sp)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Green when healthy, Red when low blink rate",
+                                style = MaterialTheme.typography.bodySmall,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(text = "⚡", fontSize = 16.sp)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Auto-pauses on screen off & saves battery",
+                                style = MaterialTheme.typography.bodySmall,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(18.dp))
+
+                // Primary Action: Enable Now
+                Button(
+                    onClick = onEnableNow,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp),
+                    shape = RoundedCornerShape(25.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = TealPrimary,
+                        contentColor = Color.White
+                    )
+                ) {
+                    Text(
+                        text = stringResource(R.string.suggest_monitoring_btn_enable),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                // Secondary Action: Go to Settings
+                OutlinedButton(
+                    onClick = onGoToSettings,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp),
+                    shape = RoundedCornerShape(24.dp),
+                    border = BorderStroke(1.5.dp, TealPrimary)
+                ) {
+                    Text(
+                        text = stringResource(R.string.suggest_monitoring_btn_settings),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = TealPrimary
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(6.dp))
+
+                // Dismiss: Maybe Later
+                TextButton(
+                    onClick = onDismiss,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = stringResource(R.string.suggest_monitoring_btn_later),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Standby Meter Gauge for Monitoring Mode.
+ */
+@Composable
+fun StandbyMonitoringGauge() {
+    Box(
+        modifier = Modifier.size(260.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Canvas(modifier = Modifier.size(240.dp)) {
+            val strokeWidth = 12.dp.toPx()
+            val radius = size.minDimension / 2 - strokeWidth / 2
+
+            // Background circular track
+            drawCircle(
+                color = TrackColor,
+                radius = radius,
+                style = Stroke(width = strokeWidth)
+            )
+
+            // Accent arc indicating monitoring readiness
+            drawArc(
+                color = TealPrimary,
+                startAngle = -90f,
+                sweepAngle = 270f,
+                useCenter = false,
+                style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
+            )
+        }
+
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.app_logo),
+                contentDescription = null,
+                modifier = Modifier.size(52.dp)
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Text(
+                text = stringResource(R.string.home_monitoring_standby_title),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+
+            Text(
+                text = "Periodic Eye Care",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+/**
+ * Active Meter Gauge for Monitoring Mode: Displays real-time BPM and Green/Red status.
+ */
+@Composable
+fun ActiveMonitoringGauge(
+    currentBpm: Double,
+    statusCategory: BlinkStatusCategory
+) {
+    val isHealthy = statusCategory == BlinkStatusCategory.NORMAL
+    val isLow = statusCategory == BlinkStatusCategory.LOW_RATE
+    val indicatorColor = if (isHealthy) AccentEmerald else if (isLow) AccentRose else AccentAmber
+
+    val infiniteTransition = rememberInfiniteTransition(label = "monitoring_pulse")
+    val pulseScale by infiniteTransition.animateFloat(
+        initialValue = 0.98f,
+        targetValue = 1.03f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1200, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "monitoring_pulse_scale"
+    )
+
+    Box(
+        modifier = Modifier
+            .size(260.dp)
+            .scale(pulseScale),
+        contentAlignment = Alignment.Center
+    ) {
+        Canvas(modifier = Modifier.size(240.dp)) {
+            val strokeWidth = 12.dp.toPx()
+            val radius = size.minDimension / 2 - strokeWidth / 2
+
+            drawCircle(
+                color = TrackColor,
+                radius = radius,
+                style = Stroke(width = strokeWidth)
+            )
+
+            drawCircle(
+                color = indicatorColor,
+                radius = radius,
+                style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
+            )
+        }
+
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = "%.0f".format(currentBpm),
+                style = MaterialTheme.typography.displayMedium.copy(fontSize = 54.sp),
+                fontWeight = FontWeight.ExtraBold,
+                color = indicatorColor
+            )
+
+            Text(
+                text = stringResource(R.string.home_blinks_per_minute),
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+            Surface(
+                shape = RoundedCornerShape(10.dp),
+                color = indicatorColor.copy(alpha = 0.15f)
+            ) {
+                Text(
+                    text = if (isHealthy) "🟢 Healthy" else if (isLow) "🔴 Rest Needed" else "🟡 Scanning",
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = indicatorColor,
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                )
             }
         }
     }

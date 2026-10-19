@@ -17,6 +17,16 @@ class SettingsRepository(private val preferenceManager: PreferenceManager) {
     val activeSessionId: Flow<String?> = preferenceManager.activeSessionId
     val batteryGuardEnabled: Flow<Boolean> = preferenceManager.batteryGuardEnabled
     val batteryGuardThreshold: Flow<Int> = preferenceManager.batteryGuardThreshold
+    val hasCompletedFirst5MinTest: Flow<Boolean> = preferenceManager.hasCompletedFirst5MinTest
+    val isMonitoringPromptDismissed: Flow<Boolean> = preferenceManager.isMonitoringPromptDismissed
+
+    suspend fun setFirst5MinTestCompleted(completed: Boolean) {
+        preferenceManager.setFirst5MinTestCompleted(completed)
+    }
+
+    suspend fun setMonitoringPromptDismissed(dismissed: Boolean) {
+        preferenceManager.setMonitoringPromptDismissed(dismissed)
+    }
 
     suspend fun setOnboardingCompleted(completed: Boolean) {
         preferenceManager.setOnboardingCompleted(completed)

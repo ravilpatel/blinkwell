@@ -22,14 +22,22 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.foundation.Image
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.HelpOutline
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.OpenInNew
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.ui.res.painterResource
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
@@ -39,10 +47,16 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -65,6 +79,8 @@ fun SettingsScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
+    var showBurstHelpDialog by remember { mutableStateOf(false) }
+    var showMonitoringHelpDialog by remember { mutableStateOf(false) }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -84,7 +100,54 @@ fun SettingsScreen(
                 fontWeight = FontWeight.Bold
             )
 
-            // Section 1: Healthy Target Blink Rate
+            // Section 1: Operating Mode (Burst Mode vs Monitoring Mode)
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    text = stringResource(R.string.settings_section_mode),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = TealPrimary
+                )
+
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    shape = RoundedCornerShape(16.dp),
+                    border = BorderStroke(1.dp, BorderColor)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp)
+                    ) {
+                        // Option 1: Burst Mode
+                        ModeOptionItem(
+                            title = stringResource(R.string.settings_mode_burst_title),
+                            subtitle = stringResource(R.string.settings_mode_burst_desc),
+                            isSelected = uiState.appMode == "burst",
+                            onSelect = { viewModel.setAppMode("burst") },
+                            onHelpClick = { showBurstHelpDialog = true }
+                        )
+
+                        HorizontalDivider(
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                            color = BorderColor.copy(alpha = 0.7f),
+                            thickness = 0.8.dp
+                        )
+
+                        // Option 2: Monitoring Mode
+                        ModeOptionItem(
+                            title = stringResource(R.string.settings_mode_monitoring_title),
+                            subtitle = stringResource(R.string.settings_mode_monitoring_desc),
+                            isSelected = uiState.appMode == "monitoring",
+                            onSelect = { viewModel.setAppMode("monitoring") },
+                            onHelpClick = { showMonitoringHelpDialog = true }
+                        )
+                    }
+                }
+            }
+
+            // Section 2: Healthy Target Blink Rate
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
                     text = "Target Blink Rate",
@@ -433,6 +496,331 @@ fun SettingsScreen(
             }
 
             Spacer(modifier = Modifier.height(16.dp))
+        }
+
+        // Mode Explanation Pop-ups
+        if (showBurstHelpDialog) {
+            BurstModeInfoDialog(onDismiss = { showBurstHelpDialog = false })
+        }
+
+        if (showMonitoringHelpDialog) {
+            MonitoringModeInfoDialog(onDismiss = { showMonitoringHelpDialog = false })
+        }
+    }
+}
+
+@Composable
+private fun ModeOptionItem(
+    title: String,
+    subtitle: String,
+    isSelected: Boolean,
+    onSelect: () -> Unit,
+    onHelpClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onSelect() }
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        RadioButton(
+            selected = isSelected,
+            onClick = onSelect,
+            colors = RadioButtonDefaults.colors(
+                selectedColor = TealPrimary,
+                unselectedColor = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        )
+
+        Spacer(modifier = Modifier.width(10.dp))
+
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Bold,
+                color = if (isSelected) TealPrimary else MaterialTheme.colorScheme.onSurface
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = subtitle,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                lineHeight = 16.sp
+            )
+        }
+
+        Spacer(modifier = Modifier.width(8.dp))
+
+        // ? Help Button
+        Surface(
+            shape = CircleShape,
+            color = TealPrimary.copy(alpha = 0.12f),
+            modifier = Modifier
+                .size(32.dp)
+                .clip(CircleShape)
+                .clickable { onHelpClick() }
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Text(
+                    text = "?",
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = TealPrimary
+                )
+            }
+        }
+    }
+}
+
+/**
+ * Illustrated Information Pop-up explaining how Burst Mode works.
+ */
+@Composable
+fun BurstModeInfoDialog(onDismiss: () -> Unit) {
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        Surface(
+            shape = RoundedCornerShape(24.dp),
+            color = MaterialTheme.colorScheme.surface,
+            border = BorderStroke(1.dp, BorderColor),
+            modifier = Modifier
+                .fillMaxWidth(0.92f)
+                .padding(vertical = 16.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(20.dp)
+                    .verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // Header Row: Title & Close 'X' button
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = stringResource(R.string.burst_help_dialog_title),
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                    IconButton(
+                        onClick = onDismiss,
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Close",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(14.dp))
+
+                // Mode Illustration
+                Image(
+                    painter = painterResource(id = R.drawable.illus_step1_welcome),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(180.dp)
+                        .clip(RoundedCornerShape(16.dp)),
+                    contentScale = ContentScale.Fit
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Explanatory Points
+                ModeHelpPoint(
+                    icon = "⏱️",
+                    title = stringResource(R.string.burst_help_point1_title),
+                    description = stringResource(R.string.burst_help_point1_desc)
+                )
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                ModeHelpPoint(
+                    icon = "📊",
+                    title = stringResource(R.string.burst_help_point2_title),
+                    description = stringResource(R.string.burst_help_point2_desc)
+                )
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                ModeHelpPoint(
+                    icon = "🔒",
+                    title = stringResource(R.string.burst_help_point3_title),
+                    description = stringResource(R.string.burst_help_point3_desc)
+                )
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                Button(
+                    onClick = onDismiss,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp),
+                    shape = RoundedCornerShape(24.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = TealPrimary)
+                ) {
+                    Text(
+                        text = stringResource(R.string.done),
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Illustrated Information Pop-up explaining how Monitoring Mode works.
+ */
+@Composable
+fun MonitoringModeInfoDialog(onDismiss: () -> Unit) {
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        Surface(
+            shape = RoundedCornerShape(24.dp),
+            color = MaterialTheme.colorScheme.surface,
+            border = BorderStroke(1.dp, BorderColor),
+            modifier = Modifier
+                .fillMaxWidth(0.92f)
+                .padding(vertical = 16.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(20.dp)
+                    .verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // Header Row: Title & Close 'X' button
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = stringResource(R.string.monitoring_help_dialog_title),
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                    IconButton(
+                        onClick = onDismiss,
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Close",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(14.dp))
+
+                // Mode Illustration
+                Image(
+                    painter = painterResource(id = R.drawable.illus_step4_notification),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(180.dp)
+                        .clip(RoundedCornerShape(16.dp)),
+                    contentScale = ContentScale.Fit
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Explanatory Points
+                ModeHelpPoint(
+                    icon = "⏱️",
+                    title = stringResource(R.string.monitoring_help_point1_title),
+                    description = stringResource(R.string.monitoring_help_point1_desc)
+                )
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                ModeHelpPoint(
+                    icon = "🔔",
+                    title = stringResource(R.string.monitoring_help_point2_title),
+                    description = stringResource(R.string.monitoring_help_point2_desc)
+                )
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                ModeHelpPoint(
+                    icon = "⏳",
+                    title = stringResource(R.string.monitoring_help_point3_title),
+                    description = stringResource(R.string.monitoring_help_point3_desc)
+                )
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                ModeHelpPoint(
+                    icon = "🔋",
+                    title = stringResource(R.string.monitoring_help_point4_title),
+                    description = stringResource(R.string.monitoring_help_point4_desc)
+                )
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                Button(
+                    onClick = onDismiss,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp),
+                    shape = RoundedCornerShape(24.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = TealPrimary)
+                ) {
+                    Text(
+                        text = stringResource(R.string.done),
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ModeHelpPoint(
+    icon: String,
+    title: String,
+    description: String
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.Top
+    ) {
+        Text(
+            text = icon,
+            fontSize = 18.sp,
+            modifier = Modifier.padding(top = 2.dp)
+        )
+        Spacer(modifier = Modifier.width(10.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = description,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                lineHeight = 17.sp
+            )
         }
     }
 }
