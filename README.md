@@ -82,19 +82,40 @@ The BlinkWell Research Portal has been redesigned for high-precision clinical er
 
 ---
 
-## 🚀 Building the App (GitHub Actions)
+## 🚀 Building & Testing the App
 
 Since this project is configured to build without requiring a local Android Studio installation:
 
 1. Push your code to your GitHub repository:
    ```bash
    git add .
-   git commit -m "Initialize BlinkWell"
+   git commit -m "Update BlinkWell"
    git push origin main
    ```
-2. Open the **Actions** tab in your GitHub repository.
-3. The **Android CI - Debug Build** workflow will compile the APK.
-4. Download `blinkwell-debug-apk` from the workflow run's **Artifacts** section and install it directly on your Android phone.
+2. The **Android CI - Debug Build** workflow will automatically compile the APK.
+
+### 📲 Instant USB Testing (Direct from GitHub Actions CI)
+
+No manual APK downloading, unzipping, or clicking through phone installer dialogs:
+
+1. Connect your Android phone to your PC via USB cable.
+2. Ensure **USB Debugging** is enabled in your phone's Developer Options.
+3. Run the one-command USB runner:
+   ```bash
+   ./run-device.sh
+   ```
+
+**What it does automatically:**
+- Self-bootstraps Google's official standalone `adb` if not installed on your system (zero root/sudo required).
+- Queries GitHub Actions and downloads the latest successful build artifact directly into a temporary cache.
+- Streams and installs the APK to your phone in seconds (`adb install -r -d -g`).
+- Auto-grants camera and notification permissions so no phone popups interrupt testing.
+- Instantly launches BlinkWell on your screen and streams real-time blink detection logs to your terminal!
+
+**Useful Flags:**
+- `./run-device.sh -w`: Waits for a currently running CI build to complete, then deploys immediately.
+- `./run-device.sh -e`: **Ephemeral mode** — runs the test and automatically uninstalls the app when you stop (Ctrl+C), leaving zero footprint on your phone.
+- `./run-device.sh --apk <path>`: Deploys a specific local APK directly over USB.
 
 ---
 

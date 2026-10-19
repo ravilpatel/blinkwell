@@ -110,6 +110,15 @@ fun HomeScreen(
     val context = LocalContext.current
     var showInfoDialog by remember { mutableStateOf(false) }
 
+    val notificationLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) {
+        val hasCameraPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
+        if (hasCameraPermission) {
+            viewModel.startMonitoring(context)
+        }
+    }
+
     val cameraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { granted ->
@@ -122,17 +131,6 @@ fun HomeScreen(
             } else {
                 viewModel.startMonitoring(context)
             }
-        }
-    }
-
-    val notificationLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission()
-    ) {
-        val hasCameraPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
-        if (!hasCameraPermission) {
-            cameraLauncher.launch(Manifest.permission.CAMERA)
-        } else {
-            viewModel.startMonitoring(context)
         }
     }
 
