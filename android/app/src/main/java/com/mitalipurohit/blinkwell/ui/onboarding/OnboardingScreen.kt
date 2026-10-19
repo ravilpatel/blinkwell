@@ -10,8 +10,11 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -207,22 +210,17 @@ fun WelcomeStep() {
         verticalArrangement = Arrangement.Center,
         modifier = Modifier.verticalScroll(rememberScrollState())
     ) {
-        Box(
+        Image(
+            painter = painterResource(id = R.drawable.illus_art_welcome),
+            contentDescription = "Welcome to BlinkWell",
             modifier = Modifier
-                .size(100.dp)
-                .clip(CircleShape)
-                .background(TealPrimary.copy(alpha = 0.15f)),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = Icons.Default.Visibility,
-                contentDescription = null,
-                tint = TealPrimary,
-                modifier = Modifier.size(54.dp)
-            )
-        }
+                .fillMaxWidth(0.9f)
+                .height(180.dp)
+                .clip(RoundedCornerShape(20.dp)),
+            contentScale = ContentScale.Crop
+        )
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(20.dp))
 
         Text(
             text = stringResource(R.string.onboarding_welcome_title),
@@ -231,7 +229,7 @@ fun WelcomeStep() {
             textAlign = TextAlign.Center
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(6.dp))
 
         Text(
             text = stringResource(R.string.ideator_credit),
@@ -240,7 +238,7 @@ fun WelcomeStep() {
             fontWeight = FontWeight.SemiBold
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         Text(
             text = stringResource(R.string.onboarding_welcome_desc),
@@ -258,22 +256,17 @@ fun HowItWorksStep() {
         verticalArrangement = Arrangement.Center,
         modifier = Modifier.verticalScroll(rememberScrollState())
     ) {
-        Box(
+        Image(
+            painter = painterResource(id = R.drawable.illus_art_face_detect),
+            contentDescription = "BlinkWell On-Device Face Analysis",
             modifier = Modifier
-                .size(100.dp)
-                .clip(CircleShape)
-                .background(AccentEmerald.copy(alpha = 0.15f)),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = Icons.Default.Security,
-                contentDescription = null,
-                tint = AccentEmerald,
-                modifier = Modifier.size(54.dp)
-            )
-        }
+                .fillMaxWidth(0.9f)
+                .height(180.dp)
+                .clip(RoundedCornerShape(20.dp)),
+            contentScale = ContentScale.Crop
+        )
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(20.dp))
 
         Text(
             text = stringResource(R.string.onboarding_how_it_works_title),
@@ -282,7 +275,7 @@ fun HowItWorksStep() {
             textAlign = TextAlign.Center
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
         Text(
             text = stringResource(R.string.onboarding_how_it_works_desc),
@@ -291,13 +284,13 @@ fun HowItWorksStep() {
             textAlign = TextAlign.Center
         )
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(20.dp))
 
         Card(
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
             ),
-            shape = RoundedCornerShape(12.dp)
+            shape = RoundedCornerShape(14.dp)
         ) {
             Row(
                 modifier = Modifier.padding(16.dp),
@@ -644,12 +637,13 @@ fun ModeChoiceStep(
     selectedMode: String?,
     onModeSelected: (String) -> Unit
 ) {
+    onModeSelected("burst")
     Column(
         horizontalAlignment = Alignment.Start,
         modifier = Modifier.verticalScroll(rememberScrollState())
     ) {
         Text(
-            text = stringResource(R.string.mode_choice_title),
+            text = "5-Minute Eye Assessment",
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold
         )
@@ -657,26 +651,19 @@ fun ModeChoiceStep(
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = stringResource(R.string.mode_choice_desc),
+            text = "BlinkWell uses focused 5-minute burst sessions to measure your natural blink rate while you use your phone, with zero continuous battery drain.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Burst Mode Card (Default & Recommended)
-        val isBurst = selectedMode == "burst"
         Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { onModeSelected("burst") },
+            modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(
-                containerColor = if (isBurst) TealPrimary.copy(alpha = 0.12f) else MaterialTheme.colorScheme.surface
+                containerColor = TealPrimary.copy(alpha = 0.12f)
             ),
-            border = BorderStroke(
-                2.dp,
-                if (isBurst) TealPrimary else MaterialTheme.colorScheme.outlineVariant
-            ),
+            border = BorderStroke(2.dp, TealPrimary),
             shape = RoundedCornerShape(16.dp)
         ) {
             Row(
@@ -687,13 +674,13 @@ fun ModeChoiceStep(
                     modifier = Modifier
                         .size(48.dp)
                         .clip(CircleShape)
-                        .background(if (isBurst) TealPrimary else MaterialTheme.colorScheme.surfaceVariant),
+                        .background(TealPrimary),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.Visibility,
                         contentDescription = null,
-                        tint = if (isBurst) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+                        tint = Color.White
                     )
                 }
 
@@ -712,7 +699,7 @@ fun ModeChoiceStep(
                             color = TealPrimary.copy(alpha = 0.15f)
                         ) {
                             Text(
-                                text = "Default",
+                                text = "Standard",
                                 style = MaterialTheme.typography.labelSmall,
                                 fontWeight = FontWeight.Bold,
                                 color = TealPrimary,
@@ -728,76 +715,12 @@ fun ModeChoiceStep(
                     )
                 }
 
-                if (isBurst) {
-                    Icon(
-                        imageVector = Icons.Default.Check,
-                        contentDescription = "Selected",
-                        tint = TealPrimary,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Monitoring Mode Card
-        val isMonitoring = selectedMode == "monitoring"
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { onModeSelected("monitoring") },
-            colors = CardDefaults.cardColors(
-                containerColor = if (isMonitoring) TealPrimary.copy(alpha = 0.12f) else MaterialTheme.colorScheme.surface
-            ),
-            border = BorderStroke(
-                2.dp,
-                if (isMonitoring) TealPrimary else MaterialTheme.colorScheme.outlineVariant
-            ),
-            shape = RoundedCornerShape(16.dp)
-        ) {
-            Row(
-                modifier = Modifier.padding(20.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(48.dp)
-                        .clip(CircleShape)
-                        .background(if (isMonitoring) TealPrimary else MaterialTheme.colorScheme.surfaceVariant),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Notifications,
-                        contentDescription = null,
-                        tint = if (isMonitoring) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-
-                Spacer(modifier = Modifier.width(16.dp))
-
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = stringResource(R.string.mode_monitoring_title),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = stringResource(R.string.mode_monitoring_desc),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-
-                if (isMonitoring) {
-                    Icon(
-                        imageVector = Icons.Default.Check,
-                        contentDescription = "Selected",
-                        tint = TealPrimary,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
+                Icon(
+                    imageVector = Icons.Default.Check,
+                    contentDescription = "Selected",
+                    tint = TealPrimary,
+                    modifier = Modifier.size(24.dp)
+                )
             }
         }
     }

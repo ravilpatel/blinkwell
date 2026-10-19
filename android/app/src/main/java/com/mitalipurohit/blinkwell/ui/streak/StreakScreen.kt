@@ -25,6 +25,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Info
@@ -35,6 +36,7 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -69,7 +71,8 @@ private val BorderColor = Color(0xFFE2E8F0)
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun StreakScreen(
-    viewModel: StatsViewModel
+    viewModel: StatsViewModel,
+    onBack: (() -> Unit)? = null
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var selectedDayInfo by remember { mutableStateOf<DayStreakInfo?>(null) }
@@ -91,6 +94,18 @@ fun StreakScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
+                        if (onBack != null) {
+                            IconButton(
+                                onClick = onBack,
+                                modifier = Modifier.size(36.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.ArrowBack,
+                                    contentDescription = "Back",
+                                    tint = MaterialTheme.colorScheme.onBackground
+                                )
+                            }
+                        }
                         Icon(
                             imageVector = Icons.Default.LocalFireDepartment,
                             contentDescription = null,

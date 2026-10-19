@@ -23,7 +23,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.mitalipurohit.blinkwell.BlinkWellApp
-import com.mitalipurohit.blinkwell.ui.about.AboutScreen
 import com.mitalipurohit.blinkwell.ui.home.HomeScreen
 import com.mitalipurohit.blinkwell.ui.home.HomeViewModel
 import com.mitalipurohit.blinkwell.ui.onboarding.OnboardingScreen
@@ -70,17 +69,29 @@ fun BlinkWellNavGraph(
         }
 
         composable("main") {
-            MainTabPagerScreen()
+            MainTabPagerScreen(navController = navController)
+        }
+
+        composable(Screen.Streak.route) {
+            val statsViewModel: StatsViewModel = viewModel()
+            StreakScreen(
+                viewModel = statsViewModel,
+                onBack = { navController.popBackStack() }
+            )
         }
     }
 }
 
 @Composable
 fun MainTabPagerScreen(
+    navController: NavHostController,
     homeViewModel: HomeViewModel = viewModel(),
     statsViewModel: StatsViewModel = viewModel(),
     settingsViewModel: SettingsViewModel = viewModel()
 ) {
+    val statsUiState by statsViewModel.uiState.collectAsState()
+    val currentStreak = statsUiState.streakSummary.currentHealthyStreak
+
     val homeIndex = remember { Screen.bottomNavItems.indexOf(Screen.Home).coerceAtLeast(0) }
     val pagerState = rememberPagerState(
         initialPage = homeIndex,
@@ -127,12 +138,18 @@ fun MainTabPagerScreen(
             beyondViewportPageCount = 1
         ) { page ->
             when (Screen.bottomNavItems[page]) {
+                Screen.Home -> HomeScreen(
+                    viewModel = homeViewModel,
+                    currentStreak = currentStreak,
+                    onOpenStreak = { navController.navigate(Screen.Streak.route) }
+                )
                 Screen.Stats -> StatsScreen(viewModel = statsViewModel)
-                Screen.Streak -> StreakScreen(viewModel = statsViewModel)
-                Screen.Home -> HomeScreen(viewModel = homeViewModel)
                 Screen.Settings -> SettingsScreen(viewModel = settingsViewModel)
-                Screen.About -> AboutScreen()
-                else -> HomeScreen(viewModel = homeViewModel)
+                else -> HomeScreen(
+                    viewModel = homeViewModel,
+                    currentStreak = currentStreak,
+                    onOpenStreak = { navController.navigate(Screen.Streak.route) }
+                )
             }
         }
     }
