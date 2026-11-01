@@ -26,11 +26,13 @@ android {
     namespace = "com.mitalipurohit.blinkwell"
     compileSdk = 35
 
+    val ciVersionCode = System.getenv("GITHUB_RUN_NUMBER")?.toIntOrNull() ?: 1
+
     defaultConfig {
         applicationId = "com.mitalipurohit.blinkwell"
         minSdk = 24
         targetSdk = 35
-        versionCode = 1
+        versionCode = ciVersionCode
         versionName = "1.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -40,6 +42,18 @@ android {
 
         buildConfigField("String", "SUPABASE_URL", "\"$supabaseUrl\"")
         buildConfigField("String", "SUPABASE_ANON_KEY", "\"$supabaseAnonKey\"")
+    }
+
+    signingConfigs {
+        getByName("debug") {
+            val debugKeystoreFile = file("debug.keystore")
+            if (debugKeystoreFile.exists()) {
+                storeFile = debugKeystoreFile
+                storePassword = "android"
+                keyAlias = "androiddebugkey"
+                keyPassword = "android"
+            }
+        }
     }
 
     buildTypes {
@@ -56,6 +70,7 @@ android {
             isMinifyEnabled = false
             applicationIdSuffix = ".debug"
             isDebuggable = true
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
 

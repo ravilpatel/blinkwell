@@ -14,6 +14,7 @@ android/local.properties
 *.apk
 *.aab
 *.keystore
+!android/app/debug.keystore
 
 # Node & Next.js
 dashboard/node_modules/
