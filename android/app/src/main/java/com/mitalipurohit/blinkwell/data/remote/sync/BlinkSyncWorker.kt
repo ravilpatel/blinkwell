@@ -16,7 +16,10 @@ import com.mitalipurohit.blinkwell.data.remote.model.BlinkMinuteLogRemote
 import com.mitalipurohit.blinkwell.data.remote.model.BlinkSessionRemote
 import com.mitalipurohit.blinkwell.data.remote.model.ProfileRemote
 import io.github.jan.supabase.postgrest.postgrest
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -56,20 +59,27 @@ class BlinkSyncWorker(
         }
 
         fun triggerOneTimeSync(context: Context) {
-            Log.d(TAG, "Triggering immediate one-time sync request...")
-            val constraints = Constraints.Builder()
-                .setRequiredNetworkType(NetworkType.CONNECTED)
-                .build()
+            CoroutineScope(Dispatchers.IO).launch {
+                val hasConsent = BlinkWellApp.settingsRepository.researchConsent.first()
+                if (!hasConsent) {
+                    Log.d(TAG, "Skip triggerOneTimeSync: User has not enabled research consent.")
+                    return@launch
+                }
+                Log.d(TAG, "Triggering immediate one-time sync request...")
+                val constraints = Constraints.Builder()
+                    .setRequiredNetworkType(NetworkType.CONNECTED)
+                    .build()
 
-            val syncRequest = OneTimeWorkRequestBuilder<BlinkSyncWorker>()
-                .setConstraints(constraints)
-                .build()
+                val syncRequest = OneTimeWorkRequestBuilder<BlinkSyncWorker>()
+                    .setConstraints(constraints)
+                    .build()
 
-            WorkManager.getInstance(context).enqueueUniqueWork(
-                UNIQUE_ONE_TIME_WORK_NAME,
-                ExistingWorkPolicy.REPLACE,
-                syncRequest
-            )
+                WorkManager.getInstance(context).enqueueUniqueWork(
+                    UNIQUE_ONE_TIME_WORK_NAME,
+                    ExistingWorkPolicy.REPLACE,
+                    syncRequest
+                )
+            }
         }
     }
 
@@ -114,6 +124,7 @@ class BlinkSyncWorker(
                         cohortArm = cohortArm
                     )
                 )
+                BlinkWellApp.preferenceManager.setDeviceRegistered(true)
                 Log.d(TAG, "Profile successfully synced.")
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to upsert user profile in Supabase: ${e.message}", e)

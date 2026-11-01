@@ -12,7 +12,7 @@ import kotlinx.coroutines.launch
 data class OnboardingUiState(
     val currentStep: Int = 0,
     val monitorConsent: Boolean = true,
-    val researchConsent: Boolean = true,
+    val researchConsent: Boolean = false,
     val cohortArm: String = "software_engineer", // "software_engineer" | "student" | "general"
     val selectedMode: String = "burst", // "burst" (default) or "monitoring"
     val isCompleting: Boolean = false

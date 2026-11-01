@@ -10,6 +10,7 @@ import com.mitalipurohit.blinkwell.service.BlinkMonitorService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 data class SettingsUiState(
@@ -18,7 +19,7 @@ data class SettingsUiState(
     val monitoringMode: String = "background",
     val samplingMode: String = "duty_cycle",
     val alertsEnabled: Boolean = true,
-    val researchConsent: Boolean = true,
+    val researchConsent: Boolean = false,
     val selectedLanguage: String = "system",
     val batteryGuardEnabled: Boolean = true,
     val batteryGuardThreshold: Int = 25
@@ -123,12 +124,35 @@ class SettingsViewModel(
                 } catch (ignored: Exception) {
                 }
                 com.mitalipurohit.blinkwell.data.remote.sync.BlinkSyncWorker.triggerOneTimeSync(BlinkWellApp.instance)
+            } else {
+                try {
+                    if (com.mitalipurohit.blinkwell.data.remote.SupabaseClientProvider.isConfigured()) {
+                        val session = com.mitalipurohit.blinkwell.data.remote.SupabaseClientProvider.auth.currentSessionOrNull()
+                        val uid = session?.user?.id
+                        if (uid != null) {
+                            val cohortArm = settingsRepository.cohortArm.first()
+                            com.mitalipurohit.blinkwell.data.remote.SupabaseClientProvider.postgrest["profiles"].upsert(
+                                com.mitalipurohit.blinkwell.data.remote.model.ProfileRemote(
+                                    id = uid,
+                                    researchConsent = false,
+                                    cohortArm = cohortArm
+                                )
+                            )
+                        }
+                    }
+                } catch (ignored: Exception) {
+                }
+                androidx.work.WorkManager.getInstance(BlinkWellApp.instance).cancelUniqueWork("BlinkWellOneTimeSync")
             }
         }
     }
 
     fun triggerManualSync() {
-        com.mitalipurohit.blinkwell.data.remote.sync.BlinkSyncWorker.triggerOneTimeSync(BlinkWellApp.instance)
+        viewModelScope.launch {
+            if (settingsRepository.researchConsent.first()) {
+                com.mitalipurohit.blinkwell.data.remote.sync.BlinkSyncWorker.triggerOneTimeSync(BlinkWellApp.instance)
+            }
+        }
     }
 
     fun setSelectedLanguage(lang: String) {

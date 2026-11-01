@@ -62,7 +62,7 @@ class PreferenceManager(private val context: Context) {
     }
 
     val researchConsent: Flow<Boolean> = context.dataStore.data.map { preferences ->
-        preferences[KEY_RESEARCH_CONSENT] ?: true
+        preferences[KEY_RESEARCH_CONSENT] ?: false
     }
 
     val cohortArm: Flow<String> = context.dataStore.data.map { preferences ->
