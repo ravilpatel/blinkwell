@@ -195,7 +195,12 @@ class SettingsViewModel(
 
             if (SupabaseClientProvider.isConfigured()) {
                 try {
-                    val uid = SupabaseClientProvider.ensureAnonymousAuth()
+                    val uid = try {
+                        SupabaseClientProvider.ensureAnonymousAuth()
+                    } catch (e: Exception) {
+                        Log.w("SettingsViewModel", "Anonymous auth not available or failed: ${e.message}")
+                        null
+                    }
                     val feedbackRemote = FeedbackRemote(
                         userId = uid,
                         usageDuration = usageDuration,
@@ -205,10 +210,12 @@ class SettingsViewModel(
                         comments = comments.ifBlank { null }
                     )
                     SupabaseClientProvider.postgrest["feedback"].insert(feedbackRemote)
-                    Log.d("SettingsViewModel", "Feedback successfully posted to Supabase: $feedbackRemote")
+                    Log.i("SettingsViewModel", "Feedback successfully posted to Supabase: $feedbackRemote")
                 } catch (e: Exception) {
-                    Log.e("SettingsViewModel", "Failed to sync feedback to Supabase", e)
+                    Log.e("SettingsViewModel", "Failed to sync feedback to Supabase: ${e.message}", e)
                 }
+            } else {
+                Log.w("SettingsViewModel", "Supabase is not configured (URL=${com.mitalipurohit.blinkwell.BuildConfig.SUPABASE_URL}). Feedback saved locally only. Please set SUPABASE_URL and SUPABASE_ANON_KEY in local.properties.")
             }
         }
     }

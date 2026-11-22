@@ -16,8 +16,8 @@ object SupabaseClientProvider {
     private const val TAG = "SupabaseClientProvider"
 
     fun isConfigured(): Boolean {
-        val url = BuildConfig.SUPABASE_URL
-        val key = BuildConfig.SUPABASE_ANON_KEY
+        val url = BuildConfig.SUPABASE_URL.trim()
+        val key = BuildConfig.SUPABASE_ANON_KEY.trim()
         return url.isNotBlank() && 
                !url.contains("placeholder") && 
                key.isNotBlank() && 
@@ -26,8 +26,8 @@ object SupabaseClientProvider {
 
     val client: SupabaseClient by lazy {
         createSupabaseClient(
-            supabaseUrl = BuildConfig.SUPABASE_URL,
-            supabaseKey = BuildConfig.SUPABASE_ANON_KEY
+            supabaseUrl = BuildConfig.SUPABASE_URL.trim(),
+            supabaseKey = BuildConfig.SUPABASE_ANON_KEY.trim()
         ) {
             install(Auth)
             install(Postgrest)

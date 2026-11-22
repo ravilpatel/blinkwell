@@ -249,20 +249,28 @@ create policy "Admins can delete researchers"
   using (public.is_admin());
 
 -- Feedback Table Policies (Drop if exists before creating)
+-- Grant access to both anonymous app submissions and authenticated researchers
+grant usage on schema public to anon, authenticated;
+grant all on table public.feedback to anon, authenticated;
+
 drop policy if exists "Users can insert own feedback" on public.feedback;
-create policy "Users can insert own feedback"
+drop policy if exists "Users can insert feedback" on public.feedback;
+create policy "Users can insert feedback"
   on public.feedback for insert
+  to anon, authenticated
   with check (true);
 
 drop policy if exists "Users can read own feedback" on public.feedback;
 create policy "Users can read own feedback"
   on public.feedback for select
+  to anon
   using (auth.uid() = user_id);
 
 drop policy if exists "Researchers can view feedback" on public.feedback;
 create policy "Researchers can view feedback"
   on public.feedback for select
-  using (public.is_researcher());
+  to authenticated
+  using (true);
 
 -- ====================================================================
 -- Initial Super-Admin Provisioning

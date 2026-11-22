@@ -9,9 +9,7 @@ data class ProfileRemote(
     @SerialName("research_consent")
     val researchConsent: Boolean = false,
     @SerialName("cohort_arm")
-    val cohortArm: String = "general",
-    @SerialName("created_at")
-    val createdAt: String? = null
+    val cohortArm: String = "general"
 )
 
 @Serializable
@@ -44,7 +42,7 @@ data class BlinkMinuteLogRemote(
 
 @Serializable
 data class FeedbackRemote(
-    val id: String? = null,
+    val id: String = java.util.UUID.randomUUID().toString(),
     @SerialName("user_id")
     val userId: String? = null,
     @SerialName("usage_duration")
@@ -55,7 +53,5 @@ data class FeedbackRemote(
     val reminderComfort: String,
     @SerialName("preferred_mode")
     val preferredMode: String,
-    val comments: String? = null,
-    @SerialName("created_at")
-    val createdAt: String? = null
+    val comments: String? = null
 )
