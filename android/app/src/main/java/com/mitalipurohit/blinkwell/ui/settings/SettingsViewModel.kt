@@ -1,12 +1,16 @@
 package com.mitalipurohit.blinkwell.ui.settings
 
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mitalipurohit.blinkwell.BlinkWellApp
+import com.mitalipurohit.blinkwell.data.remote.SupabaseClientProvider
+import com.mitalipurohit.blinkwell.data.remote.model.FeedbackRemote
 import com.mitalipurohit.blinkwell.data.repository.BlinkRepository
 import com.mitalipurohit.blinkwell.data.repository.SettingsRepository
 import com.mitalipurohit.blinkwell.service.BlinkMonitorService
+import io.github.jan.supabase.postgrest.postgrest
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -170,6 +174,42 @@ class SettingsViewModel(
     fun setBatteryGuardThreshold(threshold: Int) {
         viewModelScope.launch {
             settingsRepository.setBatteryGuardThreshold(threshold)
+        }
+    }
+
+    fun submitFeedback(
+        usageDuration: String,
+        comfortImprovement: String,
+        reminderComfort: String,
+        preferredMode: String,
+        comments: String
+    ) {
+        viewModelScope.launch {
+            settingsRepository.saveFeedback(
+                usageDuration = usageDuration,
+                comfortImprovement = comfortImprovement,
+                reminderComfort = reminderComfort,
+                preferredMode = preferredMode,
+                comments = comments
+            )
+
+            if (SupabaseClientProvider.isConfigured()) {
+                try {
+                    val uid = SupabaseClientProvider.ensureAnonymousAuth()
+                    val feedbackRemote = FeedbackRemote(
+                        userId = uid,
+                        usageDuration = usageDuration,
+                        comfortImprovement = comfortImprovement,
+                        reminderComfort = reminderComfort,
+                        preferredMode = preferredMode,
+                        comments = comments.ifBlank { null }
+                    )
+                    SupabaseClientProvider.postgrest["feedback"].insert(feedbackRemote)
+                    Log.d("SettingsViewModel", "Feedback successfully posted to Supabase: $feedbackRemote")
+                } catch (e: Exception) {
+                    Log.e("SettingsViewModel", "Failed to sync feedback to Supabase", e)
+                }
+            }
         }
     }
 

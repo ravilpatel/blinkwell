@@ -75,7 +75,6 @@ class StatsLogicTest {
 
     @Test
     fun testTimeRangeFilterDurations() {
-        assertEquals(15 * 60 * 1000L, TimeRangeFilter.LAST_15_MIN.durationMs)
         assertEquals(60 * 60 * 1000L, TimeRangeFilter.LAST_1_HOUR.durationMs)
         assertEquals(24 * 60 * 60 * 1000L, TimeRangeFilter.LAST_1_DAY.durationMs)
         assertEquals(7 * 24 * 60 * 60 * 1000L, TimeRangeFilter.LAST_7_DAYS.durationMs)

@@ -4,6 +4,11 @@
 -keep class com.google.mlkit.** { *; }
 -dontwarn com.google.mlkit.**
 
+# Keep MediaPipe Tasks Vision components
+-keep class com.google.mediapipe.tasks.** { *; }
+-keep class com.google.mediapipe.framework.** { *; }
+-dontwarn com.google.mediapipe.**
+
 # Keep Supabase & Ktor serialization classes
 -keepattributes *Annotation*,Signature,InnerClasses,EnclosingMethod
 -keepclassmembers class * {

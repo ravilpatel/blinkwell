@@ -24,6 +24,21 @@ class PreferenceManager(private val context: Context) {
         val KEY_ALERTS_ENABLED = booleanPreferencesKey("alerts_enabled")
         val KEY_RESEARCH_CONSENT = booleanPreferencesKey("research_consent")
         val KEY_COHORT_ARM = stringPreferencesKey("cohort_arm") // "software_engineer" | "student" | "general"
+        val KEY_USER_AGE = stringPreferencesKey("user_age")
+        val KEY_WEARS_GLASSES = stringPreferencesKey("wears_glasses")
+        val KEY_OCCUPATION = stringPreferencesKey("occupation")
+        val KEY_OCCUPATION_OTHER = stringPreferencesKey("occupation_other")
+        val KEY_IS_COMPUTER_BASED = booleanPreferencesKey("is_computer_based")
+        val KEY_ENVIRONMENT = stringPreferencesKey("environment")
+        val KEY_WORKING_HOURS = stringPreferencesKey("working_hours")
+        val KEY_MEDICATION = stringPreferencesKey("medication")
+        val KEY_APP_REASONS = stringPreferencesKey("app_reasons")
+        val KEY_FEEDBACK_USAGE_DURATION = stringPreferencesKey("feedback_usage_duration")
+        val KEY_FEEDBACK_COMFORT = stringPreferencesKey("feedback_comfort")
+        val KEY_FEEDBACK_REMINDERS = stringPreferencesKey("feedback_reminders")
+        val KEY_FEEDBACK_PREFERRED_MODE = stringPreferencesKey("feedback_preferred_mode")
+        val KEY_FEEDBACK_COMMENTS = stringPreferencesKey("feedback_comments")
+        val KEY_FEEDBACK_SUBMITTED_TIME = stringPreferencesKey("feedback_submitted_time")
         val KEY_SELECTED_LANGUAGE = stringPreferencesKey("selected_language") // "system", "en", "hi"
         val KEY_ACTIVE_SESSION_ID = stringPreferencesKey("active_session_id")
         val KEY_DEVICE_REGISTERED = booleanPreferencesKey("device_registered")
@@ -67,6 +82,42 @@ class PreferenceManager(private val context: Context) {
 
     val cohortArm: Flow<String> = context.dataStore.data.map { preferences ->
         preferences[KEY_COHORT_ARM] ?: "software_engineer"
+    }
+
+    val userAge: Flow<String> = context.dataStore.data.map { preferences ->
+        preferences[KEY_USER_AGE] ?: "26-40"
+    }
+
+    val wearsGlasses: Flow<String> = context.dataStore.data.map { preferences ->
+        preferences[KEY_WEARS_GLASSES] ?: "none"
+    }
+
+    val occupation: Flow<String> = context.dataStore.data.map { preferences ->
+        preferences[KEY_OCCUPATION] ?: "software_engineer"
+    }
+
+    val occupationOther: Flow<String> = context.dataStore.data.map { preferences ->
+        preferences[KEY_OCCUPATION_OTHER] ?: ""
+    }
+
+    val isComputerBased: Flow<Boolean> = context.dataStore.data.map { preferences ->
+        preferences[KEY_IS_COMPUTER_BASED] ?: true
+    }
+
+    val environment: Flow<String> = context.dataStore.data.map { preferences ->
+        preferences[KEY_ENVIRONMENT] ?: "ac"
+    }
+
+    val workingHours: Flow<String> = context.dataStore.data.map { preferences ->
+        preferences[KEY_WORKING_HOURS] ?: "6-8"
+    }
+
+    val medication: Flow<String> = context.dataStore.data.map { preferences ->
+        preferences[KEY_MEDICATION] ?: "none"
+    }
+
+    val appReasons: Flow<String> = context.dataStore.data.map { preferences ->
+        preferences[KEY_APP_REASONS] ?: "eye_strain"
     }
 
     val selectedLanguage: Flow<String> = context.dataStore.data.map { preferences ->
@@ -150,6 +201,47 @@ class PreferenceManager(private val context: Context) {
     suspend fun setCohortArm(arm: String) {
         context.dataStore.edit { preferences ->
             preferences[KEY_COHORT_ARM] = arm
+        }
+    }
+
+    suspend fun setUserProfile(
+        age: String,
+        glasses: String,
+        occupation: String,
+        occupationOther: String,
+        isComputerBased: Boolean,
+        environment: String,
+        workingHours: String,
+        medication: String,
+        reasons: String
+    ) {
+        context.dataStore.edit { preferences ->
+            preferences[KEY_USER_AGE] = age
+            preferences[KEY_WEARS_GLASSES] = glasses
+            preferences[KEY_OCCUPATION] = occupation
+            preferences[KEY_OCCUPATION_OTHER] = occupationOther
+            preferences[KEY_IS_COMPUTER_BASED] = isComputerBased
+            preferences[KEY_ENVIRONMENT] = environment
+            preferences[KEY_WORKING_HOURS] = workingHours
+            preferences[KEY_MEDICATION] = medication
+            preferences[KEY_APP_REASONS] = reasons
+        }
+    }
+
+    suspend fun saveFeedback(
+        usageDuration: String,
+        comfortImprovement: String,
+        reminderComfort: String,
+        preferredMode: String,
+        comments: String
+    ) {
+        context.dataStore.edit { preferences ->
+            preferences[KEY_FEEDBACK_USAGE_DURATION] = usageDuration
+            preferences[KEY_FEEDBACK_COMFORT] = comfortImprovement
+            preferences[KEY_FEEDBACK_REMINDERS] = reminderComfort
+            preferences[KEY_FEEDBACK_PREFERRED_MODE] = preferredMode
+            preferences[KEY_FEEDBACK_COMMENTS] = comments
+            preferences[KEY_FEEDBACK_SUBMITTED_TIME] = System.currentTimeMillis().toString()
         }
     }
 

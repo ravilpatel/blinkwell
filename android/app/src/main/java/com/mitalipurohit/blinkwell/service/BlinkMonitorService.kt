@@ -191,7 +191,7 @@ class BlinkMonitorService : Service(), LifecycleOwner {
                 while (isActive && isRunning && elapsedActiveSeconds < 300L) {
                     delay(1000L)
                     if (isScreenUnlockedAndActive) {
-                        val hasFaceRecently = blinkDetector.hasSeenFaceRecently(5000L)
+                        val hasFaceRecently = blinkDetector.hasSeenFaceRecently(8000L)
                         if (hasFaceRecently) {
                             noFaceDurationSeconds = 0L
                             if (!isCameraBound) {
@@ -210,8 +210,8 @@ class BlinkMonitorService : Service(), LifecycleOwner {
                             }
                         } else {
                             noFaceDurationSeconds++
-                            // Privacy & battery rule: If no face in 5s, unbind camera and pause active countdown
-                            if (noFaceDurationSeconds >= 5L && isCameraBound) {
+                            // Privacy & battery rule: If no face in 10s, unbind camera and pause active countdown
+                            if (noFaceDurationSeconds >= 10L && isCameraBound) {
                                 unbindCamera()
                                 blinkDetector.markFaceLost()
                             } else if (noFaceDurationSeconds % 10L == 0L && !isCameraBound) {
@@ -481,10 +481,10 @@ class BlinkMonitorService : Service(), LifecycleOwner {
                     .requireLensFacing(CameraSelector.LENS_FACING_FRONT)
                     .build()
 
-                blinkAnalyzer = BlinkAnalyzer(blinkDetector)
+                blinkAnalyzer = BlinkAnalyzer(this, blinkDetector)
 
                 val imageAnalysis = ImageAnalysis.Builder()
-                    .setTargetResolution(Size(480, 360))
+                    .setTargetResolution(Size(640, 480))
                     .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                     .build()
 

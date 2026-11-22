@@ -56,6 +56,10 @@ android {
         }
     }
 
+    testOptions {
+        unitTests.isReturnDefaultValues = true
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true
@@ -95,6 +99,10 @@ android {
             excludes += "META-INF/io.netty.versions.properties"
         }
     }
+
+    androidResources {
+        noCompress += "task"
+    }
 }
 
 dependencies {
@@ -123,6 +131,9 @@ dependencies {
 
     // ML Kit Face Detection
     implementation(libs.google.mlkit.face.detection)
+
+    // MediaPipe Tasks Vision
+    implementation(libs.google.mediapipe.tasks.vision)
 
     // Room Database
     implementation(libs.androidx.room.runtime)
@@ -154,6 +165,7 @@ dependencies {
 
     // Testing
     testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))

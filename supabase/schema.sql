@@ -48,12 +48,26 @@ create table if not exists public.researchers (
   created_at timestamptz default now() not null
 );
 
+-- 5. User Feedback & Experience Ratings Table
+create table if not exists public.feedback (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users(id) on delete set null,
+  usage_duration text not null,
+  comfort_improvement text not null,
+  reminder_comfort text not null,
+  preferred_mode text not null,
+  comments text,
+  created_at timestamptz default now() not null
+);
+
 -- Indexes for lightning-fast queries
 create index if not exists idx_sessions_user_id on public.blink_sessions(user_id);
 create index if not exists idx_sessions_started_at on public.blink_sessions(started_at desc);
 create index if not exists idx_minute_log_session_id on public.blink_minute_log(session_id);
 create index if not exists idx_minute_log_timestamp on public.blink_minute_log(minute_timestamp desc);
 create index if not exists idx_researchers_email on public.researchers(email);
+create index if not exists idx_feedback_created_at on public.feedback(created_at desc);
+create index if not exists idx_feedback_user_id on public.feedback(user_id);
 
 -- ====================================================================
 -- Enable Supabase Realtime (Safe duplicate check)
@@ -82,6 +96,14 @@ exception
   when others then null;
 end $$;
 
+do $$
+begin
+  alter publication supabase_realtime add table public.feedback;
+exception
+  when duplicate_object then null;
+  when others then null;
+end $$;
+
 -- ====================================================================
 -- Row Level Security (RLS) Policies
 -- ====================================================================
@@ -90,6 +112,7 @@ alter table public.profiles enable row level security;
 alter table public.blink_sessions enable row level security;
 alter table public.blink_minute_log enable row level security;
 alter table public.researchers enable row level security;
+alter table public.feedback enable row level security;
 
 -- Helper functions to check roles
 create or replace function public.is_researcher()
@@ -224,6 +247,22 @@ drop policy if exists "Admins can delete researchers" on public.researchers;
 create policy "Admins can delete researchers"
   on public.researchers for delete
   using (public.is_admin());
+
+-- Feedback Table Policies (Drop if exists before creating)
+drop policy if exists "Users can insert own feedback" on public.feedback;
+create policy "Users can insert own feedback"
+  on public.feedback for insert
+  with check (true);
+
+drop policy if exists "Users can read own feedback" on public.feedback;
+create policy "Users can read own feedback"
+  on public.feedback for select
+  using (auth.uid() = user_id);
+
+drop policy if exists "Researchers can view feedback" on public.feedback;
+create policy "Researchers can view feedback"
+  on public.feedback for select
+  using (public.is_researcher());
 
 -- ====================================================================
 -- Initial Super-Admin Provisioning

@@ -10,9 +10,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -22,10 +24,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.foundation.Image
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.HelpOutline
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.OpenInNew
+import androidx.compose.material.icons.filled.RateReview
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.ui.res.painterResource
 import androidx.compose.material3.Button
@@ -36,6 +40,8 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Slider
@@ -81,6 +87,7 @@ fun SettingsScreen(
     val context = LocalContext.current
     var showBurstHelpDialog by remember { mutableStateOf(false) }
     var showMonitoringHelpDialog by remember { mutableStateOf(false) }
+    var showFeedbackDialog by remember { mutableStateOf(false) }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -367,6 +374,72 @@ fun SettingsScreen(
                 }
             }
 
+            // Section: Feedback
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    text = "Feedback",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = TealPrimary
+                )
+
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { showFeedbackDialog = true },
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    shape = RoundedCornerShape(20.dp),
+                    border = BorderStroke(1.dp, BorderColor)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(18.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Surface(
+                            shape = CircleShape,
+                            color = TealPrimary.copy(alpha = 0.12f),
+                            modifier = Modifier.size(46.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    imageVector = Icons.Default.RateReview,
+                                    contentDescription = "Feedback",
+                                    tint = TealPrimary,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.width(14.dp))
+
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "Share Your Feedback",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = "Tell us how BlinkWell is helping your eyes & suggest improvements",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                lineHeight = 16.sp
+                            )
+                        }
+
+                        Icon(
+                            imageVector = Icons.Default.ChevronRight,
+                            contentDescription = "Give Feedback",
+                            tint = TealPrimary,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+                }
+            }
+
             // Section 4: Merged About BlinkWell & Legal
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
@@ -505,6 +578,21 @@ fun SettingsScreen(
 
         if (showMonitoringHelpDialog) {
             MonitoringModeInfoDialog(onDismiss = { showMonitoringHelpDialog = false })
+        }
+
+        if (showFeedbackDialog) {
+            FeedbackDialog(
+                onDismiss = { showFeedbackDialog = false },
+                onSubmit = { duration, comfort, reminders, mode, comments ->
+                    viewModel.submitFeedback(
+                        usageDuration = duration,
+                        comfortImprovement = comfort,
+                        reminderComfort = reminders,
+                        preferredMode = mode,
+                        comments = comments
+                    )
+                }
+            )
         }
     }
 }
@@ -821,6 +909,382 @@ private fun ModeHelpPoint(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 lineHeight = 17.sp
             )
+        }
+    }
+}
+
+@Composable
+fun FeedbackDialog(
+    onDismiss: () -> Unit,
+    onSubmit: (usageDuration: String, comfort: String, reminders: String, mode: String, comments: String) -> Unit
+) {
+    var usageDuration by remember { mutableStateOf("First day / Just started") }
+    var comfortImprovement by remember { mutableStateOf("🌟 Significant (eyes feel fresher & less dry)") }
+    var reminderComfort by remember { mutableStateOf("✨ Very gentle & well-timed") }
+    var preferredMode by remember { mutableStateOf("⏱️ 5-Minute Eye Check (Burst Mode)") }
+    var comments by remember { mutableStateOf("") }
+    var isSubmitted by remember { mutableStateOf(false) }
+
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        Surface(
+            shape = RoundedCornerShape(24.dp),
+            color = MaterialTheme.colorScheme.surface,
+            border = BorderStroke(1.dp, BorderColor),
+            modifier = Modifier
+                .fillMaxWidth(0.92f)
+                .fillMaxHeight(0.90f)
+                .padding(vertical = 16.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(20.dp)
+                    .verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.Start
+            ) {
+                // Header Row
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Surface(
+                            shape = CircleShape,
+                            color = TealPrimary.copy(alpha = 0.12f),
+                            modifier = Modifier.size(36.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    imageVector = Icons.Default.RateReview,
+                                    contentDescription = null,
+                                    tint = TealPrimary,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        }
+                        Text(
+                            text = "Share Your Feedback",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.ExtraBold
+                        )
+                    }
+
+                    IconButton(onClick = onDismiss) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Close",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+
+                if (isSubmitted) {
+                    Spacer(modifier = Modifier.height(32.dp))
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Surface(
+                            shape = CircleShape,
+                            color = AccentEmerald.copy(alpha = 0.15f),
+                            modifier = Modifier.size(64.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Text("🎉", fontSize = 28.sp)
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Text(
+                            text = "Thank You for Your Feedback!",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Text(
+                            text = "Your insights help our optometric researchers and developers continuously improve BlinkWell.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        )
+
+                        Spacer(modifier = Modifier.height(28.dp))
+
+                        Button(
+                            onClick = onDismiss,
+                            colors = ButtonDefaults.buttonColors(containerColor = TealPrimary),
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("Done")
+                        }
+                    }
+                } else {
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text(
+                        text = "We'd love to hear how BlinkWell is helping your eyes and daily screen comfort.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    // Question 1: How long have you been using the application?
+                    Text(
+                        text = "1. How long have you been using the application?",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    val durationOptions = listOf(
+                        "First day / Just started",
+                        "2 – 6 days (1 week)",
+                        "1 – 3 weeks",
+                        "1 month or more"
+                    )
+                    durationOptions.forEach { opt ->
+                        val isSelected = usageDuration == opt
+                        Surface(
+                            shape = RoundedCornerShape(12.dp),
+                            color = if (isSelected) TealPrimary.copy(alpha = 0.10f) else MaterialTheme.colorScheme.surface,
+                            border = BorderStroke(if (isSelected) 2.dp else 1.dp, if (isSelected) TealPrimary else BorderColor),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { usageDuration = opt }
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                RadioButton(
+                                    selected = isSelected,
+                                    onClick = { usageDuration = opt },
+                                    colors = RadioButtonDefaults.colors(selectedColor = TealPrimary)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = opt,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+                                    color = if (isSelected) TealPrimary else MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(6.dp))
+                    }
+
+                    Spacer(modifier = Modifier.height(18.dp))
+
+                    // Question 2: Eye comfort improvement
+                    Text(
+                        text = "2. How noticeable is your eye comfort improvement?",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    val comfortOptions = listOf(
+                        "🌟 Significant (eyes feel fresher & less dry)",
+                        "👍 Moderate (blinking more frequently)",
+                        "😐 Subtle / Little change so far",
+                        "⏳ Too early to tell"
+                    )
+                    comfortOptions.forEach { opt ->
+                        val isSelected = comfortImprovement == opt
+                        Surface(
+                            shape = RoundedCornerShape(12.dp),
+                            color = if (isSelected) TealPrimary.copy(alpha = 0.10f) else MaterialTheme.colorScheme.surface,
+                            border = BorderStroke(if (isSelected) 2.dp else 1.dp, if (isSelected) TealPrimary else BorderColor),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { comfortImprovement = opt }
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                RadioButton(
+                                    selected = isSelected,
+                                    onClick = { comfortImprovement = opt },
+                                    colors = RadioButtonDefaults.colors(selectedColor = TealPrimary)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = opt,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+                                    color = if (isSelected) TealPrimary else MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(6.dp))
+                    }
+
+                    Spacer(modifier = Modifier.height(18.dp))
+
+                    // Question 3: Reminders comfort
+                    Text(
+                        text = "3. How comfortable are the blink reminders?",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    val reminderOptions = listOf(
+                        "✨ Very gentle & well-timed",
+                        "👍 Helpful & balanced",
+                        "😐 Neutral / Okay",
+                        "⚠️ Too frequent or distracting"
+                    )
+                    reminderOptions.forEach { opt ->
+                        val isSelected = reminderComfort == opt
+                        Surface(
+                            shape = RoundedCornerShape(12.dp),
+                            color = if (isSelected) TealPrimary.copy(alpha = 0.10f) else MaterialTheme.colorScheme.surface,
+                            border = BorderStroke(if (isSelected) 2.dp else 1.dp, if (isSelected) TealPrimary else BorderColor),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { reminderComfort = opt }
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                RadioButton(
+                                    selected = isSelected,
+                                    onClick = { reminderComfort = opt },
+                                    colors = RadioButtonDefaults.colors(selectedColor = TealPrimary)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = opt,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+                                    color = if (isSelected) TealPrimary else MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(6.dp))
+                    }
+
+                    Spacer(modifier = Modifier.height(18.dp))
+
+                    // Question 4: Preferred mode
+                    Text(
+                        text = "4. Which mode do you find most useful?",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    val modeOptions = listOf(
+                        "⏱️ 5-Minute Eye Check (Burst Mode)",
+                        "🔄 All-Day Monitoring Mode",
+                        "⚖️ Both equally"
+                    )
+                    modeOptions.forEach { opt ->
+                        val isSelected = preferredMode == opt
+                        Surface(
+                            shape = RoundedCornerShape(12.dp),
+                            color = if (isSelected) TealPrimary.copy(alpha = 0.10f) else MaterialTheme.colorScheme.surface,
+                            border = BorderStroke(if (isSelected) 2.dp else 1.dp, if (isSelected) TealPrimary else BorderColor),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { preferredMode = opt }
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                RadioButton(
+                                    selected = isSelected,
+                                    onClick = { preferredMode = opt },
+                                    colors = RadioButtonDefaults.colors(selectedColor = TealPrimary)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = opt,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+                                    color = if (isSelected) TealPrimary else MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(6.dp))
+                    }
+
+                    Spacer(modifier = Modifier.height(18.dp))
+
+                    // Question 5: Suggestions / Comments
+                    Text(
+                        text = "5. Any suggestions or feature requests?",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    OutlinedTextField(
+                        value = comments,
+                        onValueChange = { comments = it },
+                        placeholder = { Text("Tell us what you liked or how we can improve...") },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 100.dp),
+                        shape = RoundedCornerShape(14.dp),
+                        maxLines = 4
+                    )
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    // Action Buttons
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        OutlinedButton(
+                            onClick = onDismiss,
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text("Cancel")
+                        }
+
+                        Button(
+                            onClick = {
+                                onSubmit(
+                                    usageDuration,
+                                    comfortImprovement,
+                                    reminderComfort,
+                                    preferredMode,
+                                    comments
+                                )
+                                isSubmitted = true
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = TealPrimary),
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text("Submit")
+                        }
+                    }
+                }
+            }
         }
     }
 }

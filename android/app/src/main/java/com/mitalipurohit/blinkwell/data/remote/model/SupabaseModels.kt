@@ -41,3 +41,21 @@ data class BlinkMinuteLogRemote(
     val minuteTimestamp: String,
     val bpm: Double
 )
+
+@Serializable
+data class FeedbackRemote(
+    val id: String? = null,
+    @SerialName("user_id")
+    val userId: String? = null,
+    @SerialName("usage_duration")
+    val usageDuration: String,
+    @SerialName("comfort_improvement")
+    val comfortImprovement: String,
+    @SerialName("reminder_comfort")
+    val reminderComfort: String,
+    @SerialName("preferred_mode")
+    val preferredMode: String,
+    val comments: String? = null,
+    @SerialName("created_at")
+    val createdAt: String? = null
+)

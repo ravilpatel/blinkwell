@@ -13,6 +13,15 @@ class SettingsRepository(private val preferenceManager: PreferenceManager) {
     val alertsEnabled: Flow<Boolean> = preferenceManager.alertsEnabled
     val researchConsent: Flow<Boolean> = preferenceManager.researchConsent
     val cohortArm: Flow<String> = preferenceManager.cohortArm
+    val userAge: Flow<String> = preferenceManager.userAge
+    val wearsGlasses: Flow<String> = preferenceManager.wearsGlasses
+    val occupation: Flow<String> = preferenceManager.occupation
+    val occupationOther: Flow<String> = preferenceManager.occupationOther
+    val isComputerBased: Flow<Boolean> = preferenceManager.isComputerBased
+    val environment: Flow<String> = preferenceManager.environment
+    val workingHours: Flow<String> = preferenceManager.workingHours
+    val medication: Flow<String> = preferenceManager.medication
+    val appReasons: Flow<String> = preferenceManager.appReasons
     val selectedLanguage: Flow<String> = preferenceManager.selectedLanguage
     val activeSessionId: Flow<String?> = preferenceManager.activeSessionId
     val batteryGuardEnabled: Flow<Boolean> = preferenceManager.batteryGuardEnabled
@@ -58,6 +67,46 @@ class SettingsRepository(private val preferenceManager: PreferenceManager) {
 
     suspend fun setCohortArm(arm: String) {
         preferenceManager.setCohortArm(arm)
+    }
+
+    suspend fun setUserProfile(
+        age: String,
+        glasses: String,
+        occupation: String,
+        occupationOther: String,
+        isComputerBased: Boolean,
+        environment: String,
+        workingHours: String,
+        medication: String,
+        reasons: String
+    ) {
+        preferenceManager.setUserProfile(
+            age = age,
+            glasses = glasses,
+            occupation = occupation,
+            occupationOther = occupationOther,
+            isComputerBased = isComputerBased,
+            environment = environment,
+            workingHours = workingHours,
+            medication = medication,
+            reasons = reasons
+        )
+    }
+
+    suspend fun saveFeedback(
+        usageDuration: String,
+        comfortImprovement: String,
+        reminderComfort: String,
+        preferredMode: String,
+        comments: String
+    ) {
+        preferenceManager.saveFeedback(
+            usageDuration = usageDuration,
+            comfortImprovement = comfortImprovement,
+            reminderComfort = reminderComfort,
+            preferredMode = preferredMode,
+            comments = comments
+        )
     }
 
     suspend fun setSelectedLanguage(language: String) {

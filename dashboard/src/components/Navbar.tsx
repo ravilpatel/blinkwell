@@ -9,7 +9,8 @@ import {
   Activity, 
   FileText, 
   UserCheck, 
-  LogOut
+  LogOut,
+  MessageSquare
 } from 'lucide-react';
 
 export default function Navbar() {
@@ -41,6 +42,7 @@ export default function Navbar() {
   const navLinks = [
     { name: 'Overview', href: '/overview/', icon: Activity },
     { name: 'User Types', href: '/protocols/', icon: FileText },
+    { name: 'Feedback', href: '/feedback/', icon: MessageSquare },
     { name: 'Team & Permissions', href: '/team/', icon: UserCheck },
   ];
 

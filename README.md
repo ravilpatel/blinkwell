@@ -17,7 +17,6 @@ BlinkWell is a privacy-first, lightweight Android application that monitors your
   - **App-Only Mode:** Camera only runs while BlinkWell is actively open on screen (0% background CPU/battery footprint).
 - **Offline First:** Room DB stores all session history locally. Core features require no account and no internet.
 - **Multilingual:** Full support for **English** and **हिन्दी (Hindi)** with per-app language settings.
-- **Built entirely via GitHub Actions:** No local Android Studio needed — CI automatically compiles and packages debug APKs and signed release bundles.
 
 ---
 
@@ -26,8 +25,6 @@ BlinkWell is a privacy-first, lightweight Android application that monitors your
 ```
 BlinkWell/
 ├── .github/workflows/
-│   ├── android-build.yml      # CI debug APK compilation on push/PR
-│   ├── android-release.yml    # Release signed APK / AAB bundling
 │   ├── dashboard-deploy.yml   # Next.js researcher portal CI verification
 │   └── dashboard-pages.yml    # GitHub Pages static export & deployment
 ├── android/                   # Kotlin + Jetpack Compose Android app
@@ -82,40 +79,51 @@ The BlinkWell Research Portal has been redesigned for high-precision clinical er
 
 ---
 
-## 🚀 Building & Testing the App
+## 🚀 Building & Testing the App (Local USB Debugging)
 
-Since this project is configured to build without requiring a local Android Studio installation:
+This repository is configured for full local builds, automated testing, and direct USB device debugging without requiring GitHub Actions:
 
-1. Push your code to your GitHub repository:
-   ```bash
-   git add .
-   git commit -m "Update BlinkWell"
-   git push origin main
-   ```
-2. The **Android CI - Debug Build** workflow will automatically compile the APK.
+### 🛠️ Environment Prerequisites
+- **JDK 17** (`~/.local/share/jdk-17` or system Java 17)
+- **Android SDK** (`~/Android/Sdk`, with `platforms;android-35`, `build-tools;35.0.0`, `platform-tools/adb`)
+- Environment variables are automatically loaded by the runner or configured in `android/local.properties`.
 
-### 📲 Instant USB Testing (Direct from GitHub Actions CI)
+### 📲 One-Command Local Build & USB Testing
 
 No manual APK downloading, unzipping, or clicking through phone installer dialogs:
 
-1. Connect your Android phone to your PC via USB cable.
-2. Ensure **USB Debugging** is enabled in your phone's Developer Options.
-3. Run the one-command USB runner:
+1. Connect your Android phone to your PC via a USB cable.
+2. Ensure **USB Debugging** is enabled in your phone's Developer Options (*Settings > About Phone > Tap 'Build number' 7 times, then Settings > Developer Options > USB Debugging*).
+3. If prompted on your phone screen, check **Always allow from this computer** and tap **Allow**.
+4. Run the one-command local build, install, and runner:
    ```bash
    ./run-device.sh
    ```
 
 **What it does automatically:**
-- Self-bootstraps Google's official standalone `adb` if not installed on your system (zero root/sudo required).
-- Queries GitHub Actions and downloads the latest successful build artifact directly into a temporary cache.
+- Auto-detects local Java 17 and Android SDK environment.
+- Compiles the debug APK locally via Gradle (`./gradlew assembleDebug`).
+- Detects your USB-connected Android phone via ADB.
 - Streams and installs the APK to your phone in seconds (`adb install -r -d -g`).
 - Auto-grants camera and notification permissions so no phone popups interrupt testing.
 - Instantly launches BlinkWell on your screen and streams real-time blink detection logs to your terminal!
 
 **Useful Flags:**
-- `./run-device.sh -w`: Waits for a currently running CI build to complete, then deploys immediately.
-- `./run-device.sh -e`: **Ephemeral mode** — runs the test and automatically uninstalls the app when you stop (Ctrl+C), leaving zero footprint on your phone.
-- `./run-device.sh --apk <path>`: Deploys a specific local APK directly over USB.
+- `./run-device.sh`: Full local build + USB install + launch + live telemetry.
+- `./run-device.sh --test` (`-t`): Runs local unit tests (`./gradlew testDebugUnitTest`), then builds and installs.
+- `./run-device.sh --no-build`: Instantly installs existing compiled APK without recompiling.
+- `./run-device.sh -e` (`--ephemeral`): **Ephemeral mode** — runs the test and automatically uninstalls the app upon exiting (Ctrl+C), leaving zero footprint on your phone.
+- `./run-device.sh -c` (`--clean`): Runs `./gradlew clean` prior to compilation.
+- `./run-device.sh -r` (`--release`): Builds and installs the Release APK.
+- `./run-device.sh -s <serial>`: Targets a specific device serial if multiple USB devices are connected.
+- `./run-device.sh --apk <path>`: Deploys a specific custom APK directly over USB.
+
+### 🧪 Running Unit Tests Locally
+To run all automated JVM unit tests locally:
+```bash
+cd android
+./gradlew testDebugUnitTest
+```
 
 ---
 

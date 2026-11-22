@@ -24,13 +24,13 @@ class BlinkDetector(
         const val EYE_CLOSED_THRESHOLD = 0.40f
         const val EYE_OPEN_THRESHOLD = 0.60f
         const val DEFAULT_EYE_OPEN_BASELINE = 0.75f
-        const val MIN_EYE_OPEN_BASELINE = 0.45f
+        const val MIN_EYE_OPEN_BASELINE = 0.20f
         const val MAX_EYE_OPEN_BASELINE = 0.95f
-        const val MIN_BLINK_DURATION_MS = 60L
+        const val MIN_BLINK_DURATION_MS = 30L
         const val MAX_BLINK_DURATION_MS = 600L
         const val MIN_INTER_BLINK_INTERVAL_MS = 150L // Physiological refractory period
-        const val MAX_RELIABLE_HEAD_YAW_DEG = 35.0f
-        const val MAX_RELIABLE_HEAD_PITCH_DEG = 30.0f
+        const val MAX_RELIABLE_HEAD_YAW_DEG = 55.0f
+        const val MAX_RELIABLE_HEAD_PITCH_DEG = 55.0f
         const val WARMUP_PERIOD_MS = 30_000L // 30 seconds initial warmup
         const val ROLLING_WINDOW_MS = 60_000L // 60 seconds rolling window
         const val ALERT_SUSTAINED_DURATION_MS = 2 * 60 * 1000L // 2 consecutive minutes
@@ -195,7 +195,7 @@ class BlinkDetector(
         burstStartTimestamp = timestamp
         burstBlinkCount = 0
         burstHasFace = false
-        lastFaceSeenTimestamp = timestamp
+        lastFaceSeenTimestamp = 0L
         eyeState = EyeState.OPEN
         eyeClosedTimestamp = 0L
         lastBlinkTimestamp = 0L
@@ -239,10 +239,12 @@ class BlinkDetector(
             )
         }
 
-        val elapsedSeconds = if (burstStartTimestamp > 0L) {
+        val elapsedSeconds = if (scanDurationSeconds > 0.0) {
+            scanDurationSeconds
+        } else if (burstStartTimestamp > 0L) {
             ((System.currentTimeMillis() - burstStartTimestamp) / 1000.0).coerceIn(5.0, 90.0)
         } else {
-            scanDurationSeconds
+            20.0
         }
 
         val computedBpm = (burstBlinkCount * 60.0) / elapsedSeconds
@@ -335,20 +337,29 @@ class BlinkDetector(
         }
 
         // Single-eye fallback vs Bilateral evaluation
+        val minEye: Float
         val rawScore: Float
         val isWink: Boolean
 
         if (leftEyeProb != null && rightEyeProb != null) {
-            rawScore = (leftEyeProb + rightEyeProb) / 2.0f
-            val dynClosed = (eyeOpenBaseline * 0.45f).coerceIn(0.20f, 0.40f)
-            val dynOpen = (eyeOpenBaseline * 0.75f).coerceIn(0.45f, 0.60f)
-            // A wink occurs when one eye is closed while the other eye remains wide open
-            isWink = (leftEyeProb < dynClosed && rightEyeProb > dynOpen) ||
-                     (rightEyeProb < dynClosed && leftEyeProb > dynOpen)
+            minEye = Math.min(leftEyeProb, rightEyeProb)
+            val maxEye = Math.max(leftEyeProb, rightEyeProb)
+            val avgEye = (leftEyeProb + rightEyeProb) / 2.0f
+
+            // Fused bilateral score: prioritizes closure dip while preserving stability
+            rawScore = 0.6f * minEye + 0.4f * avgEye
+
+            // A wink is strictly a voluntary unilateral eye closure:
+            // One eye must be deeply shut (< 0.15) while the other remains wide open (> 0.75),
+            // with a massive asymmetry gap (> 0.60).
+            // Natural perspective differences at yaw 20-45 deg will never trigger this.
+            isWink = (minEye < 0.15f && maxEye > 0.75f && (maxEye - minEye) > 0.60f)
         } else if (leftEyeProb != null) {
+            minEye = leftEyeProb
             rawScore = leftEyeProb
             isWink = false
         } else if (rightEyeProb != null) {
+            minEye = rightEyeProb
             rawScore = rightEyeProb
             isWink = false
         } else {
@@ -368,21 +379,24 @@ class BlinkDetector(
         smoothedEyeScore = smoothed
         lastFrameTimestamp = timestamp
 
-        // Adapt baseline when eye is open and stable
-        if (eyeState == EyeState.OPEN && rawScore >= 0.45f && !isWink) {
-            eyeOpenBaseline = (eyeOpenBaseline * 0.95f + rawScore * 0.05f).coerceIn(MIN_EYE_OPEN_BASELINE, MAX_EYE_OPEN_BASELINE)
+        // Adapt baseline only when eye is confirmed open and stable (prevent dragging down during blinks)
+        if (eyeState == EyeState.OPEN && rawScore >= 0.28f && !isWink) {
+            eyeOpenBaseline = (eyeOpenBaseline * 0.92f + rawScore * 0.08f).coerceIn(MIN_EYE_OPEN_BASELINE, MAX_EYE_OPEN_BASELINE)
         }
 
-        val dynamicClosedThreshold = (eyeOpenBaseline * 0.45f).coerceIn(0.20f, 0.40f)
-        val dynamicOpenThreshold = (eyeOpenBaseline * 0.75f).coerceIn(0.45f, 0.60f)
+        val dynamicClosedThreshold = (eyeOpenBaseline * 0.45f).coerceIn(0.18f, 0.40f)
+        val dynamicOpenThreshold = (eyeOpenBaseline * 0.65f).coerceIn(0.25f, 0.55f)
+
+        val effectiveClosureScore = Math.min(smoothed, minEye)
+        val effectiveOpenScore = Math.max(smoothed, rawScore)
 
         var blinkCompleted = false
 
         when (eyeState) {
             EyeState.OPEN, EyeState.OPENING -> {
                 if (isWink) {
-                    // Suppress winks
-                } else if (smoothed < dynamicClosedThreshold) {
+                    // Suppress voluntary winks
+                } else if (effectiveClosureScore < dynamicClosedThreshold) {
                     // Refractory period check: suppress post-blink bounce/rebound artifacts
                     if ((timestamp - lastBlinkTimestamp) >= MIN_INTER_BLINK_INTERVAL_MS) {
                         eyeState = EyeState.CLOSED
@@ -393,11 +407,14 @@ class BlinkDetector(
             EyeState.CLOSED, EyeState.CLOSING -> {
                 if (isWink) {
                     eyeState = EyeState.OPEN
-                } else if (smoothed > dynamicOpenThreshold || rawScore > dynamicOpenThreshold) {
+                } else if (effectiveOpenScore > dynamicOpenThreshold) {
                     val duration = timestamp - eyeClosedTimestamp
                     if (duration in MIN_BLINK_DURATION_MS..MAX_BLINK_DURATION_MS) {
                         lastBlinkTimestamp = timestamp
                         blinkCompleted = true
+                        try {
+                            android.util.Log.i("BlinkDetector", "Blink completed! duration=${duration}ms, baseline=$eyeOpenBaseline, rawScore=$rawScore")
+                        } catch (ignored: Throwable) {}
                     }
                     eyeState = EyeState.OPEN
                 }
