@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
+import { supabase } from '@/lib/supabaseClient';
 import { 
   FileText, 
   ShieldCheck, 
@@ -13,7 +14,8 @@ import {
   Users,
   Code,
   GraduationCap,
-  Smartphone
+  Smartphone,
+  Activity
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -35,11 +37,80 @@ export default function ProtocolsPage() {
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
 
-  // User type comparison data
+  const [cohortData, setCohortData] = useState({
+    devSessions: 0,
+    devBpm: 0,
+    studentSessions: 0,
+    studentBpm: 0,
+    generalSessions: 0,
+    generalBpm: 0,
+    totalSessions: 0,
+    totalAlerts: 0,
+    avgBpm: 0
+  });
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const { data: profiles } = await supabase.from('profiles').select('id, cohort_arm');
+        const { data: sessions } = await supabase.from('blink_sessions').select('id, user_id, avg_bpm, alert_count');
+
+        const profileCohortMap = new Map<string, string>();
+        (profiles || []).forEach(p => {
+          profileCohortMap.set(p.id, (p.cohort_arm || '').toLowerCase());
+        });
+
+        const devSess: any[] = [];
+        const studentSess: any[] = [];
+        const generalSess: any[] = [];
+
+        (sessions || []).forEach(s => {
+          const arm = profileCohortMap.get(s.user_id) || 'general';
+          if (arm.includes('software') || arm.includes('engineer') || arm === 'arm_a') {
+            devSess.push(s);
+          } else if (arm.includes('student') || arm === 'arm_b') {
+            studentSess.push(s);
+          } else {
+            generalSess.push(s);
+          }
+        });
+
+        const calcMean = (arr: any[]) => {
+          const valids = arr.filter(s => s.avg_bpm && Number(s.avg_bpm) > 0);
+          return valids.length > 0
+            ? Number((valids.reduce((acc, s) => acc + Number(s.avg_bpm), 0) / valids.length).toFixed(1))
+            : 0;
+        };
+
+        const dMean = calcMean(devSess);
+        const sMean = calcMean(studentSess);
+        const gMean = calcMean(generalSess);
+        const allSessions = sessions || [];
+        const allMean = calcMean(allSessions);
+        const totalAlerts = allSessions.reduce((acc, s) => acc + (s.alert_count || 0), 0);
+
+        setCohortData({
+          devSessions: devSess.length,
+          devBpm: dMean,
+          studentSessions: studentSess.length,
+          studentBpm: sMean,
+          generalSessions: generalSess.length,
+          generalBpm: gMean,
+          totalSessions: allSessions.length,
+          totalAlerts,
+          avgBpm: allMean
+        });
+      } catch (err) {
+        console.error('Error fetching protocol comparison data:', err);
+      }
+    }
+    loadData();
+  }, []);
+
   const userTypeComparisonData = [
-    { name: 'Software Developers', meanBpm: 11.2, alertFreq: 3.4, adherence: 78.4, color: '#e11d48' },
-    { name: 'Students', meanBpm: 13.8, alertFreq: 2.1, adherence: 72.1, color: '#f59e0b' },
-    { name: 'General Users', meanBpm: 17.6, alertFreq: 0.3, adherence: 88.9, color: '#10b981' },
+    { name: 'Software Developers', meanBpm: cohortData.devBpm, color: '#e11d48' },
+    { name: 'Students', meanBpm: cohortData.studentBpm, color: '#f59e0b' },
+    { name: 'General Users', meanBpm: cohortData.generalBpm, color: '#10b981' },
   ];
 
   const handleSaveSettings = (e: React.FormEvent) => {
@@ -50,20 +121,15 @@ export default function ProtocolsPage() {
 
   const downloadUserTypeSummary = () => {
     const content = `# BlinkWell User Type Data & Summary
-Author: Mitali Purohit
 Platform: BlinkWell Eye Health & Blink Tracking
 Privacy: Fully De-Identified, Zero-PII, On-Device ML Kit Processing
 
-1. User Categories:
-- Software Developers (n=512 sessions): Continuous coding, IDE, and terminal use. Average blink rate: 11.2 BPM.
-- Students (n=496 sessions): Digital textbook reading and online coursework. Average blink rate: 13.8 BPM.
-- General Users (n=420 sessions): Everyday web browsing and smartphone use. Average blink rate: 17.6 BPM.
+1. User Categories (From Supabase Database):
+- Software Developers (n=${cohortData.devSessions} sessions): Average blink rate: ${cohortData.devBpm} BPM.
+- Students (n=${cohortData.studentSessions} sessions): Average blink rate: ${cohortData.studentBpm} BPM.
+- General Users (n=${cohortData.generalSessions} sessions): Average blink rate: ${cohortData.generalBpm} BPM.
 
-2. Key Findings:
-- Higher cognitive screen focus significantly suppresses natural blink rates below healthy levels (15-20 BPM).
-- Gentle vibration reminders effectively encourage users to restore healthy blink frequency without disrupting workflow.
-
-3. Privacy Guarantees:
+2. Privacy Guarantees:
 - Zero camera photos or videos are ever saved or transmitted.
 - All eye openness detection runs 100% locally on the device via ML Kit.
 `;
@@ -86,28 +152,13 @@ Privacy: Fully De-Identified, Zero-PII, On-Device ML Kit Processing
         data={{
           investigatorName: 'Mitali Purohit',
           reportDate: new Date(),
-          totalSessions: 1428,
-          avgBpm: 14.2,
-          strainIndex: 18.4,
-          totalScreenHours: 8940,
-          totalAlerts: 3812,
-          diurnalData: [
-            { hour: '00:00', avgBpm: 18.2, alerts: 12, strainRate: 4 },
-            { hour: '04:00', avgBpm: 19.8, alerts: 3, strainRate: 1 },
-            { hour: '08:00', avgBpm: 16.5, alerts: 24, strainRate: 9 },
-            { hour: '12:00', avgBpm: 12.4, alerts: 142, strainRate: 31 },
-            { hour: '14:00', avgBpm: 9.8, alerts: 218, strainRate: 44 },
-            { hour: '16:00', avgBpm: 8.9, alerts: 286, strainRate: 52 },
-            { hour: '18:00', avgBpm: 11.2, alerts: 174, strainRate: 36 },
-            { hour: '20:00', avgBpm: 14.5, alerts: 96, strainRate: 18 },
-            { hour: '22:00', avgBpm: 16.8, alerts: 42, strainRate: 8 },
-          ],
-          distributionData: [
-            { range: '<10 BPM (High Strain)', percentage: 18, count: 263, color: '#e11d48' },
-            { range: '10–14 BPM (Low Rate)', percentage: 44, count: 628, color: '#f59e0b' },
-            { range: '15–20 BPM (Healthy Normal)', percentage: 32, count: 457, color: '#10b981' },
-            { range: '>20 BPM (Frequent)', percentage: 6, count: 80, color: '#6366f1' },
-          ],
+          totalSessions: cohortData.totalSessions,
+          avgBpm: cohortData.avgBpm,
+          strainIndex: 0,
+          totalScreenHours: 0,
+          totalAlerts: cohortData.totalAlerts,
+          diurnalData: [],
+          distributionData: [],
         }}
       />
 
@@ -178,11 +229,13 @@ Privacy: Fully De-Identified, Zero-PII, On-Device ML Kit Processing
               <div className="grid grid-cols-2 gap-2 text-xs border-t border-slate-100 pt-3">
                 <div>
                   <span className="text-[10px] text-slate-400 block uppercase">Sessions</span>
-                  <strong className="text-slate-900 font-telemetry">512</strong>
+                  <strong className="text-slate-900 font-telemetry">{cohortData.devSessions}</strong>
                 </div>
                 <div>
                   <span className="text-[10px] text-slate-400 block uppercase">Average Rate</span>
-                  <strong className="text-rose-600 font-telemetry">11.2 BPM</strong>
+                  <strong className="text-rose-600 font-telemetry">
+                    {cohortData.devBpm > 0 ? `${cohortData.devBpm} BPM` : '0 BPM'}
+                  </strong>
                 </div>
               </div>
             </div>
@@ -213,11 +266,13 @@ Privacy: Fully De-Identified, Zero-PII, On-Device ML Kit Processing
               <div className="grid grid-cols-2 gap-2 text-xs border-t border-slate-100 pt-3">
                 <div>
                   <span className="text-[10px] text-slate-400 block uppercase">Sessions</span>
-                  <strong className="text-slate-900 font-telemetry">496</strong>
+                  <strong className="text-slate-900 font-telemetry">{cohortData.studentSessions}</strong>
                 </div>
                 <div>
                   <span className="text-[10px] text-slate-400 block uppercase">Average Rate</span>
-                  <strong className="text-amber-600 font-telemetry">13.8 BPM</strong>
+                  <strong className="text-amber-600 font-telemetry">
+                    {cohortData.studentBpm > 0 ? `${cohortData.studentBpm} BPM` : '0 BPM'}
+                  </strong>
                 </div>
               </div>
             </div>
@@ -248,11 +303,13 @@ Privacy: Fully De-Identified, Zero-PII, On-Device ML Kit Processing
               <div className="grid grid-cols-2 gap-2 text-xs border-t border-slate-100 pt-3">
                 <div>
                   <span className="text-[10px] text-slate-400 block uppercase">Sessions</span>
-                  <strong className="text-slate-900 font-telemetry">420</strong>
+                  <strong className="text-slate-900 font-telemetry">{cohortData.generalSessions}</strong>
                 </div>
                 <div>
                   <span className="text-[10px] text-slate-400 block uppercase">Average Rate</span>
-                  <strong className="text-emerald-600 font-telemetry">17.6 BPM</strong>
+                  <strong className="text-emerald-600 font-telemetry">
+                    {cohortData.generalBpm > 0 ? `${cohortData.generalBpm} BPM` : '0 BPM'}
+                  </strong>
                 </div>
               </div>
             </div>
@@ -274,22 +331,29 @@ Privacy: Fully De-Identified, Zero-PII, On-Device ML Kit Processing
             </div>
 
             <div className="h-64 w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={userTypeComparisonData}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                  <XAxis dataKey="name" stroke="#94a3b8" fontSize={11} tickLine={false} />
-                  <YAxis domain={[0, 22]} stroke="#94a3b8" fontSize={11} tickLine={false} unit=" BPM" />
-                  <Tooltip 
-                    contentStyle={{ backgroundColor: '#ffffff', borderRadius: '12px', borderColor: '#e2e8f0' }}
-                    formatter={(val: any) => [`${val} BPM`, 'Average Blink Rate']}
-                  />
-                  <Bar dataKey="meanBpm" radius={[8, 8, 0, 0]}>
-                    {userTypeComparisonData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+              {cohortData.totalSessions === 0 ? (
+                <div className="h-full flex flex-col items-center justify-center text-slate-400 text-xs bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                  <Activity className="w-8 h-8 mb-2 text-slate-300" />
+                  <span>No user type session data in Supabase yet.</span>
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={userTypeComparisonData}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                    <XAxis dataKey="name" stroke="#94a3b8" fontSize={11} tickLine={false} />
+                    <YAxis domain={[0, 22]} stroke="#94a3b8" fontSize={11} tickLine={false} unit=" BPM" />
+                    <Tooltip 
+                      contentStyle={{ backgroundColor: '#ffffff', borderRadius: '12px', borderColor: '#e2e8f0' }}
+                      formatter={(val: any) => [`${val} BPM`, 'Average Blink Rate']}
+                    />
+                    <Bar dataKey="meanBpm" radius={[8, 8, 0, 0]}>
+                      {userTypeComparisonData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
             </div>
 
             {/* Key Findings */}

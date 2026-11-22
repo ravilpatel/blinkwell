@@ -123,81 +123,18 @@ function UserDetailContent() {
           fetchSessionLogs(data[0].id);
         }
       } else {
-        // High-fidelity clinical mock sessions
-        const mockSessions = [
-          {
-            id: 'sess-today-1',
-            started_at: new Date(Date.now() - 3 * 3600000).toISOString(),
-            ended_at: new Date().toISOString(),
-            avg_bpm: 8.8,
-            min_bpm: 5.2,
-            alert_count: 4,
-            monitoring_mode: 'background'
-          },
-          {
-            id: 'sess-yesterday-2',
-            started_at: new Date(Date.now() - 26 * 3600000).toISOString(),
-            ended_at: new Date(Date.now() - 24 * 3600000).toISOString(),
-            avg_bpm: 9.4,
-            min_bpm: 6.1,
-            alert_count: 3,
-            monitoring_mode: 'background'
-          },
-          {
-            id: 'sess-prev-3',
-            started_at: new Date(Date.now() - 50 * 3600000).toISOString(),
-            ended_at: new Date(Date.now() - 48 * 3600000).toISOString(),
-            avg_bpm: 12.1,
-            min_bpm: 8.4,
-            alert_count: 1,
-            monitoring_mode: 'app_only'
-          },
-          {
-            id: 'sess-prev-4',
-            started_at: new Date(Date.now() - 74 * 3600000).toISOString(),
-            ended_at: new Date(Date.now() - 71 * 3600000).toISOString(),
-            avg_bpm: 10.6,
-            min_bpm: 7.0,
-            alert_count: 2,
-            monitoring_mode: 'background'
-          }
-        ];
-        setSessions(mockSessions);
-        setSelectedSession(mockSessions[0]);
-        generateMockSessionLogs(mockSessions[0]);
+        setSessions([]);
+        setSelectedSession(null);
+        setSessionLogs([]);
       }
     } catch (err) {
       console.error('Error fetching user sessions:', err);
+      setSessions([]);
+      setSelectedSession(null);
+      setSessionLogs([]);
     } finally {
       setLoading(false);
     }
-  }
-
-  function generateMockSessionLogs(session: any) {
-    const logs = [];
-    const baseTime = new Date(session.started_at);
-    // 30 minute timeline
-    for (let i = 0; i < 30; i++) {
-      const t = new Date(baseTime.getTime() + i * 60 * 1000);
-      let bpmVal = 14.5 - (i * 0.28) + (Math.random() * 2 - 1);
-      if (i > 15 && i < 22) {
-        bpmVal = 7.4 + (Math.random() * 1.5); // fatigue dip triggering alert
-      } else if (i >= 22) {
-        bpmVal = 15.8 + (Math.random() * 2); // post-nudge recovery
-      }
-      bpmVal = Math.max(4, Math.min(22, Number(bpmVal.toFixed(1))));
-      logs.push({
-        time: format(t, 'HH:mm'),
-        bpm: bpmVal,
-        threshold: 10,
-        normalLow: 15,
-        normalHigh: 20,
-        ibiMs: Math.round(60000 / Math.max(1, bpmVal)),
-        eyeScore: (0.75 + (bpmVal > 10 ? 0.15 : -0.2)).toFixed(2),
-        alertEvent: i === 18
-      });
-    }
-    setSessionLogs(logs);
   }
 
   async function fetchSessionLogs(sessionId: string) {
@@ -221,10 +158,11 @@ function UserDetailContent() {
         }));
         setSessionLogs(formatted);
       } else {
-        generateMockSessionLogs(selectedSession || { started_at: new Date().toISOString() });
+        setSessionLogs([]);
       }
     } catch (err) {
       console.error('Error fetching session logs:', err);
+      setSessionLogs([]);
     }
   }
 
@@ -375,9 +313,14 @@ function UserDetailContent() {
             </div>
 
             <div className="space-y-3 max-h-[520px] overflow-y-auto pr-1">
-              {sessions.map((session) => {
-                const isSelected = selectedSession?.id === session.id;
-                return (
+              {sessions.length === 0 ? (
+                <div className="p-8 text-center text-xs text-slate-400 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                  No sessions recorded for this participant in Supabase.
+                </div>
+              ) : (
+                sessions.map((session) => {
+                  const isSelected = selectedSession?.id === session.id;
+                  return (
                   <div
                     key={session.id}
                     onClick={() => {
@@ -415,7 +358,8 @@ function UserDetailContent() {
                     </div>
                   </div>
                 );
-              })}
+              })
+            )}
             </div>
           </div>
 
@@ -447,44 +391,51 @@ function UserDetailContent() {
 
                   {/* Recharts Area Waveform */}
                   <div className="h-72 w-full pt-2">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={sessionLogs}>
-                        <defs>
-                          <linearGradient id="subjectGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#0d9488" stopOpacity={0.3} />
-                            <stop offset="95%" stopColor="#0d9488" stopOpacity={0.0} />
-                          </linearGradient>
-                        </defs>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                        <XAxis dataKey="time" stroke="#94a3b8" fontSize={11} tickLine={false} />
-                        <YAxis domain={[0, 25]} stroke="#94a3b8" fontSize={11} tickLine={false} unit=" BPM" />
-                        <Tooltip
-                          contentStyle={{ backgroundColor: '#ffffff', borderRadius: '12px', borderColor: '#e2e8f0', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}
-                          formatter={(val: any, name: string) => [
-                            `${Number(val).toFixed(1)} ${name === 'bpm' ? 'BPM' : ''}`,
-                            name === 'bpm' ? 'Observed BPM' : name === 'threshold' ? 'Fatigue Threshold' : name
-                          ]}
-                        />
-                        <Line
-                          type="monotone"
-                          dataKey="threshold"
-                          stroke="#e11d48"
-                          strokeDasharray="4 4"
-                          strokeWidth={1.5}
-                          dot={false}
-                          name="Asthenopia Threshold"
-                        />
-                        <Area
-                          type="monotone"
-                          dataKey="bpm"
-                          stroke="#0d9488"
-                          strokeWidth={2.5}
-                          fillOpacity={1}
-                          fill="url(#subjectGrad)"
-                          name="bpm"
-                        />
-                      </AreaChart>
-                    </ResponsiveContainer>
+                    {sessionLogs.length === 0 ? (
+                      <div className="h-full flex flex-col items-center justify-center text-slate-400 text-xs bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
+                        <Activity className="w-8 h-8 mb-2 text-slate-300" />
+                        <span>No minute-level log telemetry recorded for this session in Supabase.</span>
+                      </div>
+                    ) : (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart data={sessionLogs}>
+                          <defs>
+                            <linearGradient id="subjectGrad" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#0d9488" stopOpacity={0.3} />
+                              <stop offset="95%" stopColor="#0d9488" stopOpacity={0.0} />
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                          <XAxis dataKey="time" stroke="#94a3b8" fontSize={11} tickLine={false} />
+                          <YAxis domain={[0, 25]} stroke="#94a3b8" fontSize={11} tickLine={false} unit=" BPM" />
+                          <Tooltip
+                            contentStyle={{ backgroundColor: '#ffffff', borderRadius: '12px', borderColor: '#e2e8f0', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}
+                            formatter={(val: any, name: string) => [
+                              `${Number(val).toFixed(1)} ${name === 'bpm' ? 'BPM' : ''}`,
+                              name === 'bpm' ? 'Observed BPM' : name === 'threshold' ? 'Fatigue Threshold' : name
+                            ]}
+                          />
+                          <Line
+                            type="monotone"
+                            dataKey="threshold"
+                            stroke="#e11d48"
+                            strokeDasharray="4 4"
+                            strokeWidth={1.5}
+                            dot={false}
+                            name="Asthenopia Threshold"
+                          />
+                          <Area
+                            type="monotone"
+                            dataKey="bpm"
+                            stroke="#0d9488"
+                            strokeWidth={2.5}
+                            fillOpacity={1}
+                            fill="url(#subjectGrad)"
+                            name="bpm"
+                          />
+                        </AreaChart>
+                      </ResponsiveContainer>
+                    )}
                   </div>
 
                   {/* Graph Annotations */}

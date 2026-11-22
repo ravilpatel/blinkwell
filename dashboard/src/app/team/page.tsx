@@ -61,19 +61,15 @@ export default function TeamManagementPage() {
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (data && data.length > 0) {
-        setResearchers(data);
+      if (error) {
+        console.error('Error fetching researchers from Supabase:', error);
+        setResearchers([]);
       } else {
-        // Mock team members for clinical trial demonstration
-        setResearchers([
-          { id: 'usr-pi-1', email: 'viraravil2101@gmail.com', role: 'admin', created_at: new Date(Date.now() - 60 * 86400000).toISOString() },
-          { id: 'usr-coord-2', email: 'mitali.purohit@blinkwell.research', role: 'admin', created_at: new Date(Date.now() - 45 * 86400000).toISOString() },
-          { id: 'usr-invest-3', email: 'clinical.investigator@ophthalmic-lab.org', role: 'researcher', created_at: new Date(Date.now() - 20 * 86400000).toISOString() },
-          { id: 'usr-stat-4', email: 'biostatistician@ergonomics-inst.edu', role: 'analyst', created_at: new Date(Date.now() - 10 * 86400000).toISOString() },
-        ]);
+        setResearchers(data || []);
       }
     } catch (err) {
       console.error('Error fetching researchers:', err);
+      setResearchers([]);
     }
   }
 
@@ -260,45 +256,52 @@ export default function TeamManagementPage() {
             </div>
 
             <div className="divide-y divide-slate-100">
-              {researchers.map((user) => (
-                <div key={user.id} className="p-4 sm:px-6 flex items-center justify-between hover:bg-slate-50/60 transition-colors">
-                  <div className="flex items-center space-x-3">
-                    <div className="p-2 bg-slate-100 rounded-xl text-slate-600">
-                      <Shield className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <span className="text-xs font-bold text-slate-900 block">{user.email}</span>
-                      <span className="text-[11px] text-slate-400 font-mono">
-                        Enrolled {user.created_at ? format(new Date(user.created_at), 'MMM d, yyyy') : 'N/A'}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center space-x-3">
-                    <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                        user.role === 'admin'
-                          ? 'bg-purple-100 text-purple-800'
-                          : user.role === 'analyst'
-                          ? 'bg-blue-100 text-blue-800'
-                          : 'bg-teal-100 text-teal-800'
-                      }`}
-                    >
-                      {user.role === 'admin' ? 'Administrator' : user.role === 'analyst' ? 'Biostatistician' : 'Researcher'}
-                    </span>
-
-                    {user.email !== 'viraravil2101@gmail.com' && (
-                      <button
-                        onClick={() => handleDeleteUser(user.id, user.email)}
-                        className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-colors"
-                        title="Revoke Access"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    )}
-                  </div>
+              {researchers.length === 0 ? (
+                <div className="p-12 text-center text-xs text-slate-400">
+                  <ShieldCheck className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                  <span>No researchers enrolled in Supabase yet.</span>
                 </div>
-              ))}
+              ) : (
+                researchers.map((user) => (
+                  <div key={user.id} className="p-4 sm:px-6 flex items-center justify-between hover:bg-slate-50/60 transition-colors">
+                    <div className="flex items-center space-x-3">
+                      <div className="p-2 bg-slate-100 rounded-xl text-slate-600">
+                        <Shield className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <span className="text-xs font-bold text-slate-900 block">{user.email}</span>
+                        <span className="text-[11px] text-slate-400 font-mono">
+                          Enrolled {user.created_at ? format(new Date(user.created_at), 'MMM d, yyyy') : 'N/A'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center space-x-3">
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                          user.role === 'admin'
+                            ? 'bg-purple-100 text-purple-800'
+                            : user.role === 'analyst'
+                            ? 'bg-blue-100 text-blue-800'
+                            : 'bg-teal-100 text-teal-800'
+                        }`}
+                      >
+                        {user.role === 'admin' ? 'Administrator' : user.role === 'analyst' ? 'Biostatistician' : 'Researcher'}
+                      </span>
+
+                      {user.email !== 'viraravil2101@gmail.com' && (
+                        <button
+                          onClick={() => handleDeleteUser(user.id, user.email)}
+                          className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-colors"
+                          title="Revoke Access"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>

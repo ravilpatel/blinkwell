@@ -46,69 +46,6 @@ interface FeedbackItem {
   created_at: string;
 }
 
-const MOCK_FEEDBACK: FeedbackItem[] = [
-  {
-    id: 'fb-101',
-    user_id: 'a8b1c2d3-1111-4000-8000-123456789abc',
-    usage_duration: '1 – 3 weeks',
-    comfort_improvement: '🌟 Significant (eyes feel fresher & less dry)',
-    reminder_comfort: '✨ Very gentle & well-timed',
-    preferred_mode: '⏱️ 5-Minute Eye Check (Burst Mode)',
-    comments: 'The 5-minute burst check fits seamlessly into my coding routine. My end-of-day eye redness has almost disappeared!',
-    created_at: new Date(Date.now() - 1000 * 60 * 35).toISOString()
-  },
-  {
-    id: 'fb-102',
-    user_id: 'b7c2d3e4-2222-4000-8000-234567890bcd',
-    usage_duration: '1 month or more',
-    comfort_improvement: '🌟 Significant (eyes feel fresher & less dry)',
-    reminder_comfort: '👍 Helpful & balanced',
-    preferred_mode: '🔄 All-Day Monitoring Mode',
-    comments: 'All-day monitoring keeps me accountable while writing papers. The haptic reminder is discrete and not intrusive.',
-    created_at: new Date(Date.now() - 1000 * 60 * 180).toISOString()
-  },
-  {
-    id: 'fb-103',
-    user_id: 'c6d3e4f5-3333-4000-8000-345678901cde',
-    usage_duration: '2 – 6 days (1 week)',
-    comfort_improvement: '👍 Moderate (blinking more frequently)',
-    reminder_comfort: '✨ Very gentle & well-timed',
-    preferred_mode: '⚖️ Both equally',
-    comments: 'Love the Daily Eye Care routine guide and the carousel tips on onboarding. Would love a widget option for the home screen.',
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 8).toISOString()
-  },
-  {
-    id: 'fb-104',
-    user_id: 'd5e4f5a6-4444-4000-8000-456789012def',
-    usage_duration: 'First day / Just started',
-    comfort_improvement: '⏳ Too early to tell',
-    reminder_comfort: '👍 Helpful & balanced',
-    preferred_mode: '⏱️ 5-Minute Eye Check (Burst Mode)',
-    comments: 'Setup was straightforward. The questionnaire was quick and covered my computer screen hours and contact lenses accurately.',
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 22).toISOString()
-  },
-  {
-    id: 'fb-105',
-    user_id: 'e4f5a6b7-5555-4000-8000-567890123efa',
-    usage_duration: '1 – 3 weeks',
-    comfort_improvement: '🌟 Significant (eyes feel fresher & less dry)',
-    reminder_comfort: '✨ Very gentle & well-timed',
-    preferred_mode: '⏱️ 5-Minute Eye Check (Burst Mode)',
-    comments: 'Really helped with dry eyes in an air-conditioned office environment. Blinking regularly has drastically lowered my screen strain.',
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString()
-  },
-  {
-    id: 'fb-106',
-    user_id: 'f3a6b7c8-6666-4000-8000-678901234fab',
-    usage_duration: '1 month or more',
-    comfort_improvement: '👍 Moderate (blinking more frequently)',
-    reminder_comfort: '😐 Neutral / Okay',
-    preferred_mode: '🔄 All-Day Monitoring Mode',
-    comments: 'Great battery performance on duty-cycle mode. It has helped create a subconscious habit to blink completely during long spreadsheets.',
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 72).toISOString()
-  }
-];
-
 export default function FeedbackPortalPage() {
   const router = useRouter();
   const [feedbackList, setFeedbackList] = useState<FeedbackItem[]>([]);
@@ -162,15 +99,15 @@ export default function FeedbackPortalPage() {
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (data && data.length > 0) {
-        setFeedbackList(data);
+      if (error) {
+        console.error('Error fetching feedback from Supabase:', error);
+        setFeedbackList([]);
       } else {
-        // Fallback to sample responses for clinical research demo
-        setFeedbackList(MOCK_FEEDBACK);
+        setFeedbackList(data || []);
       }
     } catch (err) {
       console.error('Error fetching feedback:', err);
-      setFeedbackList(MOCK_FEEDBACK);
+      setFeedbackList([]);
     }
   }
 
@@ -423,19 +360,26 @@ export default function FeedbackPortalPage() {
                 <HeartHandshake className="w-4 h-4" />
               </span>
             </div>
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={comfortChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                  <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} allowDecimals={false} />
-                  <Tooltip 
-                    contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                  />
-                  <Bar dataKey="count" radius={[6, 6, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+            {totalResponses === 0 ? (
+              <div className="h-64 flex flex-col items-center justify-center text-slate-400 text-xs bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
+                <HeartHandshake className="w-8 h-8 mb-2 text-slate-300" />
+                <span>No feedback responses recorded in Supabase yet.</span>
+              </div>
+            ) : (
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={comfortChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                    <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} allowDecimals={false} />
+                    <Tooltip 
+                      contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                    />
+                    <Bar dataKey="count" radius={[6, 6, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            )}
           </div>
 
           {/* Usage Duration Distribution */}
@@ -449,19 +393,26 @@ export default function FeedbackPortalPage() {
                 <Clock className="w-4 h-4" />
               </span>
             </div>
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={durationChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                  <XAxis dataKey="duration" tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} allowDecimals={false} />
-                  <Tooltip 
-                    contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                  />
-                  <Bar dataKey="count" fill="#6366f1" radius={[6, 6, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+            {totalResponses === 0 ? (
+              <div className="h-64 flex flex-col items-center justify-center text-slate-400 text-xs bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
+                <Clock className="w-8 h-8 mb-2 text-slate-300" />
+                <span>No feedback responses recorded in Supabase yet.</span>
+              </div>
+            ) : (
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={durationChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                    <XAxis dataKey="duration" tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} allowDecimals={false} />
+                    <Tooltip 
+                      contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                    />
+                    <Bar dataKey="count" fill="#6366f1" radius={[6, 6, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            )}
           </div>
         </div>
 

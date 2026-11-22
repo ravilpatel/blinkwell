@@ -78,64 +78,48 @@ export default function UsersDirectoryPage() {
       let mergedUsers: any[] = [];
 
       if (profiles && profiles.length > 0) {
-        mergedUsers = profiles.map((p, index) => {
+        mergedUsers = profiles.map((p) => {
           const userSessions = userSessionMap.get(p.id) || [];
           const sessionCount = userSessions.length;
           const validBpms = userSessions.filter(s => s.avg_bpm && s.avg_bpm > 0);
           const avgBpm = validBpms.length > 0
             ? validBpms.reduce((acc, s) => acc + Number(s.avg_bpm), 0) / validBpms.length
-            : (11.5 + (index % 5) * 1.8);
+            : 0;
           const totalAlerts = userSessions.reduce((acc, s) => acc + (s.alert_count || 0), 0);
           const prefMode = userSessions.length > 0 && userSessions[0].monitoring_mode
             ? userSessions[0].monitoring_mode
-            : (index % 3 === 0 ? 'app_only' : 'background');
+            : 'app_only';
 
-          // Map self-reported onboarding cohort_arm or fallback deterministically
+          // Map self-reported onboarding cohort_arm
           let cohortArm = 'Arm C: General Screen Use';
-          const rawArm = p.cohort_arm || '';
-          if (rawArm === 'software_engineer' || rawArm === 'arm_a') {
+          const rawArm = (p.cohort_arm || '').toLowerCase();
+          if (rawArm.includes('software') || rawArm.includes('engineer') || rawArm === 'arm_a') {
             cohortArm = 'Arm A: Software Engineers';
-          } else if (rawArm === 'student' || rawArm === 'arm_b') {
+          } else if (rawArm.includes('student') || rawArm === 'arm_b') {
             cohortArm = 'Arm B: Remote Students';
-          } else if (rawArm === 'general' || rawArm === 'arm_c') {
-            cohortArm = 'Arm C: General Screen Use';
           } else {
-            cohortArm = index % 3 === 0 
-              ? 'Arm A: Software Engineers' 
-              : index % 3 === 1 
-              ? 'Arm B: Remote Students' 
-              : 'Arm C: General Screen Use';
+            cohortArm = 'Arm C: General Screen Use';
           }
 
           return {
             id: p.id,
             created_at: p.created_at,
             cohortArm,
-            sessionCount: sessionCount || (index + 1) * 4,
+            sessionCount: sessionCount,
             avgBpm: Number(avgBpm.toFixed(1)),
-            totalAlerts: totalAlerts || Math.floor((index + 1) * 2.3),
+            totalAlerts: totalAlerts,
             monitoringMode: prefMode,
-            riskTier: avgBpm < 10 ? 'critical' : avgBpm < 15 ? 'moderate' : 'optimal'
+            riskTier: avgBpm === 0 ? 'optimal' : avgBpm < 10 ? 'critical' : avgBpm < 15 ? 'moderate' : 'optimal'
           };
         });
       } else {
-        // High-fidelity clinical research mock session streams for demonstration
-        const mockCohort = [
-          { id: 'bw-stream-8841-a9f2-4c7b-91e8-230918237461', created_at: new Date(Date.now() - 30 * 86400000).toISOString(), cohortArm: 'Arm A: Software Engineers', sessionCount: 142, avgBpm: 8.4, totalAlerts: 312, monitoringMode: 'background', riskTier: 'critical' },
-          { id: 'bw-stream-2094-c1e4-4d8a-8219-482019482910', created_at: new Date(Date.now() - 25 * 86400000).toISOString(), cohortArm: 'Arm C: General Screen Use', sessionCount: 64, avgBpm: 16.8, totalAlerts: 18, monitoringMode: 'app_only', riskTier: 'optimal' },
-          { id: 'bw-stream-4710-b5d3-4f91-b382-918204918293', created_at: new Date(Date.now() - 22 * 86400000).toISOString(), cohortArm: 'Arm B: Remote Students', sessionCount: 98, avgBpm: 11.2, totalAlerts: 146, monitoringMode: 'background', riskTier: 'moderate' },
-          { id: 'bw-stream-9932-a1b7-4e33-9021-829104829102', created_at: new Date(Date.now() - 19 * 86400000).toISOString(), cohortArm: 'Arm A: Software Engineers', sessionCount: 184, avgBpm: 9.6, totalAlerts: 410, monitoringMode: 'background', riskTier: 'critical' },
-          { id: 'bw-stream-1108-b8c2-4a11-8932-192830192831', created_at: new Date(Date.now() - 15 * 86400000).toISOString(), cohortArm: 'Arm B: Remote Students', sessionCount: 76, avgBpm: 12.8, totalAlerts: 88, monitoringMode: 'app_only', riskTier: 'moderate' },
-          { id: 'bw-stream-5519-c4e9-4f28-a182-938201928492', created_at: new Date(Date.now() - 12 * 86400000).toISOString(), cohortArm: 'Arm C: General Screen Use', sessionCount: 42, avgBpm: 18.2, totalAlerts: 6, monitoringMode: 'background', riskTier: 'optimal' },
-          { id: 'bw-stream-6320-a7d1-4b55-8812-392810482918', created_at: new Date(Date.now() - 8 * 86400000).toISOString(), cohortArm: 'Arm A: Software Engineers', sessionCount: 115, avgBpm: 9.1, totalAlerts: 278, monitoringMode: 'background', riskTier: 'critical' },
-          { id: 'bw-stream-7412-b2f8-4e67-9102-482910293819', created_at: new Date(Date.now() - 4 * 86400000).toISOString(), cohortArm: 'Arm B: Remote Students', sessionCount: 58, avgBpm: 13.4, totalAlerts: 62, monitoringMode: 'background', riskTier: 'moderate' },
-        ];
-        mergedUsers = mockCohort;
+        mergedUsers = [];
       }
 
       setUsers(mergedUsers);
     } catch (err) {
       console.error('Error fetching session telemetry data:', err);
+      setUsers([]);
     } finally {
       setLoading(false);
     }
@@ -176,28 +160,15 @@ export default function UsersDirectoryPage() {
         data={{
           investigatorName: 'Mitali Purohit',
           reportDate: new Date(),
-          totalSessions: users.reduce((acc, u) => acc + (u.sessionCount || 0), 0) || 4860,
-          avgBpm: users.length > 0 ? Number((users.reduce((acc, u) => acc + u.avgBpm, 0) / users.length).toFixed(1)) : 14.2,
-          strainIndex: 18.4,
-          totalScreenHours: 8940,
-          totalAlerts: users.reduce((acc, u) => acc + (u.totalAlerts || 0), 0) || 3812,
-          diurnalData: [
-            { hour: '00:00', avgBpm: 18.2, alerts: 12, strainRate: 4 },
-            { hour: '04:00', avgBpm: 19.8, alerts: 3, strainRate: 1 },
-            { hour: '08:00', avgBpm: 16.5, alerts: 24, strainRate: 9 },
-            { hour: '12:00', avgBpm: 12.4, alerts: 142, strainRate: 31 },
-            { hour: '14:00', avgBpm: 9.8, alerts: 218, strainRate: 44 },
-            { hour: '16:00', avgBpm: 8.9, alerts: 286, strainRate: 52 },
-            { hour: '18:00', avgBpm: 11.2, alerts: 174, strainRate: 36 },
-            { hour: '20:00', avgBpm: 14.5, alerts: 96, strainRate: 18 },
-            { hour: '22:00', avgBpm: 16.8, alerts: 42, strainRate: 8 },
-          ],
-          distributionData: [
-            { range: '<10 BPM (Severe Strain)', percentage: 18, count: 263, color: '#e11d48' },
-            { range: '10–14 BPM (Sub-optimal)', percentage: 44, count: 628, color: '#f59e0b' },
-            { range: '15–20 BPM (Physiological Normal)', percentage: 32, count: 457, color: '#10b981' },
-            { range: '>20 BPM (Compensatory)', percentage: 6, count: 80, color: '#6366f1' },
-          ],
+          totalSessions: users.reduce((acc, u) => acc + (u.sessionCount || 0), 0),
+          avgBpm: users.length > 0 && users.some(u => u.avgBpm > 0)
+            ? Number((users.filter(u => u.avgBpm > 0).reduce((acc, u) => acc + u.avgBpm, 0) / Math.max(1, users.filter(u => u.avgBpm > 0).length)).toFixed(1))
+            : 0,
+          strainIndex: 0,
+          totalScreenHours: 0,
+          totalAlerts: users.reduce((acc, u) => acc + (u.totalAlerts || 0), 0),
+          diurnalData: [],
+          distributionData: [],
         }}
       />
 
